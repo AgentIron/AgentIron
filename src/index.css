@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+@theme {
+  /* Modern minimal palette — dark-mode-first (Linear/Raycast inspired) */
+  --color-bg-primary: #0a0a0b;
+  --color-bg-secondary: #111113;
+  --color-bg-tertiary: #1a1a1e;
+  --color-bg-elevated: #222226;
+  --color-bg-hover: #2a2a2f;
+
+  --color-border-default: #2a2a2f;
+  --color-border-subtle: #1f1f24;
+
+  --color-text-primary: #ececef;
+  --color-text-secondary: #8b8b93;
+  --color-text-tertiary: #5c5c66;
+
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-accent-muted: rgba(99, 102, 241, 0.15);
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+html {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ── Markdown prose styles ── */
+
+.prose-custom {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.prose-custom p {
+  margin-bottom: 0.75em;
+}
+
+.prose-custom p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-custom h1,
+.prose-custom h2,
+.prose-custom h3,
+.prose-custom h4,
+.prose-custom h5,
+.prose-custom h6 {
+  font-weight: 600;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  color: var(--color-text-primary);
+}
+
+.prose-custom h1 { font-size: 1.375rem; }
+.prose-custom h2 { font-size: 1.125rem; }
+.prose-custom h3 { font-size: 1rem; }
+
+.prose-custom ul,
+.prose-custom ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.prose-custom ul { list-style-type: disc; }
+.prose-custom ol { list-style-type: decimal; }
+
+.prose-custom li {
+  margin-bottom: 0.25em;
+}
+
+.prose-custom blockquote {
+  border-left: 3px solid var(--color-accent-muted);
+  padding-left: 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0.75em 0;
+}
+
+.prose-custom a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.prose-custom a:hover {
+  text-decoration: underline;
+}
+
+.prose-custom hr {
+  border: none;
+  border-top: 1px solid var(--color-border-default);
+  margin: 1.5em 0;
+}
+
+.prose-custom code:not(pre code) {
+  background: var(--color-bg-elevated);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--color-accent-hover);
+}
+
+.prose-custom pre {
+  margin: 0;
+}
+
+.prose-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 0.8125rem;
+}
+
+.prose-custom th,
+.prose-custom td {
+  border: 1px solid var(--color-border-default);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.prose-custom th {
+  background: var(--color-bg-elevated);
+  font-weight: 600;
+}
+
+.prose-custom strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.prose-custom em {
+  font-style: italic;
+}
+
+/* ── Prism syntax highlighting tokens ── */
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.token.keyword,
+.token.tag,
+.token.selector {
+  color: #c084fc;
+}
+
+.token.string,
+.token.attr-value,
+.token.template-string {
+  color: #86efac;
+}
+
+.token.number,
+.token.boolean {
+  color: #fdba74;
+}
+
+.token.function {
+  color: #93c5fd;
+}
+
+.token.operator,
+.token.arrow {
+  color: #f9a8d4;
+}
+
+.token.class-name,
+.token.builtin,
+.token.constant {
+  color: #fde68a;
+}
+
+.token.punctuation {
+  color: var(--color-text-secondary);
+}
+
+.token.property,
+.token.variable {
+  color: var(--color-text-primary);
+}
+
+.token.attr-name {
+  color: #93c5fd;
+}
+
+.token.regex {
+  color: #fca5a5;
+}
+
+/* ── Animations (respects prefers-reduced-motion) ── */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Streaming dots */
+  @keyframes pulse-dot {
+    0%, 80%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+  }
+  .streaming-dot { animation: pulse-dot 1.4s infinite ease-in-out; }
+  .streaming-dot:nth-child(2) { animation-delay: 0.2s; }
+  .streaming-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Tool spinner */
+  @keyframes tool-spin { to { transform: rotate(360deg); } }
+  .tool-spinner { animation: tool-spin 0.8s linear infinite; }
+
+  /* ── Transition classes for solid-transition-group ── */
+
+  /* Slide from right (MCP panel) */
+  .slide-right-enter-active,
+  .slide-right-exit-active {
+    transition: transform 200ms ease-out, opacity 200ms ease-out;
+  }
+  .slide-right-exit-active { transition-timing-function: ease-in; }
+  .slide-right-enter { transform: translateX(100%); opacity: 0; }
+  .slide-right-enter-to { transform: translateX(0); opacity: 1; }
+  .slide-right-exit { transform: translateX(0); opacity: 1; }
+  .slide-right-exit-to { transform: translateX(100%); opacity: 0; }
+
+  /* Slide up (approval bar) */
+  .slide-up-enter-active,
+  .slide-up-exit-active {
+    transition: transform 200ms ease-out, opacity 200ms ease-out;
+  }
+  .slide-up-exit-active { transition-timing-function: ease-in; }
+  .slide-up-enter { transform: translateY(100%); opacity: 0; }
+  .slide-up-enter-to { transform: translateY(0); opacity: 1; }
+  .slide-up-exit { transform: translateY(0); opacity: 1; }
+  .slide-up-exit-to { transform: translateY(100%); opacity: 0; }
+
+  /* Scale + fade (dropdowns, menus) */
+  .scale-fade-enter-active,
+  .scale-fade-exit-active {
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+  }
+  .scale-fade-exit-active { transition-timing-function: ease-in; }
+  .scale-fade-enter { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  .scale-fade-enter-to { opacity: 1; transform: scale(1) translateY(0); }
+  .scale-fade-exit { opacity: 1; transform: scale(1) translateY(0); }
+  .scale-fade-exit-to { opacity: 0; transform: scale(0.95) translateY(-4px); }
+
+  /* Fade (view switching) */
+  .fade-enter-active,
+  .fade-exit-active {
+    transition: opacity 150ms ease-out;
+  }
+  .fade-enter { opacity: 0; }
+  .fade-enter-to { opacity: 1; }
+  .fade-exit { opacity: 1; }
+  .fade-exit-to { opacity: 0; }
+
+  /* ── Keyframe animations ── */
+
+  /* Message appearance */
+  @keyframes message-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-message-in { animation: message-in 200ms ease-out; }
+
+  /* Content area fade (tab switching) */
+  @keyframes content-fade-in {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+  }
+  .animate-content-fade { animation: content-fade-in 200ms ease-out; }
+
+  /* Generic fade-in */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-in { animation: fade-in 300ms ease-out; }
+}
+
+/* Non-animated base styles for streaming dots and spinner */
+.streaming-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-tertiary);
+}
+
+.tool-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--color-text-tertiary);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+}
