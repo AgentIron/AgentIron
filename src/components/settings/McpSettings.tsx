@@ -195,18 +195,20 @@ export const McpSettings: Component = () => {
             <div class="space-y-1">
               <label class="text-xs font-medium text-text-secondary">Transport</label>
               <div class="flex gap-2">
-                {(["stdio", "http", "http_sse"] as const).map((t) => (
-                  <button
-                    onClick={() => setTransport(t)}
-                    class={`px-3 py-1.5 rounded-md text-xs transition-colors ${
-                      transport() === t
-                        ? "bg-accent text-white"
-                        : "bg-bg-elevated text-text-secondary hover:bg-bg-hover"
-                    }`}
-                  >
-                    {t === "stdio" ? "Stdio" : t === "http" ? "HTTP" : "HTTP+SSE"}
-                  </button>
-                ))}
+                <For each={["stdio", "http", "http_sse"] as const}>
+                  {(t) => (
+                    <button
+                      onClick={() => setTransport(t)}
+                      class={`px-3 py-1.5 rounded-md text-xs transition-colors ${
+                        transport() === t
+                          ? "bg-accent text-white"
+                          : "bg-bg-elevated text-text-secondary hover:bg-bg-hover"
+                      }`}
+                    >
+                      {t === "stdio" ? "Stdio" : t === "http" ? "HTTP" : "HTTP+SSE"}
+                    </button>
+                  )}
+                </For>
               </div>
             </div>
 

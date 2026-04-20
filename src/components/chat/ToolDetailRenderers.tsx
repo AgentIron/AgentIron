@@ -1,4 +1,4 @@
-import { Show, type Component, type JSX } from "solid-js";
+import { For, Show, type Component, type JSX } from "solid-js";
 import { CodeBlock } from "./CodeBlock";
 
 // ── Argument detail renderers ──
@@ -139,9 +139,11 @@ export function renderResult(toolName: string | undefined, result: unknown): JSX
     const items = (r.matches || r.files) as string[];
     return (
       <div class="bg-bg-primary rounded p-2 text-xs font-mono text-text-secondary max-h-48 overflow-y-auto">
-        {items.slice(0, 50).map((item) => (
-          <div class="py-0.5">{typeof item === "string" ? item : JSON.stringify(item)}</div>
-        ))}
+        <For each={items.slice(0, 50)}>
+          {(item) => (
+            <div class="py-0.5">{typeof item === "string" ? item : JSON.stringify(item)}</div>
+          )}
+        </For>
         <Show when={items.length > 50}>
           <div class="text-text-tertiary pt-1">... and {items.length - 50} more</div>
         </Show>

@@ -73,10 +73,13 @@ const marked = new Marked({
 </div>`;
     },
     codespan({ text }) {
-      return `<code class="inline-code">${text}</code>`;
+      return `<code class="inline-code">${escapeHtml(text)}</code>`;
+    },
+    html({ text }) {
+      return escapeHtml(text);
     },
     link({ href, text }) {
-      return `<a href="${escapeHtml(href || "")}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+      return `<a href="${escapeHtml(href || "")}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
     },
   },
 });
@@ -99,5 +102,12 @@ export const MarkdownRenderer: Component<MarkdownRendererProps> = (props) => {
     return marked.parse(c, { async: false }) as string;
   });
 
-  return <div class="prose-custom" innerHTML={html()} />;
+  return (
+    <div
+      class="prose-custom"
+      // Marked output is sanitized by escaping raw HTML and renderer text content.
+      // eslint-disable-next-line solid/no-innerhtml
+      innerHTML={html()}
+    />
+  );
 };

@@ -1,4 +1,4 @@
-import solid from "eslint-plugin-solid/configs/typescript.js";
+import solid from "eslint-plugin-solid/configs/typescript";
 import tsParser from "@typescript-eslint/parser";
 
 export default [

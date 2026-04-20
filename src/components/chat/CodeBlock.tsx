@@ -68,6 +68,8 @@ export const CodeBlock: Component<CodeBlockProps> = (props) => {
       </div>
       <pre class="bg-bg-secondary p-4 overflow-x-auto m-0"><code
           class="font-mono text-sm leading-relaxed"
+          // Prism output is already escaped or tokenized into trusted markup.
+          // eslint-disable-next-line solid/no-innerhtml
           innerHTML={highlighted()}
         /></pre>
     </div>
