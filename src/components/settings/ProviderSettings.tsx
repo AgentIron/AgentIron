@@ -317,8 +317,6 @@ const ProviderCard: Component<{
 
 // ── Expandable Model Group ──
 
-import type { ModelInfo } from "@/types/settings";
-
 const ProviderModelGroup: Component<{
   providerId: string;
   providerName: string;
