@@ -7,18 +7,22 @@ import { Tab } from "./Tab";
 
 export const TabBar: Component = () => {
   const { state, setActiveTab, createAgentForTab, renameConnection } = useAgent();
-  const { activeApiKey, settings, allModels } = useSettings();
+  const { apiKeyForProvider, settings, allModels } = useSettings();
   const { setCurrentView } = useUI();
   const [creating, setCreating] = createSignal(false);
+  const defaultProviderId = () => parseModelSlug(settings.defaultModel, allModels()).providerId;
+  const canCreateTab = () => Boolean(apiKeyForProvider(defaultProviderId())) && !creating();
 
   const handleNewTab = async () => {
-    if (!activeApiKey() || creating()) return;
+    if (!canCreateTab()) return;
     setCreating(true);
     try {
       const tabId = crypto.randomUUID();
       const { providerId, modelId } = parseModelSlug(settings.defaultModel, allModels());
+      const apiKey = apiKeyForProvider(providerId);
+      if (!apiKey) return;
       const enabledMcp = settings.mcpServers.filter((s) => s.enabledByDefault);
-      await createAgentForTab(tabId, activeApiKey(), modelId, undefined, providerId, enabledMcp);
+      await createAgentForTab(tabId, apiKey, modelId, undefined, providerId, enabledMcp);
       setCurrentView("chat");
     } catch (err) {
       console.error("Failed to create agent:", err);
@@ -47,7 +51,7 @@ export const TabBar: Component = () => {
       </For>
       <button
         onClick={handleNewTab}
-        disabled={!activeApiKey() || creating()}
+        disabled={!canCreateTab()}
         class="ml-1 px-2 py-1 text-text-tertiary hover:text-text-primary text-sm rounded hover:bg-bg-hover transition-colors disabled:opacity-50"
       >
         {creating() ? "..." : "+"}

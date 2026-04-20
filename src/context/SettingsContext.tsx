@@ -41,6 +41,7 @@ interface SettingsContextValue {
   updateModelRegistry: () => Promise<void>;
   registryLastUpdated: () => string | null;
   activeApiKey: () => string;
+  apiKeyForProvider: (providerId: string) => string;
   hasConfiguredProvider: () => boolean;
 }
 
@@ -287,6 +288,10 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
     activeApiKey: () => {
       const all = [...registryModels(), ...KNOWN_MODELS, ...settings.customModels];
       const { providerId } = parseModelSlug(settings.defaultModel, all);
+      const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
+      return provider?.apiKey ?? "";
+    },
+    apiKeyForProvider: (providerId) => {
       const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
       return provider?.apiKey ?? "";
     },

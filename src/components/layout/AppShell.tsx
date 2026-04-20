@@ -12,25 +12,27 @@ import { parseModelSlug } from "@lib/models";
 
 export const AppShell: Component = () => {
   const { state: agentState, createAgentForTab } = useAgent();
-  const { loaded, hasConfiguredProvider, activeApiKey, settings, allModels } = useSettings();
+  const { loaded, hasConfiguredProvider, apiKeyForProvider, settings, allModels } = useSettings();
   const { currentView } = useUI();
 
   // Auto-create a tab on first load when a provider is configured
   let autoCreated = false;
   createEffect(() => {
+    const { providerId, modelId } = parseModelSlug(settings.defaultModel, allModels());
+    const apiKey = apiKeyForProvider(providerId);
+
     if (
       loaded() &&
       hasConfiguredProvider() &&
-      activeApiKey() &&
+      apiKey &&
       !agentState.activeTabId &&
       !autoCreated
     ) {
       autoCreated = true;
-      const { providerId, modelId } = parseModelSlug(settings.defaultModel, allModels());
       const enabledMcp = settings.mcpServers.filter((s) => s.enabledByDefault);
       createAgentForTab(
         crypto.randomUUID(),
-        activeApiKey(),
+        apiKey,
         modelId,
         undefined,
         providerId,

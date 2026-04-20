@@ -1,4 +1,4 @@
-import { createContext, useContext, type Component, type JSX } from "solid-js";
+import { createContext, createEffect, on, untrack, useContext, type Component, type JSX } from "solid-js";
 import { createStore } from "solid-js/store";
 import { createAgent, disconnectAgent } from "@lib/tauri/commands";
 import { useSettings } from "@context/SettingsContext";
@@ -25,11 +25,12 @@ interface AgentContextValue {
 const AgentContext = createContext<AgentContextValue>();
 
 export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
-  const { settings } = useSettings();
+  const { settings, loaded } = useSettings();
   const [state, setState] = createStore<AgentState>({
     connections: [],
     activeTabId: null,
   });
+  let previousProviderCredentials: Record<string, string> | null = null;
 
   const getConnection = (tabId: string) =>
     state.connections.find((c) => c.id === tabId);
@@ -56,6 +57,65 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
     setState("connections", (prev) => [...prev, enriched]);
     return enriched;
   };
+
+  createEffect(on(
+    () => ({
+      settingsLoaded: loaded(),
+      providers: settings.providers.map((provider) => ({
+        id: provider.id,
+        enabled: provider.enabled,
+        apiKey: provider.apiKey,
+      })),
+    }),
+    ({ settingsLoaded, providers }) => {
+      if (!settingsLoaded) return;
+
+      const currentProviderCredentials = Object.fromEntries(
+        providers.map((provider) => [provider.id, `${provider.enabled}:${provider.apiKey}`]),
+      );
+
+      if (!previousProviderCredentials) {
+        previousProviderCredentials = currentProviderCredentials;
+        return;
+      }
+
+      const changedProviderIds = providers
+        .filter((provider) => previousProviderCredentials?.[provider.id] !== currentProviderCredentials[provider.id])
+        .map((provider) => provider.id);
+
+      previousProviderCredentials = currentProviderCredentials;
+
+      if (changedProviderIds.length === 0) return;
+
+      const affectedConnections = untrack(() =>
+        state.connections.filter(
+          (connection) =>
+            !!connection.providerId
+            && !!connection.model
+            && changedProviderIds.includes(connection.providerId),
+        ),
+      );
+
+      for (const connection of affectedConnections) {
+        const provider = providers.find((candidate) => candidate.id === connection.providerId);
+        const apiKey = provider?.enabled ? provider.apiKey.trim() : "";
+
+        if (!provider || !apiKey || !connection.providerId || !connection.model) {
+          continue;
+        }
+
+        replaceAgent(
+          connection.id,
+          apiKey,
+          connection.model,
+          connection.workingDirectory,
+          connection.providerId,
+        ).catch((error) => {
+          console.error(`Failed to refresh credentials for tab ${connection.id}:`, error);
+        });
+      }
+    },
+  ));
 
   const value: AgentContextValue = {
     state,

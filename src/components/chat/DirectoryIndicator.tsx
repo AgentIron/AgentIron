@@ -3,10 +3,11 @@ import { TbOutlineFolder } from "solid-icons/tb";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
+import { parseModelSlug } from "@lib/models";
 
 export const DirectoryIndicator: Component = () => {
   const { activeConnection, changeWorkingDirectory } = useAgent();
-  const { activeApiKey } = useSettings();
+  const { apiKeyForProvider, settings } = useSettings();
 
   const displayPath = () => {
     const conn = activeConnection();
@@ -30,12 +31,18 @@ export const DirectoryIndicator: Component = () => {
 
     if (!selected || selected === conn.workingDirectory) return;
 
+    const model = conn.model ?? conn.name;
+    const providerId = conn.providerId ?? parseModelSlug(settings.defaultModel).providerId;
+    const apiKey = apiKeyForProvider(providerId);
+    if (!apiKey) return;
+
     try {
       await changeWorkingDirectory(
         conn.id,
-        activeApiKey(),
-        conn.name,
+        apiKey,
+        model,
         selected as string,
+        providerId,
       );
     } catch (err) {
       console.error("Failed to change directory:", err);
