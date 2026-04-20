@@ -170,16 +170,22 @@ pub fn spawn_agent_worker(
             );
 
             let working_dir = params.working_directory;
-            let mut builtin_config = iron_core::BuiltinToolConfig::new(
-                vec![working_dir.clone()],
-            );
-            // Workaround: iron-core's ShellAvailability::detect() uses `which`
-            // which doesn't exist on Windows (should use `where`). See iron-core#8.
-            #[cfg(windows)]
-            {
-                builtin_config = builtin_config
-                    .with_shell_availability(iron_core::ShellAvailability::PowerShell);
-            }
+            let builtin_config = {
+                let builtin_config = iron_core::BuiltinToolConfig::new(
+                    vec![working_dir.clone()],
+                );
+                // Workaround: iron-core's ShellAvailability::detect() uses `which`
+                // which doesn't exist on Windows (should use `where`). See iron-core#8.
+                #[cfg(windows)]
+                {
+                    builtin_config
+                        .with_shell_availability(iron_core::ShellAvailability::PowerShell)
+                }
+                #[cfg(not(windows))]
+                {
+                    builtin_config
+                }
+            };
             agent.register_builtin_tools(&builtin_config);
             agent.register_python_exec_tool();
 
@@ -416,22 +422,31 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
     let transport = match mcp.transport.as_str() {
         "stdio" => {
             let env = mcp.env.clone().unwrap_or_default();
-            let mut command = mcp.command.clone().unwrap_or_default();
+            let command = {
+                let command = mcp.command.clone().unwrap_or_default();
 
-            // On Windows, resolve .cmd extensions for batch scripts (npx, node, npm)
-            #[cfg(windows)]
-            {
-                if !command.is_empty() && !command.contains('.') && !command.contains('\\') && !command.contains('/') {
-                    if let Ok(output) = std::process::Command::new("where")
-                        .arg(format!("{}.cmd", command))
-                        .output()
-                    {
-                        if output.status.success() {
-                            command = format!("{}.cmd", command);
+                // On Windows, resolve .cmd extensions for batch scripts (npx, node, npm)
+                #[cfg(windows)]
+                {
+                    let mut command = command;
+                    if !command.is_empty() && !command.contains('.') && !command.contains('\\') && !command.contains('/') {
+                        if let Ok(output) = std::process::Command::new("where")
+                            .arg(format!("{}.cmd", command))
+                            .output()
+                        {
+                            if output.status.success() {
+                                command = format!("{}.cmd", command);
+                            }
                         }
                     }
+                    command
                 }
-            }
+
+                #[cfg(not(windows))]
+                {
+                    command
+                }
+            };
 
             iron_core::McpTransport::Stdio {
                 command,
