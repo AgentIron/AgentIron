@@ -80,3 +80,47 @@ export async function updateModelRegistry(): Promise<import("@/types/settings").
 export async function startSnip(): Promise<void> {
   return invoke("start_snip");
 }
+
+// ── Skill commands ──
+
+export async function refreshSkillCatalog(
+  tabId: string,
+): Promise<{ level: string; message: string; skillName?: string }[]> {
+  return invoke("refresh_skill_catalog", { tabId });
+}
+
+export async function listAvailableSkills(
+  tabId: string,
+): Promise<{ id: string; displayName: string; description: string; origin: string; autoActivate: boolean; tags: string[]; requiresTools: string[]; requiresCapabilities: string[]; requiresTrust: boolean }[]> {
+  return invoke("list_available_skills", { tabId });
+}
+
+export async function activateSkill(tabId: string, name: string): Promise<void> {
+  return invoke("activate_skill", { tabId, name });
+}
+
+export async function deactivateSkill(tabId: string, name: string): Promise<void> {
+  return invoke("deactivate_skill", { tabId, name });
+}
+
+export async function listActiveSkills(tabId: string): Promise<string[]> {
+  return invoke("list_active_skills", { tabId });
+}
+
+// ── Handoff commands ──
+
+export async function exportHandoff(tabId: string): Promise<unknown> {
+  return invoke("export_handoff", { tabId });
+}
+
+export async function importHandoff(tabId: string, bundle: unknown): Promise<void> {
+  return invoke("import_handoff", { tabId, bundle });
+}
+
+export async function saveHandoffBundle(tabId: string, filePath: string): Promise<void> {
+  return invoke("save_handoff_bundle", { tabId, filePath });
+}
+
+export async function loadHandoffBundle(filePath: string): Promise<unknown> {
+  return invoke("load_handoff_bundle", { filePath });
+}

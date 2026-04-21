@@ -55,6 +55,37 @@ pub enum AgentRequest {
         app_handle: tauri::AppHandle,
         response_tx: oneshot::Sender<Result<(), String>>,
     },
+    /// Refresh the skill catalog and return diagnostics.
+    RefreshSkillCatalog {
+        response_tx: oneshot::Sender<Result<Vec<SkillDiagnosticJson>, String>>,
+    },
+    /// List skills available in the runtime catalog.
+    ListAvailableSkills {
+        response_tx: oneshot::Sender<Result<Vec<SkillMetadataJson>, String>>,
+    },
+    /// Activate a skill for this session.
+    ActivateSkill {
+        name: String,
+        response_tx: oneshot::Sender<Result<(), String>>,
+    },
+    /// Deactivate a skill for this session.
+    DeactivateSkill {
+        name: String,
+        response_tx: oneshot::Sender<Result<(), String>>,
+    },
+    /// List the names of skills currently active in this session.
+    ListActiveSkills {
+        response_tx: oneshot::Sender<Result<Vec<String>, String>>,
+    },
+    /// Export a handoff bundle for this session.
+    ExportHandoff {
+        response_tx: oneshot::Sender<Result<iron_core::HandoffBundle, String>>,
+    },
+    /// Import a handoff bundle into this session.
+    ImportHandoff {
+        bundle: iron_core::HandoffBundle,
+        response_tx: oneshot::Sender<Result<(), String>>,
+    },
     Shutdown,
 }
 
@@ -84,6 +115,30 @@ pub struct McpToolInfoJson {
     pub name: String,
     pub description: String,
     pub input_schema: serde_json::Value,
+}
+
+/// Skill metadata returned to the frontend.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillMetadataJson {
+    pub id: String,
+    pub display_name: String,
+    pub description: String,
+    pub origin: String,
+    pub auto_activate: bool,
+    pub tags: Vec<String>,
+    pub requires_tools: Vec<String>,
+    pub requires_capabilities: Vec<String>,
+    pub requires_trust: bool,
+}
+
+/// Skill diagnostic returned to the frontend.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillDiagnosticJson {
+    pub level: String,
+    pub message: String,
+    pub skill_name: Option<String>,
 }
 
 /// MCP server config passed from the frontend.
@@ -300,6 +355,53 @@ pub fn spawn_agent_worker(
                     }
                     AgentRequest::CancelActivePrompt { response_tx } => {
                         let _ = response_tx.send(Ok(()));
+                    }
+                    AgentRequest::RefreshSkillCatalog { response_tx } => {
+                        let diagnostics = session.refresh_skill_catalog();
+                        let result = Ok(diagnostics.into_iter().map(|d| SkillDiagnosticJson {
+                            level: format!("{:?}", d.level),
+                            message: d.message,
+                            skill_name: d.skill_name,
+                        }).collect());
+                        let _ = response_tx.send(result);
+                    }
+                    AgentRequest::ListAvailableSkills { response_tx } => {
+                        let skills = session.list_available_skills();
+                        let result = Ok(skills.into_iter().map(|s| SkillMetadataJson {
+                            id: s.id,
+                            display_name: s.display_name,
+                            description: s.description,
+                            origin: format!("{:?}", s.origin),
+                            auto_activate: s.auto_activate,
+                            tags: s.tags,
+                            requires_tools: s.requires_tools,
+                            requires_capabilities: s.requires_capabilities,
+                            requires_trust: s.requires_trust,
+                        }).collect());
+                        let _ = response_tx.send(result);
+                    }
+                    AgentRequest::ActivateSkill { name, response_tx } => {
+                        let result = session.activate_skill(&name)
+                            .map_err(|e| format!("{e}"));
+                        let _ = response_tx.send(result);
+                    }
+                    AgentRequest::DeactivateSkill { name, response_tx } => {
+                        session.deactivate_skill(&name);
+                        let _ = response_tx.send(Ok(()));
+                    }
+                    AgentRequest::ListActiveSkills { response_tx } => {
+                        let skills = session.list_active_skills();
+                        let _ = response_tx.send(Ok(skills));
+                    }
+                    AgentRequest::ExportHandoff { response_tx } => {
+                        let result = session.export_handoff("", None).await
+                            .map_err(|e| format!("{e}"));
+                        let _ = response_tx.send(result);
+                    }
+                    AgentRequest::ImportHandoff { bundle, response_tx } => {
+                        let result = session.import_handoff(bundle)
+                            .map_err(|e| format!("{e}"));
+                        let _ = response_tx.send(result);
                     }
                     AgentRequest::Shutdown => break,
                     _ => {}
@@ -541,6 +643,56 @@ async fn handle_active_request(
         AgentRequest::Shutdown => {
             prompt_handle.cancel().await;
             true
+        }
+        AgentRequest::RefreshSkillCatalog { response_tx } => {
+            let diagnostics = session.refresh_skill_catalog();
+            let result = Ok(diagnostics.into_iter().map(|d| SkillDiagnosticJson {
+                level: format!("{:?}", d.level),
+                message: d.message,
+                skill_name: d.skill_name,
+            }).collect());
+            let _ = response_tx.send(result);
+            false
+        }
+        AgentRequest::ListAvailableSkills { response_tx } => {
+            let skills = session.list_available_skills();
+            let result = Ok(skills.into_iter().map(|s| SkillMetadataJson {
+                id: s.id,
+                display_name: s.display_name,
+                description: s.description,
+                origin: format!("{:?}", s.origin),
+                auto_activate: s.auto_activate,
+                tags: s.tags,
+                requires_tools: s.requires_tools,
+                requires_capabilities: s.requires_capabilities,
+                requires_trust: s.requires_trust,
+            }).collect());
+            let _ = response_tx.send(result);
+            false
+        }
+        AgentRequest::ActivateSkill { name, response_tx } => {
+            let result = session.activate_skill(&name)
+                .map_err(|e| format!("{e}"));
+            let _ = response_tx.send(result);
+            false
+        }
+        AgentRequest::DeactivateSkill { name, response_tx } => {
+            session.deactivate_skill(&name);
+            let _ = response_tx.send(Ok(()));
+            false
+        }
+        AgentRequest::ListActiveSkills { response_tx } => {
+            let skills = session.list_active_skills();
+            let _ = response_tx.send(Ok(skills));
+            false
+        }
+        AgentRequest::ExportHandoff { response_tx } => {
+            let _ = response_tx.send(Err("Cannot export handoff while a prompt is running".into()));
+            false
+        }
+        AgentRequest::ImportHandoff { response_tx, .. } => {
+            let _ = response_tx.send(Err("Cannot import handoff while a prompt is running".into()));
+            false
         }
     }
 }

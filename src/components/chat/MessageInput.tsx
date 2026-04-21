@@ -4,7 +4,8 @@ import { TbOutlineSend, TbOutlinePaperclip, TbOutlinePhoto, TbOutlineScreenshot,
 import { listen } from "@tauri-apps/api/event";
 import { useChat } from "@context/ChatContext";
 import { useAgent } from "@context/AgentContext";
-import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt } from "@lib/tauri/commands";
+import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt, saveHandoffBundle, loadHandoffBundle, importHandoff } from "@lib/tauri/commands";
+import { open, save } from "@tauri-apps/plugin-dialog";
 
 interface AttachedImage {
   preview: string;  // object URL for display
@@ -95,7 +96,8 @@ export const MessageInput: Component = () => {
   const handleSlashCommand = async (command: string): Promise<boolean> => {
     const tid = tabId();
     if (!tid) return false;
-    if (command.toLowerCase().trim() === "/compact") {
+    const normalized = command.toLowerCase().trim();
+    if (normalized === "/compact") {
       addMessageEntry(tid, {
         id: crypto.randomUUID(), conversationId: tid,
         role: "system", content: "Compacting context...",
@@ -112,6 +114,75 @@ export const MessageInput: Component = () => {
         addMessageEntry(tid, {
           id: crypto.randomUUID(), conversationId: tid,
           role: "system", content: `Compact failed: ${err}`,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      return true;
+    }
+    if (normalized === "/export-handoff") {
+      addMessageEntry(tid, {
+        id: crypto.randomUUID(), conversationId: tid,
+        role: "system", content: "Exporting handoff bundle...",
+        createdAt: new Date().toISOString(),
+      });
+      try {
+        const filePath = await save({
+          filters: [{ name: "Handoff Bundle", extensions: ["json"] }],
+          defaultPath: `handoff-${tid}.json`,
+        });
+        if (filePath) {
+          await saveHandoffBundle(tid, filePath);
+          addMessageEntry(tid, {
+            id: crypto.randomUUID(), conversationId: tid,
+            role: "system", content: `Handoff exported to ${filePath}`,
+            createdAt: new Date().toISOString(),
+          });
+        } else {
+          addMessageEntry(tid, {
+            id: crypto.randomUUID(), conversationId: tid,
+            role: "system", content: "Export cancelled.",
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (err) {
+        addMessageEntry(tid, {
+          id: crypto.randomUUID(), conversationId: tid,
+          role: "system", content: `Export failed: ${err}`,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      return true;
+    }
+    if (normalized === "/import-handoff") {
+      addMessageEntry(tid, {
+        id: crypto.randomUUID(), conversationId: tid,
+        role: "system", content: "Select a handoff bundle to import...",
+        createdAt: new Date().toISOString(),
+      });
+      try {
+        const filePath = await open({
+          filters: [{ name: "Handoff Bundle", extensions: ["json"] }],
+          multiple: false,
+        });
+        if (filePath && typeof filePath === "string") {
+          const bundle = await loadHandoffBundle(filePath);
+          await importHandoff(tid, bundle);
+          addMessageEntry(tid, {
+            id: crypto.randomUUID(), conversationId: tid,
+            role: "system", content: `Handoff imported from ${filePath}. Session restored.`,
+            createdAt: new Date().toISOString(),
+          });
+        } else {
+          addMessageEntry(tid, {
+            id: crypto.randomUUID(), conversationId: tid,
+            role: "system", content: "Import cancelled.",
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (err) {
+        addMessageEntry(tid, {
+          id: crypto.randomUUID(), conversationId: tid,
+          role: "system", content: `Import failed: ${err}`,
           createdAt: new Date().toISOString(),
         });
       }
@@ -300,7 +371,7 @@ export const MessageInput: Component = () => {
         <textarea
           ref={textareaRef}
           rows="1"
-          placeholder="Type a message or /compact..."
+          placeholder="Type a message or /compact, /export-handoff..."
           value={text()}
           onInput={(e) => {
             setText(e.currentTarget.value);

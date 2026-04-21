@@ -108,6 +108,8 @@ pub async fn create_agent(
     provider_id: Option<String>,
     mcp_servers: Option<Vec<McpServerConfigJson>>,
     transport: Option<String>,
+    trust_project_skills: Option<bool>,
+    additional_skill_dirs: Option<Vec<String>>,
 ) -> Result<AgentInfo, String> {
     let transport = transport.unwrap_or_else(|| "in-process".to_string());
     if transport != "in-process" {
@@ -116,6 +118,12 @@ pub async fn create_agent(
 
     let pid = provider_id.unwrap_or_else(|| "openai".to_string());
     let provider = build_provider(&pid, &api_key)?;
+
+    let mut skill_config = iron_core::config::SkillConfig::new()
+        .with_trust_project_skills(trust_project_skills.unwrap_or(false));
+    for dir in additional_skill_dirs.unwrap_or_default() {
+        skill_config = skill_config.with_additional_skill_dir(PathBuf::from(dir));
+    }
 
     let config = iron_core::Config::default()
         .with_model(model.clone())
@@ -130,7 +138,8 @@ pub async fn create_agent(
             iron_core::McpConfig::new()
                 .with_enabled(true)
                 .with_enabled_by_default(true)
-        );
+        )
+        .with_skills(skill_config);
 
     let work_dir = working_directory
         .map(PathBuf::from)
@@ -281,4 +290,237 @@ pub async fn set_mcp_server_enabled(
     response_rx
         .await
         .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+// ---------------------------------------------------------------------------
+// Skill commands
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub async fn refresh_skill_catalog(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+) -> Result<Vec<crate::state::SkillDiagnosticJson>, String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::RefreshSkillCatalog { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn list_available_skills(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+) -> Result<Vec<crate::state::SkillMetadataJson>, String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ListAvailableSkills { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn activate_skill(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    name: String,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ActivateSkill { name, response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn deactivate_skill(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    name: String,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::DeactivateSkill { name, response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn list_active_skills(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+) -> Result<Vec<String>, String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ListActiveSkills { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+// ---------------------------------------------------------------------------
+// Handoff commands
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub async fn export_handoff(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+) -> Result<iron_core::HandoffBundle, String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ExportHandoff { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn import_handoff(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    bundle: iron_core::HandoffBundle,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ImportHandoff { bundle, response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
+pub async fn save_handoff_bundle(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    file_path: String,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ExportHandoff { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    let bundle = response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?;
+
+    let json = serde_json::to_string_pretty(&bundle)
+        .map_err(|e| format!("Failed to serialize handoff bundle: {e}"))?;
+
+    std::fs::write(&file_path, json)
+        .map_err(|e| format!("Failed to write handoff bundle: {e}"))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn load_handoff_bundle(
+    file_path: String,
+) -> Result<iron_core::HandoffBundle, String> {
+    let content = std::fs::read_to_string(&file_path)
+        .map_err(|e| format!("Failed to read handoff bundle: {e}"))?;
+
+    let bundle: iron_core::HandoffBundle = serde_json::from_str(&content)
+        .map_err(|e| format!("Failed to parse handoff bundle: {e}"))?;
+
+    Ok(bundle)
 }
