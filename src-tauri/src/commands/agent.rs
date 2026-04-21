@@ -107,7 +107,13 @@ pub async fn create_agent(
     working_directory: Option<String>,
     provider_id: Option<String>,
     mcp_servers: Option<Vec<McpServerConfigJson>>,
+    transport: Option<String>,
 ) -> Result<AgentInfo, String> {
+    let transport = transport.unwrap_or_else(|| "in-process".to_string());
+    if transport != "in-process" {
+        return Err(format!("Transport '{}' is not supported. Only 'in-process' is available.", transport));
+    }
+
     let pid = provider_id.unwrap_or_else(|| "openai".to_string());
     let provider = build_provider(&pid, &api_key)?;
 
@@ -150,7 +156,7 @@ pub async fn create_agent(
     let info = AgentInfo {
         id: tab_id.clone(),
         name: model.clone(),
-        transport: "in-process".to_string(),
+        transport: transport.clone(),
         status: "connected".to_string(),
         working_directory: work_dir_str,
     };

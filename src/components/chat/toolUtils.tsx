@@ -61,6 +61,35 @@ export function formatArgsSummary(toolName: string | undefined, args: unknown): 
   }
 }
 
+export function formatScriptActivityLabel(activityType: string | undefined): string {
+  switch (activityType) {
+    case "ScriptStarted":
+      return "Python script started";
+    case "ScriptPhase":
+      return "Python script phase";
+    case "ScriptCompleted":
+      return "Python script completed";
+    case "ChildToolCallStarted":
+      return "Child tool call started";
+    case "ChildToolCallCompleted":
+      return "Child tool call completed";
+    case "ChildToolCallFailed":
+      return "Child tool call failed";
+    default:
+      return "Python script activity";
+  }
+}
+
+export function formatScriptActivitySummary(detail: unknown): string {
+  if (typeof detail === "string") return truncate(detail, 80);
+  if (!detail || typeof detail !== "object") return "";
+
+  const record = detail as Record<string, unknown>;
+  const text = [record.message, record.phase, record.tool_name, record.summary]
+    .find((value) => typeof value === "string" && value.length > 0);
+  return typeof text === "string" ? truncate(text, 80) : "";
+}
+
 // ── Tool classification ──
 
 const READ_ONLY_TOOLS = new Set(["glob", "grep", "read"]);
@@ -84,11 +113,14 @@ export function buildToolGroupSummary(events: import("@/types/agent").ToolEvent[
   let allReadOnly = true;
 
   for (const ev of events) {
-    const name = ev.toolName || "unknown";
+    const name = ev.type === "script_activity"
+      ? formatScriptActivityLabel(ev.activityType)
+      : (ev.toolName || "unknown");
     nameCounts[name] = (nameCounts[name] || 0) + 1;
-    if (ev.type !== "tool_result") allCompleted = false;
+    if (ev.type !== "tool_result" && ev.type !== "script_activity") allCompleted = false;
+    if (ev.type === "script_activity" && ev.status === "Running") allCompleted = false;
     if (ev.status === "Failed" || ev.status === "Error") hasErrors = true;
-    if (!isReadOnlyTool(name)) allReadOnly = false;
+    if (ev.type !== "script_activity" && !isReadOnlyTool(name)) allReadOnly = false;
   }
 
   return {

@@ -4,7 +4,7 @@ import { TbOutlineSend, TbOutlinePaperclip, TbOutlinePhoto, TbOutlineScreenshot,
 import { listen } from "@tauri-apps/api/event";
 import { useChat } from "@context/ChatContext";
 import { useAgent } from "@context/AgentContext";
-import { sendMessage, sendMessageWithImages, compactSession, startSnip } from "@lib/tauri/commands";
+import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt } from "@lib/tauri/commands";
 
 interface AttachedImage {
   preview: string;  // object URL for display
@@ -185,6 +185,18 @@ export const MessageInput: Component = () => {
     }
   };
 
+  const handleCancel = async () => {
+    const tid = tabId();
+    if (!tid || !sending()) return;
+
+    try {
+      await cancelActivePrompt(tid);
+      setStreaming(tid, false);
+    } catch (err) {
+      console.error("Failed to cancel prompt:", err);
+    }
+  };
+
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !sending()) {
       e.preventDefault();
@@ -300,17 +312,30 @@ export const MessageInput: Component = () => {
           class="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none disabled:opacity-50 resize-none leading-relaxed py-1"
           style="max-height: 200px;"
         />
-        <button
-          onClick={handleSend}
-          disabled={sending() || (!text().trim() && images().length === 0)}
-          class={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-            (text().trim() || images().length > 0) && !sending()
-              ? "bg-accent text-white hover:bg-accent-hover"
-              : "bg-bg-elevated text-text-tertiary"
-          }`}
+        <Show
+          when={sending()}
+          fallback={
+            <button
+              onClick={handleSend}
+              disabled={!text().trim() && images().length === 0}
+              class={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                text().trim() || images().length > 0
+                  ? "bg-accent text-white hover:bg-accent-hover"
+                  : "bg-bg-elevated text-text-tertiary"
+              }`}
+            >
+              <TbOutlineSend size={16} />
+            </button>
+          }
         >
-          <TbOutlineSend size={16} />
-        </button>
+          <button
+            onClick={handleCancel}
+            class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-bg-elevated text-text-primary hover:bg-bg-hover transition-colors"
+            title="Stop"
+          >
+            <TbOutlineX size={16} />
+          </button>
+        </Show>
       </div>
     </div>
   );

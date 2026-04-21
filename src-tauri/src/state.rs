@@ -24,6 +24,10 @@ pub enum AgentRequest {
         call_id: String,
         approved: bool,
     },
+    /// Cancel the currently active prompt, if one exists.
+    CancelActivePrompt {
+        response_tx: oneshot::Sender<Result<(), String>>,
+    },
     /// Register a new MCP server on the running agent.
     RegisterMcpServer {
         config: McpServerConfigJson,
@@ -294,6 +298,9 @@ pub fn spawn_agent_worker(
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
+                    AgentRequest::CancelActivePrompt { response_tx } => {
+                        let _ = response_tx.send(Ok(()));
+                    }
                     AgentRequest::Shutdown => break,
                     _ => {}
                 }
@@ -316,58 +323,113 @@ async fn handle_prompt_stream(
 
     let (prompt_handle, mut events) = session.prompt_stream_with_blocks(blocks);
     let mut full_text = String::new();
+    let mut was_cancelled = false;
 
-    while let Some(event) = events.next().await {
-        match &event {
-            iron_core::PromptEvent::Output { text } => {
-                full_text.push_str(text);
-                let _ = app_handle.emit(
-                    "agent-stream-chunk",
-                    serde_json::json!({ "tabId": tab_id, "chunk": text }),
-                );
-            }
-            iron_core::PromptEvent::Complete { .. } => break,
-            iron_core::PromptEvent::Status { message } => {
-                let _ = app_handle.emit(
-                    "agent-event",
-                    serde_json::json!({ "tabId": tab_id, "type": "status", "message": message }),
-                );
-            }
-            iron_core::PromptEvent::ToolCall { call_id, tool_name, arguments } => {
-                let _ = app_handle.emit(
-                    "agent-tool-event",
-                    serde_json::json!({
-                        "tabId": tab_id, "type": "tool_call",
-                        "callId": call_id, "toolName": tool_name, "arguments": arguments,
-                    }),
-                );
-            }
-            iron_core::PromptEvent::ApprovalRequest { call_id, tool_name, arguments } => {
-                let _ = app_handle.emit(
-                    "agent-tool-event",
-                    serde_json::json!({
-                        "tabId": tab_id, "type": "approval_request",
-                        "callId": call_id, "toolName": tool_name, "arguments": arguments,
-                    }),
-                );
-                let approved = wait_for_approval(call_id, request_rx).await;
-                if approved {
-                    let _ = prompt_handle.approve(call_id);
-                } else {
-                    let _ = prompt_handle.deny(call_id);
+    loop {
+        tokio::select! {
+            maybe_event = events.next() => {
+                let Some(event) = maybe_event else {
+                    break;
+                };
+
+                match &event {
+                    iron_core::PromptEvent::Output { text } => {
+                        full_text.push_str(text);
+                        let _ = app_handle.emit(
+                            "agent-stream-chunk",
+                            serde_json::json!({ "tabId": tab_id, "chunk": text }),
+                        );
+                    }
+                    iron_core::PromptEvent::Complete { outcome } => {
+                        if *outcome == iron_core::PromptOutcome::Cancelled {
+                            was_cancelled = true;
+                        }
+                        break;
+                    }
+                    iron_core::PromptEvent::Status { message } => {
+                        let _ = app_handle.emit(
+                            "agent-event",
+                            serde_json::json!({ "tabId": tab_id, "type": "status", "message": message }),
+                        );
+                    }
+                    iron_core::PromptEvent::ToolCall { call_id, tool_name, arguments } => {
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id, "type": "tool_call",
+                                "callId": call_id, "toolName": tool_name, "arguments": arguments,
+                            }),
+                        );
+                    }
+                    iron_core::PromptEvent::ApprovalRequest { call_id, tool_name, arguments } => {
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id, "type": "approval_request",
+                                "callId": call_id, "toolName": tool_name, "arguments": arguments,
+                            }),
+                        );
+                        match wait_for_approval(call_id, request_rx, session, app_handle, tab_id, &prompt_handle).await {
+                            ApprovalDecision::Approve => {
+                                let _ = prompt_handle.approve(call_id);
+                            }
+                            ApprovalDecision::Deny => {
+                                let _ = prompt_handle.deny(call_id);
+                            }
+                            ApprovalDecision::Cancel => {
+                                was_cancelled = true;
+                            }
+                        }
+                    }
+                    iron_core::PromptEvent::ToolResult {
+                        call_id,
+                        tool_name,
+                        status,
+                        result,
+                        ..
+                    } => {
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id, "type": "tool_result",
+                                "callId": call_id, "toolName": tool_name,
+                                "status": format!("{:?}", status), "result": result,
+                            }),
+                        );
+                    }
+                    iron_core::PromptEvent::ScriptActivity {
+                        script_id,
+                        parent_call_id,
+                        activity_type,
+                        status,
+                        detail,
+                    } => {
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "type": "script_activity",
+                                "scriptId": script_id,
+                                "parentCallId": parent_call_id,
+                                "toolName": "python_exec",
+                                "activityType": format!("{:?}", activity_type),
+                                "status": format!("{:?}", status),
+                                "detail": detail,
+                            }),
+                        );
+                    }
+                    _ => {}
                 }
             }
-            iron_core::PromptEvent::ToolResult { call_id, tool_name, status, result } => {
-                let _ = app_handle.emit(
-                    "agent-tool-event",
-                    serde_json::json!({
-                        "tabId": tab_id, "type": "tool_result",
-                        "callId": call_id, "toolName": tool_name,
-                        "status": format!("{:?}", status), "result": result,
-                    }),
-                );
+            maybe_request = request_rx.recv() => {
+                let Some(request) = maybe_request else {
+                    break;
+                };
+
+                if handle_active_request(request, session, app_handle, tab_id, &prompt_handle).await {
+                    was_cancelled = true;
+                }
             }
-            _ => {}
         }
     }
 
@@ -391,28 +453,94 @@ async fn handle_prompt_stream(
 
     let _ = app_handle.emit(
         "agent-stream-done",
-        serde_json::json!({ "tabId": tab_id }),
+        serde_json::json!({ "tabId": tab_id, "cancelled": was_cancelled }),
     );
 
     Ok(full_text)
+}
+
+enum ApprovalDecision {
+    Approve,
+    Deny,
+    Cancel,
 }
 
 /// Wait for an approval response from the frontend for a specific call_id.
 async fn wait_for_approval(
     call_id: &str,
     request_rx: &mut mpsc::Receiver<AgentRequest>,
-) -> bool {
+    session: &iron_core::AgentSession,
+    app_handle: &tauri::AppHandle,
+    tab_id: &str,
+    prompt_handle: &iron_core::PromptHandle,
+) -> ApprovalDecision {
     loop {
         match request_rx.recv().await {
             Some(AgentRequest::ApprovalResponse {
                 call_id: resp_id,
                 approved,
             }) if resp_id == call_id => {
-                return approved;
+                return if approved {
+                    ApprovalDecision::Approve
+                } else {
+                    ApprovalDecision::Deny
+                };
             }
-            Some(AgentRequest::Shutdown) => return false,
-            None => return false,
-            _ => {}
+            Some(request) => {
+                if handle_active_request(request, session, app_handle, tab_id, prompt_handle).await {
+                    return ApprovalDecision::Cancel;
+                }
+            }
+            None => return ApprovalDecision::Cancel,
+        }
+    }
+}
+
+async fn handle_active_request(
+    request: AgentRequest,
+    session: &iron_core::AgentSession,
+    _app_handle: &tauri::AppHandle,
+    _tab_id: &str,
+    prompt_handle: &iron_core::PromptHandle,
+) -> bool {
+    match request {
+        AgentRequest::ApprovalResponse { .. } => false,
+        AgentRequest::CancelActivePrompt { response_tx } => {
+            prompt_handle.cancel().await;
+            let _ = response_tx.send(Ok(()));
+            true
+        }
+        AgentRequest::GetTokenCount { tab_id, app_handle } => {
+            emit_token_count(session, &app_handle, &tab_id);
+            false
+        }
+        AgentRequest::Compact { response_tx, .. } => {
+            let _ = response_tx.send(Err("Cannot compact a session while a prompt is running".into()));
+            false
+        }
+        AgentRequest::RegisterMcpServer { response_tx, .. } => {
+            let _ = response_tx.send(Err("Cannot register MCP servers while a prompt is running".into()));
+            false
+        }
+        AgentRequest::GetMcpStatus { response_tx } => {
+            let _ = response_tx.send(Err("Cannot query MCP status while a prompt is running".into()));
+            false
+        }
+        AgentRequest::SetMcpServerEnabled { response_tx, .. } => {
+            let _ = response_tx.send(Err("Cannot change MCP enablement while a prompt is running".into()));
+            false
+        }
+        AgentRequest::Prompt { response_tx, .. } => {
+            let _ = response_tx.send(Err("A prompt is already running for this tab".into()));
+            false
+        }
+        AgentRequest::PromptWithBlocks { response_tx, .. } => {
+            let _ = response_tx.send(Err("A prompt is already running for this tab".into()));
+            false
+        }
+        AgentRequest::Shutdown => {
+            prompt_handle.cancel().await;
+            true
         }
     }
 }
@@ -455,10 +583,16 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
             }
         }
         "http" => iron_core::McpTransport::Http {
-            url: mcp.url.clone().unwrap_or_default(),
+            config: iron_core::HttpConfig {
+                url: mcp.url.clone().unwrap_or_default(),
+                headers: mcp.headers.clone(),
+            },
         },
         "http_sse" => iron_core::McpTransport::HttpSse {
-            url: mcp.url.clone().unwrap_or_default(),
+            config: iron_core::HttpConfig {
+                url: mcp.url.clone().unwrap_or_default(),
+                headers: mcp.headers.clone(),
+            },
         },
         _ => return None,
     };

@@ -76,6 +76,7 @@ pub fn run() {
             commands::chat::send_message,
             commands::chat::send_message_with_images,
             commands::chat::respond_to_approval,
+            commands::chat::cancel_active_prompt,
             commands::chat::compact_session,
             commands::models::update_model_registry,
             commands::snip::start_snip,

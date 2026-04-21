@@ -8,8 +8,9 @@ export async function createAgent(
   workingDirectory?: string,
   providerId?: string,
   mcpServers?: import("@/types/settings").McpServerConfig[],
+  transport?: string,
 ): Promise<AgentConnection> {
-  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers });
+  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers, transport: transport ?? "in-process" });
 }
 
 export async function disconnectAgent(tabId: string): Promise<void> {
@@ -47,6 +48,10 @@ export async function respondToApproval(
   return invoke("respond_to_approval", { tabId, callId, approved });
 }
 
+export async function cancelActivePrompt(tabId: string): Promise<void> {
+  return invoke("cancel_active_prompt", { tabId });
+}
+
 export async function registerMcpServer(
   tabId: string,
   config: import("@/types/settings").McpServerConfig,
@@ -75,4 +80,3 @@ export async function updateModelRegistry(): Promise<import("@/types/settings").
 export async function startSnip(): Promise<void> {
   return invoke("start_snip");
 }
-

@@ -115,6 +115,31 @@ pub async fn respond_to_approval(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn cancel_active_prompt(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::CancelActivePrompt { response_tx })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
 /// Compact the session context to reduce token usage.
 #[tauri::command]
 pub async fn compact_session(

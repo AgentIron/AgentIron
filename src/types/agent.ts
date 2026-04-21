@@ -1,4 +1,4 @@
-export type Transport = "in-process" | "stdio" | "tcp";
+export type Transport = "in-process";
 export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
 export interface AgentConnection {
@@ -26,11 +26,15 @@ export interface AgentConfig {
 
 export interface ToolEvent {
   tabId: string;
-  type: "tool_call" | "approval_request" | "tool_result" | "status";
+  type: "tool_call" | "approval_request" | "tool_result" | "status" | "script_activity";
   callId?: string;
   toolName?: string;
   arguments?: unknown;
   status?: string;
   result?: unknown;
   message?: string;
+  scriptId?: string;
+  parentCallId?: string;
+  activityType?: string;
+  detail?: unknown;
 }
