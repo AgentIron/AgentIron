@@ -35,6 +35,10 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "copyright": "Copyright (c) 2025 AgentIron Contributors",
+    "category": "DeveloperTool",
+    "shortDescription": "Cross-platform AI agent client",
+    "longDescription": "AgentIron is a desktop application for interactive agentic development, task scheduling, and personal AI assistance. Built on Tauri and iron-core."
   }
 }

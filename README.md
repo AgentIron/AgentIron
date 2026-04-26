@@ -116,6 +116,60 @@ AgentIron/
 - **[iron-core](https://github.com/AgentIron/iron-core)** — AI agent runtime
 - **[iron-providers](https://github.com/AgentIron/iron-providers)** — LLM provider abstraction
 
+## Installation
+
+Download the latest release for your platform from the [Releases](https://github.com/AgentIron/AgentIron/releases) page.
+
+### macOS (Apple Silicon)
+
+1. Download the `.dmg` file from the latest release
+2. Open the `.dmg` and drag **AgentIron** to your Applications folder
+3. On first launch, you may need to right-click the app and select **Open** to bypass Gatekeeper
+
+### Windows
+
+1. Download the `.msi` (recommended) or `.exe` installer from the latest release
+2. Run the installer and follow the prompts
+3. Launch AgentIron from the Start Menu or desktop shortcut
+
+### Linux
+
+**Debian/Ubuntu:**
+```bash
+sudo dpkg -i agentiron_*.deb
+# If dependency errors occur:
+sudo apt-get install -f
+```
+
+**Other distributions (AppImage):**
+```bash
+chmod +x agentiron_*.AppImage
+./agentiron_*.AppImage
+```
+
+## Building from Source
+
+See [Prerequisites](#prerequisites) and [Getting Started](#getting-started) above.
+
+## Release Build Secrets
+
+The following repository secrets are **optional** but recommended for signed release builds. The workflow will produce unsigned artifacts if secrets are not configured.
+
+### macOS Signing (Optional)
+- `APPLE_CERTIFICATE` — Base64-encoded Apple Developer ID Application certificate (`.p12`)
+- `APPLE_CERTIFICATE_PASSWORD` — Password for the `.p12` file
+- `APPLE_ID` — Apple ID email for notarization
+- `APPLE_PASSWORD` — App-specific password for notarization
+- `APPLE_TEAM_ID` — Apple Developer Team ID
+
+### Windows Signing (Optional)
+- `WINDOWS_CERTIFICATE` — Base64-encoded code signing certificate (`.pfx`)
+- `WINDOWS_CERTIFICATE_PASSWORD` — Password for the `.pfx` file
+
+### Auto-Updater (Future)
+- `TAURI_SIGNING_PRIVATE_KEY` — Private key for update bundle signing (only needed if auto-updater is enabled)
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — Password for the private key
+
 ## License
 
 [Apache License 2.0](LICENSE)
