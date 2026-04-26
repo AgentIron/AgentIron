@@ -27,9 +27,11 @@
 - [x] 5.3 Create GitHub issue to track auto-updater integration (deferred)
 - [x] 5.4 Create GitHub issue to track Flatpak packaging (deferred)
 
-## 6. Verification
+## 6. Verification (Manual — requires actual hardware)
 
 - [ ] 6.1 Push test tag (`v0.0.0-test`) and verify workflow triggers
 - [ ] 6.2 Verify macOS artifact installs and runs on Apple Silicon Mac
 - [ ] 6.3 Verify Windows artifact installs and runs on Windows x86_64
 - [ ] 6.4 Verify Linux artifacts install and run on Ubuntu/Debian x86_64
+
+> Tasks 6.1–6.4 require manual verification. They are intentionally left unchecked until tested.
