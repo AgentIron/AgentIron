@@ -22,10 +22,10 @@ jobs:
       - name: Run OpenCode Review
         uses: anomalyco/opencode/github@latest
         env:
-          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: z.ai/glm-5.1
+          model: zai-coding-plan/glm-5.1
           use_github_token: true
           prompt: |
             Perform a comprehensive code review of this pull request with the following priorities:
