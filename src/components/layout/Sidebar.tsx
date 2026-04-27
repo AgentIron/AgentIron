@@ -58,7 +58,7 @@ interface SidebarItemProps {
 const SidebarItem: Component<SidebarItemProps> = (props) => {
   return (
     <button
-      onClick={props.onClick}
+      onClick={() => props.onClick?.()}
       class={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
         props.active
           ? "bg-bg-hover text-text-primary"

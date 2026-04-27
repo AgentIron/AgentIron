@@ -18,7 +18,7 @@ export const Button: Component<ButtonProps> = (props) => {
   return (
     <button
       class={`${base} ${variants[props.variant ?? "primary"]}`}
-      onClick={props.onClick}
+      onClick={() => props.onClick?.()}
       disabled={props.disabled}
     >
       {props.children}

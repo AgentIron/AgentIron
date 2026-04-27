@@ -20,61 +20,62 @@ export const MessageBubble: Component<MessageBubbleProps> = (props) => {
     return timeAgo(props.createdAt);
   };
 
-  if (props.role === "system") {
-    return (
-      <div class="flex justify-center mb-3 animate-message-in">
-        <span class="text-xs text-text-tertiary italic">{props.content}</span>
-      </div>
-    );
-  }
-
-  if (props.role === "user") {
-    return (
-      <div class="flex justify-end mb-4 animate-message-in">
-        <div class="flex items-start gap-3 max-w-[80%]">
-          <div class="bg-bg-tertiary rounded-xl px-4 py-3">
-            <p class="text-sm whitespace-pre-wrap">{props.content}</p>
-          </div>
-          <div class="flex-shrink-0 w-7 h-7 rounded-full bg-bg-elevated flex items-center justify-center mt-0.5">
-            <TbOutlineUser size={15} class="text-text-secondary" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Assistant message
   return (
-    <div class="flex mb-6 animate-message-in">
-      <div class="flex items-start gap-3 max-w-full">
-        <div class="flex-shrink-0 w-7 h-7 rounded-full bg-accent-muted flex items-center justify-center mt-0.5">
-          <TbOutlineRobot size={15} class="text-accent" />
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-medium text-text-secondary">Assistant</span>
-            <Show when={!props.isStreaming}>
-              <span class="text-xs text-text-tertiary">{timestamp()}</span>
-            </Show>
+    <Show
+      when={props.role === "assistant"}
+      fallback={
+        <Show
+          when={props.role === "user"}
+          fallback={
+            <div class="flex justify-center mb-3 animate-message-in">
+              <span class="text-xs text-text-tertiary italic">{props.content}</span>
+            </div>
+          }
+        >
+          <div class="flex justify-end mb-4 animate-message-in">
+            <div class="flex items-start gap-3 max-w-[80%]">
+              <div class="bg-bg-tertiary rounded-xl px-4 py-3">
+                <p class="text-sm whitespace-pre-wrap">{props.content}</p>
+              </div>
+              <div class="flex-shrink-0 w-7 h-7 rounded-full bg-bg-elevated flex items-center justify-center mt-0.5">
+                <TbOutlineUser size={15} class="text-text-secondary" />
+              </div>
+            </div>
           </div>
-          <Show
-            when={props.content}
-            fallback={
-              <Show when={props.isStreaming}>
-                <StreamingDots />
-              </Show>
-            }
-          >
-            <div>
-              <MarkdownRenderer content={props.content} />
-              <Show when={props.isStreaming}>
-                <StreamingDots />
+        </Show>
+      }
+    >
+      <div class="flex mb-6 animate-message-in">
+        <div class="flex items-start gap-3 max-w-full">
+          <div class="flex-shrink-0 w-7 h-7 rounded-full bg-accent-muted flex items-center justify-center mt-0.5">
+            <TbOutlineRobot size={15} class="text-accent" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-medium text-text-secondary">Assistant</span>
+              <Show when={!props.isStreaming}>
+                <span class="text-xs text-text-tertiary">{timestamp()}</span>
               </Show>
             </div>
-          </Show>
+            <Show
+              when={props.content}
+              fallback={
+                <Show when={props.isStreaming}>
+                  <StreamingDots />
+                </Show>
+              }
+            >
+              <div>
+                <MarkdownRenderer content={props.content} />
+                <Show when={props.isStreaming}>
+                  <StreamingDots />
+                </Show>
+              </div>
+            </Show>
+          </div>
         </div>
       </div>
-    </div>
+    </Show>
   );
 };
 
