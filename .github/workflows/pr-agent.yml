@@ -27,3 +27,6 @@ jobs:
           github_action_config.auto_review: "true"
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "true"
+          github_action_config.publish_output: "true"
+          pr_reviewer.persistent_comment: "false"
+          pr_reviewer.inline_code_comments: "true"
