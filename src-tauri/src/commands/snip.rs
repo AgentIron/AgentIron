@@ -36,10 +36,8 @@ pub struct SnipRegion {
 /// Phase 1: Minimize main window and open the snip widget.
 #[cfg(desktop)]
 #[tauri::command]
-pub async fn start_snip(
-    app: tauri::AppHandle,
-) -> Result<(), String> {
-    use tauri::{Manager, WebviewWindowBuilder, WebviewUrl};
+pub async fn start_snip(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
     // Close existing overlay if open
     if let Some(existing) = app.get_webview_window("snip-overlay") {
@@ -55,21 +53,17 @@ pub async fn start_snip(
     tokio::time::sleep(std::time::Duration::from_millis(300)).await;
 
     // Open a small floating widget window (slightly oversized to avoid scrollbars)
-    WebviewWindowBuilder::new(
-        &app,
-        "snip-overlay",
-        WebviewUrl::App("/snip".into()),
-    )
-    .title("Screenshot")
-    .inner_size(300.0, 160.0)
-    .center()
-    .decorations(false)
-    .always_on_top(true)
-    .skip_taskbar(true)
-    .resizable(false)
-    .focused(true)
-    .build()
-    .map_err(|e| format!("Failed to create snip widget: {e}"))?;
+    WebviewWindowBuilder::new(&app, "snip-overlay", WebviewUrl::App("/snip".into()))
+        .title("Screenshot")
+        .inner_size(300.0, 160.0)
+        .center()
+        .decorations(false)
+        .always_on_top(true)
+        .skip_taskbar(true)
+        .resizable(false)
+        .focused(true)
+        .build()
+        .map_err(|e| format!("Failed to create snip widget: {e}"))?;
 
     Ok(())
 }
@@ -84,7 +78,8 @@ pub async fn capture_snip(
     use tauri::Manager;
 
     // Hide the widget so it's not in the screenshot
-    let overlay = app.get_webview_window("snip-overlay")
+    let overlay = app
+        .get_webview_window("snip-overlay")
         .ok_or("Snip overlay not found")?;
     let _ = overlay.hide();
 
@@ -92,7 +87,8 @@ pub async fn capture_snip(
     tokio::time::sleep(std::time::Duration::from_millis(300)).await;
 
     // Capture the primary monitor
-    let monitors = xcap::Monitor::all().map_err(|e| format!("Failed to enumerate monitors: {e}"))?;
+    let monitors =
+        xcap::Monitor::all().map_err(|e| format!("Failed to enumerate monitors: {e}"))?;
     let primary = monitors
         .into_iter()
         .find(|m| m.is_primary())
@@ -128,7 +124,9 @@ pub async fn capture_snip(
     let size = monitor.size();
     let scale = monitor.scale_factor();
 
-    let _ = overlay.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(0, 0)));
+    let _ = overlay.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(
+        0, 0,
+    )));
     let _ = overlay.set_size(tauri::Size::Logical(tauri::LogicalSize::new(
         size.width as f64 / scale,
         size.height as f64 / scale,
@@ -145,9 +143,7 @@ pub async fn capture_snip(
 /// Return the screenshot as base64 PNG for the overlay to display.
 #[cfg(desktop)]
 #[tauri::command]
-pub async fn get_snip_screenshot(
-    state: tauri::State<'_, SnipState>,
-) -> Result<String, String> {
+pub async fn get_snip_screenshot(state: tauri::State<'_, SnipState>) -> Result<String, String> {
     let lock = state.data.lock().map_err(|e| e.to_string())?;
     let data = lock.as_ref().ok_or("No screenshot available")?;
 
@@ -198,10 +194,7 @@ pub async fn complete_snip(
             .write_to(&mut buf, image::ImageFormat::Png)
             .map_err(|e| format!("Failed to encode cropped image: {e}"))?;
 
-        base64::Engine::encode(
-            &base64::engine::general_purpose::STANDARD,
-            buf.into_inner(),
-        )
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, buf.into_inner())
     };
 
     let _ = app.emit(

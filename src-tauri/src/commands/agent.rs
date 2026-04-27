@@ -1,8 +1,11 @@
+use crate::state::{
+    spawn_agent_worker, AgentHandle, AgentParams, AgentRequest, AppState, McpServerConfigJson,
+    McpServerStatusJson,
+};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
-use crate::state::{AgentHandle, AgentParams, AgentRequest, AppState, McpServerConfigJson, McpServerStatusJson, spawn_agent_worker};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,6 +102,7 @@ fn build_provider(
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn create_agent(
     state: tauri::State<'_, AppState>,
     api_key: String,
@@ -113,7 +117,10 @@ pub async fn create_agent(
 ) -> Result<AgentInfo, String> {
     let transport = transport.unwrap_or_else(|| "in-process".to_string());
     if transport != "in-process" {
-        return Err(format!("Transport '{}' is not supported. Only 'in-process' is available.", transport));
+        return Err(format!(
+            "Transport '{}' is not supported. Only 'in-process' is available.",
+            transport
+        ));
     }
 
     let pid = provider_id.unwrap_or_else(|| "openai".to_string());
@@ -132,12 +139,12 @@ pub async fn create_agent(
         .with_context_management(
             iron_core::ContextManagementConfig::new()
                 .enabled()
-                .with_maintenance_threshold(50_000)
+                .with_maintenance_threshold(50_000),
         )
         .with_mcp(
             iron_core::McpConfig::new()
                 .with_enabled(true)
-                .with_enabled_by_default(true)
+                .with_enabled_by_default(true),
         )
         .with_skills(skill_config);
 
@@ -227,7 +234,10 @@ pub async fn register_mcp_server(
 
     let (response_tx, response_rx) = oneshot::channel();
     request_tx
-        .send(AgentRequest::RegisterMcpServer { config, response_tx })
+        .send(AgentRequest::RegisterMcpServer {
+            config,
+            response_tx,
+        })
         .await
         .map_err(|_| "Agent worker thread is not running".to_string())?;
 
@@ -469,7 +479,10 @@ pub async fn import_handoff(
 
     let (response_tx, response_rx) = oneshot::channel();
     request_tx
-        .send(AgentRequest::ImportHandoff { bundle, response_tx })
+        .send(AgentRequest::ImportHandoff {
+            bundle,
+            response_tx,
+        })
         .await
         .map_err(|_| "Agent worker thread is not running".to_string())?;
 
@@ -506,16 +519,13 @@ pub async fn save_handoff_bundle(
     let json = serde_json::to_string_pretty(&bundle)
         .map_err(|e| format!("Failed to serialize handoff bundle: {e}"))?;
 
-    std::fs::write(&file_path, json)
-        .map_err(|e| format!("Failed to write handoff bundle: {e}"))?;
+    std::fs::write(&file_path, json).map_err(|e| format!("Failed to write handoff bundle: {e}"))?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub async fn load_handoff_bundle(
-    file_path: String,
-) -> Result<iron_core::HandoffBundle, String> {
+pub async fn load_handoff_bundle(file_path: String) -> Result<iron_core::HandoffBundle, String> {
     let content = std::fs::read_to_string(&file_path)
         .map_err(|e| format!("Failed to read handoff bundle: {e}"))?;
 
