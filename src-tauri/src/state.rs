@@ -309,34 +309,32 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::GetMcpStatus { response_tx } => {
-                        let result = (|| -> Result<Vec<McpServerStatusJson>, String> {
-                            let registry = agent.mcp_registry();
-                            let servers = registry.list_servers();
-                            Ok(servers
-                                .iter()
-                                .map(|s| {
-                                    let enabled = session
-                                        .is_mcp_server_enabled(&s.config.id)
-                                        .unwrap_or(s.config.enabled_by_default);
-                                    McpServerStatusJson {
-                                        id: s.config.id.clone(),
-                                        label: s.config.label.clone(),
-                                        health: format!("{:?}", s.health),
-                                        discovered_tools: s
-                                            .discovered_tools
-                                            .iter()
-                                            .map(|t| McpToolInfoJson {
-                                                name: t.name.clone(),
-                                                description: t.description.clone(),
-                                                input_schema: t.input_schema.clone(),
-                                            })
-                                            .collect(),
-                                        last_error: s.last_error.clone(),
-                                        enabled,
-                                    }
-                                })
-                                .collect())
-                        })();
+                        let registry = agent.mcp_registry();
+                        let servers = registry.list_servers();
+                        let result = Ok(servers
+                            .iter()
+                            .map(|s| {
+                                let enabled = session
+                                    .is_mcp_server_enabled(&s.config.id)
+                                    .unwrap_or(s.config.enabled_by_default);
+                                McpServerStatusJson {
+                                    id: s.config.id.clone(),
+                                    label: s.config.label.clone(),
+                                    health: format!("{:?}", s.health),
+                                    discovered_tools: s
+                                        .discovered_tools
+                                        .iter()
+                                        .map(|t| McpToolInfoJson {
+                                            name: t.name.clone(),
+                                            description: t.description.clone(),
+                                            input_schema: t.input_schema.clone(),
+                                        })
+                                        .collect(),
+                                    last_error: s.last_error.clone(),
+                                    enabled,
+                                }
+                            })
+                            .collect());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::RegisterMcpServer {
@@ -369,7 +367,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let result = session
                             .checkpoint(iron_core::CompactionCheckpoint::TaskComplete)
                             .await
-                            .map_err(|e| format!("{e}"));
+                            .map_err(|e| e.to_string());
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
@@ -407,7 +405,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::ActivateSkill { name, response_tx } => {
-                        let result = session.activate_skill(&name).map_err(|e| format!("{e}"));
+                        let result = session.activate_skill(&name).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::DeactivateSkill { name, response_tx } => {
@@ -422,14 +420,14 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let result = session
                             .export_handoff("", None)
                             .await
-                            .map_err(|e| format!("{e}"));
+                            .map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::ImportHandoff {
                         bundle,
                         response_tx,
                     } => {
-                        let result = session.import_handoff(bundle).map_err(|e| format!("{e}"));
+                        let result = session.import_handoff(bundle).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::Shutdown => break,
@@ -715,7 +713,7 @@ async fn handle_active_request(
             false
         }
         AgentRequest::ActivateSkill { name, response_tx } => {
-            let result = session.activate_skill(&name).map_err(|e| format!("{e}"));
+            let result = session.activate_skill(&name).map_err(|e| e.to_string());
             let _ = response_tx.send(result);
             false
         }

@@ -102,6 +102,7 @@ fn build_provider(
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn create_agent(
     state: tauri::State<'_, AppState>,
     api_key: String,
