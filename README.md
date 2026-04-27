@@ -170,6 +170,33 @@ The following repository secrets are **optional** but recommended for signed rel
 - `TAURI_SIGNING_PRIVATE_KEY` — Private key for update bundle signing (only needed if auto-updater is enabled)
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — Password for the private key
 
+## Contributing
+
+We follow the same workflow pattern as [iron-core](https://github.com/AgentIron/iron-core) and [iron-providers](https://github.com/AgentIron/iron-providers).
+
+### Branch Protection
+
+The `main` branch is protected with the following rules:
+- **Pull Request required** — All changes must go through a PR with at least 1 approval
+- **Up-to-date branch** — PR branches must be up to date with `main` before merging
+- **Status checks** — PR Checks workflow must pass (Rust fmt, clippy, build, test + frontend lint, build)
+- **Stale review dismissal** — Approvals are dismissed when new commits are pushed
+- **Conversation resolution** — All review conversations must be resolved before merging
+- **No force pushes** — Force pushes to `main` are blocked
+- **No deletions** — `main` branch cannot be deleted
+
+### Pull Request Requirements
+
+- PRs must reference a GitHub issue in the title or body (`Closes #123`, `Fixes #456`, etc.)
+- Use the PR template provided when creating a PR
+- Ensure all status checks pass before requesting review
+
+### Release Process
+
+- **Patch releases** — Automatic on every merge to `main` (via `release-patch.yml`)
+- **Minor/Major releases** — Manual workflow dispatch (via `release-manual.yml`)
+- See [Release Build Secrets](#release-build-secrets) for signing configuration
+
 ## License
 
 [Apache License 2.0](LICENSE)
