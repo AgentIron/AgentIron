@@ -56,6 +56,11 @@ export interface McpServerStatus {
   enabled: boolean;
 }
 
+export interface SkillSettings {
+  trustProjectSkills: boolean;
+  additionalSkillDirs: string[];
+}
+
 export interface AppSettings {
   theme: "light" | "dark";
   autostart: boolean;
@@ -66,4 +71,5 @@ export interface AppSettings {
   customModels: ModelInfo[];
   mcpServers: McpServerConfig[];
   userProfile: UserProfile;
+  skills: SkillSettings;
 }

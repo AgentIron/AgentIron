@@ -5,7 +5,7 @@ import {
   TbOutlineChevronDown,
   TbOutlineChevronRight,
 } from "solid-icons/tb";
-import { toolIcon, buildToolGroupSummary, formatToolCounts } from "./toolUtils";
+import { toolIcon, buildToolGroupSummary, formatScriptActivityLabel, formatScriptActivitySummary, formatToolCounts } from "./toolUtils";
 import { renderArgsDetail, renderResult } from "./ToolDetailRenderers";
 import type { ChatEntry } from "@/types/message";
 import type { ToolEvent } from "@/types/agent";
@@ -70,12 +70,19 @@ const ToolDetailItem: Component<{ event: ToolEvent }> = (props) => {
   const [open, setOpen] = createSignal(false);
 
   const isResult = () => props.event.type === "tool_result";
+  const isScriptActivity = () => props.event.type === "script_activity";
   const statusColor = () => {
-    if (isResult()) {
+    if (isResult() || isScriptActivity()) {
       return props.event.status === "Completed" ? "text-success" : "text-error";
     }
     return "text-accent";
   };
+  const title = () => isScriptActivity()
+    ? formatScriptActivityLabel(props.event.activityType)
+    : props.event.toolName;
+  const detailSummary = () => isScriptActivity()
+    ? formatScriptActivitySummary(props.event.detail)
+    : "";
 
   return (
     <div class="border-b border-border-subtle last:border-b-0">
@@ -84,9 +91,12 @@ const ToolDetailItem: Component<{ event: ToolEvent }> = (props) => {
         class="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-bg-hover transition-colors"
       >
         {toolIcon(props.event.toolName)}
-        <span class="font-medium text-text-primary">{props.event.toolName}</span>
+        <span class="font-medium text-text-primary">{title()}</span>
+        <Show when={detailSummary()}>
+          <span class="text-text-tertiary font-mono truncate max-w-[40%]">{detailSummary()}</span>
+        </Show>
         <span class={`ml-auto flex-shrink-0 ${statusColor()}`}>
-          {isResult() ? props.event.status : "Running"}
+          {isResult() || isScriptActivity() ? props.event.status : "Running"}
         </span>
         <span class="text-text-tertiary flex-shrink-0">
           {open() ? <TbOutlineChevronDown size={12} /> : <TbOutlineChevronRight size={12} />}
@@ -96,6 +106,14 @@ const ToolDetailItem: Component<{ event: ToolEvent }> = (props) => {
         <div class="border-t border-border-subtle px-3 py-2 space-y-2">
           <Show when={props.event.arguments}>
             {renderArgsDetail(props.event.toolName, props.event.arguments)}
+          </Show>
+          <Show when={isScriptActivity() && props.event.detail !== undefined}>
+            <div class="pt-1 border-t border-border-subtle">
+              <span class="text-xs text-text-tertiary">Details:</span>
+              <pre class="mt-1 bg-bg-primary rounded p-2 overflow-x-auto font-mono text-text-secondary text-xs max-h-48 overflow-y-auto whitespace-pre-wrap">
+                {JSON.stringify(props.event.detail, null, 2)}
+              </pre>
+            </div>
           </Show>
           <Show when={isResult() && props.event.result !== undefined}>
             <div class="pt-1 border-t border-border-subtle">

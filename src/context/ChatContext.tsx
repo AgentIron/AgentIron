@@ -125,6 +125,14 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
         }
       }),
     );
+
+    unlisteners.push(
+      await listen<{ tabId: string; cancelled?: boolean }>("agent-stream-done", (e) => {
+        const { tabId } = e.payload;
+        setState("streamingByTab", tabId, false);
+        setState("pendingApprovalByTab", tabId, null);
+      }),
+    );
   });
 
   onCleanup(() => {
@@ -154,7 +162,7 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
         if (!s.entriesByTab[tabId]) s.entriesByTab[tabId] = [];
 
         // Find existing entry with the same callId and update it
-        if (toolEvent.callId) {
+        if (toolEvent.type !== "script_activity" && toolEvent.callId) {
           const existing = s.entriesByTab[tabId].find(
             (e) => e.type === "tool_event" && e.toolEvent?.callId === toolEvent.callId,
           );
@@ -163,6 +171,7 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
             existing.toolEvent.type = toolEvent.type;
             if (toolEvent.status) existing.toolEvent.status = toolEvent.status;
             if (toolEvent.result !== undefined) existing.toolEvent.result = toolEvent.result;
+            if (toolEvent.message) existing.toolEvent.message = toolEvent.message;
             return;
           }
         }

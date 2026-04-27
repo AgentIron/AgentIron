@@ -22,6 +22,7 @@ const DEFAULTS: AppSettings = {
   customModels: [],
   mcpServers: [],
   userProfile: { name: "", email: "" },
+  skills: { trustProjectSkills: false, additionalSkillDirs: [] },
 };
 
 interface SettingsContextValue {
@@ -38,6 +39,9 @@ interface SettingsContextValue {
   addMcpServer: (server: McpServerConfig) => void;
   updateMcpServer: (id: string, patch: Partial<McpServerConfig>) => void;
   removeMcpServer: (id: string) => void;
+  updateSkillSettings: (patch: Partial<import("@/types/settings").SkillSettings>) => void;
+  addSkillDir: (dir: string) => void;
+  removeSkillDir: (dir: string) => void;
   updateModelRegistry: () => Promise<void>;
   registryLastUpdated: () => string | null;
   activeApiKey: () => string;
@@ -60,9 +64,10 @@ const DB_KEY_MAP: Record<string, string> = {
   mcpServers: "mcp_servers",
   modelRegistry: "model_registry",
   userProfile: "user_profile",
+  skills: "skills",
 };
 
-const JSON_KEYS = new Set(["providers", "starredModels", "customModels", "mcpServers", "userProfile", "modelRegistry"]);
+const JSON_KEYS = new Set(["providers", "starredModels", "customModels", "mcpServers", "userProfile", "modelRegistry", "skills"]);
 
 async function persistSetting(key: keyof AppSettings, value: unknown) {
   const dbKey = DB_KEY_MAP[key] || key;
@@ -118,6 +123,9 @@ async function loadAllSettings(): Promise<Partial<AppSettings>> {
         case "userProfile":
           try { result.userProfile = JSON.parse(row.value); } catch { /* use default */ }
           break;
+        case "skills":
+          try { result.skills = JSON.parse(row.value); } catch { /* use default */ }
+          break;
         case "modelRegistry":
           // Handled separately, not part of AppSettings
           break;
@@ -154,6 +162,7 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
       if (saved.customModels !== undefined) s.customModels = saved.customModels;
       if (saved.mcpServers !== undefined) s.mcpServers = saved.mcpServers;
       if (saved.userProfile !== undefined) s.userProfile = saved.userProfile;
+      if (saved.skills !== undefined) s.skills = saved.skills;
     }));
     // Load cached model registry
     try {
@@ -284,6 +293,26 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
         if (idx >= 0) s.mcpServers.splice(idx, 1);
       }));
       persistSetting("mcpServers", settings.mcpServers);
+    },
+    updateSkillSettings: (patch) => {
+      setSettings(produce((s) => {
+        Object.assign(s.skills, patch);
+      }));
+      persistSetting("skills", settings.skills);
+    },
+    addSkillDir: (dir) => {
+      setSettings(produce((s) => {
+        if (!s.skills.additionalSkillDirs.includes(dir)) {
+          s.skills.additionalSkillDirs.push(dir);
+        }
+      }));
+      persistSetting("skills", settings.skills);
+    },
+    removeSkillDir: (dir) => {
+      setSettings(produce((s) => {
+        s.skills.additionalSkillDirs = s.skills.additionalSkillDirs.filter((d) => d !== dir);
+      }));
+      persistSetting("skills", settings.skills);
     },
     activeApiKey: () => {
       const all = [...registryModels(), ...KNOWN_MODELS, ...settings.customModels];

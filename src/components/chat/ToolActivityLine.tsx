@@ -1,6 +1,6 @@
 import { Show, type Component } from "solid-js";
 import { TbOutlineCheck, TbOutlineX } from "solid-icons/tb";
-import { toolIcon, formatArgsSummary, isReadOnlyTool } from "./toolUtils";
+import { toolIcon, formatArgsSummary, formatScriptActivityLabel, formatScriptActivitySummary, isReadOnlyTool } from "./toolUtils";
 import type { ToolEvent } from "@/types/agent";
 
 interface ToolActivityLineProps {
@@ -8,15 +8,22 @@ interface ToolActivityLineProps {
 }
 
 export const ToolActivityLine: Component<ToolActivityLineProps> = (props) => {
+  const isScriptActivity = () => props.event.type === "script_activity";
   const isCompleted = () =>
-    props.event.type === "tool_result" && props.event.status === "Completed";
+    (props.event.type === "tool_result" && props.event.status === "Completed")
+    || (props.event.type === "script_activity" && props.event.status === "Completed");
   const isError = () =>
-    props.event.type === "tool_result" &&
-    (props.event.status === "Failed" || props.event.status === "Error");
+    (props.event.type === "tool_result" || props.event.type === "script_activity")
+    && (props.event.status === "Failed" || props.event.status === "Error" || props.event.status === "Cancelled");
   const isRunning = () => !isCompleted() && !isError();
-  const dimmed = () => isReadOnlyTool(props.event.toolName);
+  const dimmed = () => !isScriptActivity() && isReadOnlyTool(props.event.toolName);
 
-  const summary = () => formatArgsSummary(props.event.toolName, props.event.arguments);
+  const label = () => isScriptActivity()
+    ? formatScriptActivityLabel(props.event.activityType)
+    : props.event.toolName;
+  const summary = () => isScriptActivity()
+    ? formatScriptActivitySummary(props.event.detail)
+    : formatArgsSummary(props.event.toolName, props.event.arguments);
 
   return (
     <div
@@ -25,7 +32,7 @@ export const ToolActivityLine: Component<ToolActivityLineProps> = (props) => {
       }`}
     >
       {toolIcon(props.event.toolName)}
-      <span class="text-text-primary font-medium">{props.event.toolName}</span>
+      <span class="text-text-primary font-medium">{label()}</span>
       <Show when={summary()}>
         <span class="text-text-tertiary font-mono truncate max-w-[40%]">{summary()}</span>
       </Show>

@@ -51,7 +51,12 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
 
     // Always include enabled MCP servers when creating/replacing an agent
     const effectiveMcp = mcpServers ?? getEnabledMcpServers();
-    const conn = await createAgent(apiKey, model, tabId, workingDirectory, providerId, effectiveMcp);
+    const conn = await createAgent(
+      apiKey, model, tabId, workingDirectory, providerId, effectiveMcp,
+      "in-process",
+      settings.skills.trustProjectSkills,
+      settings.skills.additionalSkillDirs,
+    );
     // Enrich connection with model/provider info
     const enriched: AgentConnection = { ...conn, model, providerId };
     setState("connections", (prev) => [...prev, enriched]);
@@ -125,7 +130,12 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
     removeConnection: (id) =>
       setState("connections", (prev) => prev.filter((c) => c.id !== id)),
     createAgentForTab: async (tabId, apiKey, model, workingDirectory?, providerId?, mcpServers?) => {
-      const conn = await createAgent(apiKey, model, tabId, workingDirectory, providerId, mcpServers);
+      const conn = await createAgent(
+        apiKey, model, tabId, workingDirectory, providerId, mcpServers,
+        "in-process",
+        settings.skills.trustProjectSkills,
+        settings.skills.additionalSkillDirs,
+      );
       const enriched: AgentConnection = { ...conn, model, providerId };
       setState("connections", (prev) => [...prev, enriched]);
       setState("activeTabId", tabId);
