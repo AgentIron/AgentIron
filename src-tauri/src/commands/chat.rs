@@ -1,6 +1,6 @@
+use crate::state::{AgentRequest, AppState, ImageDataJson};
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
-use crate::state::{AgentRequest, AppState, ImageDataJson};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {

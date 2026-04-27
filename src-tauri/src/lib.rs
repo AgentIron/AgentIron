@@ -1,5 +1,5 @@
-use tauri::tray::TrayIconBuilder;
 use tauri::menu::{Menu, MenuItem};
+use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
 mod commands;
