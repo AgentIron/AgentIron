@@ -86,13 +86,11 @@ pub async fn update_model_registry() -> Result<Vec<RegistryModel>, String> {
     // Register OpenAI manually since it's not in the default registry
     // (iron-providers handles OpenAI via OpenAiProvider, not GenericProvider).
     let mut registry = iron_providers::ProviderRegistry::default();
-    registry.register(
-        iron_providers::ProviderProfile::new(
-            "openai",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.openai.com/v1",
-        )
-    );
+    registry.register(iron_providers::ProviderProfile::new(
+        "openai",
+        iron_providers::ApiFamily::OpenAiChatCompletions,
+        "https://api.openai.com/v1",
+    ));
 
     let mut models = Vec::new();
 

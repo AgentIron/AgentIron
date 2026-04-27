@@ -197,10 +197,7 @@ impl AppState {
 ///
 /// The IronAgent gets the multi-thread runtime's handle so its spawned tasks
 /// (MCP connect, health checks, etc.) actually run on background threads.
-pub fn spawn_agent_worker(
-    params: AgentParams,
-    mut request_rx: mpsc::Receiver<AgentRequest>,
-) {
+pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<AgentRequest>) {
     std::thread::spawn(move || {
         // Background runtime for iron-core's async tasks (MCP, plugins, etc.)
         let bg_rt = tokio::runtime::Builder::new_multi_thread()
@@ -222,23 +219,17 @@ pub fn spawn_agent_worker(
         local.block_on(&local_rt, async move {
             // Give the agent the BACKGROUND runtime handle so its spawned tasks
             // (MCP connections, etc.) run on actual worker threads
-            let agent = iron_core::IronAgent::with_tokio_handle(
-                params.config,
-                params.provider,
-                bg_handle,
-            );
+            let agent =
+                iron_core::IronAgent::with_tokio_handle(params.config, params.provider, bg_handle);
 
             let working_dir = params.working_directory;
             let builtin_config = {
-                let builtin_config = iron_core::BuiltinToolConfig::new(
-                    vec![working_dir.clone()],
-                );
+                let builtin_config = iron_core::BuiltinToolConfig::new(vec![working_dir.clone()]);
                 // Workaround: iron-core's ShellAvailability::detect() uses `which`
                 // which doesn't exist on Windows (should use `where`). See iron-core#8.
                 #[cfg(windows)]
                 {
-                    builtin_config
-                        .with_shell_availability(iron_core::ShellAvailability::PowerShell)
+                    builtin_config.with_shell_availability(iron_core::ShellAvailability::PowerShell)
                 }
                 #[cfg(not(windows))]
                 {
@@ -254,7 +245,6 @@ pub fn spawn_agent_worker(
                     agent.register_mcp_server(config);
                 }
             }
-
 
             let connection = agent.connect();
             let session = match connection.create_session() {
@@ -280,13 +270,22 @@ pub fn spawn_agent_worker(
                     } => {
                         let blocks = vec![iron_core::ContentBlock::Text { text: content }];
                         let result = handle_prompt_stream(
-                            &session, &app_handle, &tab_id, &blocks, &mut request_rx,
-                        ).await;
+                            &session,
+                            &app_handle,
+                            &tab_id,
+                            &blocks,
+                            &mut request_rx,
+                        )
+                        .await;
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::PromptWithBlocks {
-                        text, images, app_handle, tab_id, response_tx,
+                        text,
+                        images,
+                        app_handle,
+                        tab_id,
+                        response_tx,
                     } => {
                         let mut blocks: Vec<iron_core::ContentBlock> = Vec::new();
                         for img in &images {
@@ -299,16 +298,22 @@ pub fn spawn_agent_worker(
                             blocks.push(iron_core::ContentBlock::Text { text });
                         }
                         let result = handle_prompt_stream(
-                            &session, &app_handle, &tab_id, &blocks, &mut request_rx,
-                        ).await;
+                            &session,
+                            &app_handle,
+                            &tab_id,
+                            &blocks,
+                            &mut request_rx,
+                        )
+                        .await;
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::GetMcpStatus { response_tx } => {
-                        let result = (|| -> Result<Vec<McpServerStatusJson>, String> {
-                            let registry = agent.mcp_registry();
-                            let servers = registry.list_servers();
-                            Ok(servers.iter().map(|s| {
+                        let registry = agent.mcp_registry();
+                        let servers = registry.list_servers();
+                        let result = Ok(servers
+                            .iter()
+                            .map(|s| {
                                 let enabled = session
                                     .is_mcp_server_enabled(&s.config.id)
                                     .unwrap_or(s.config.enabled_by_default);
@@ -316,21 +321,26 @@ pub fn spawn_agent_worker(
                                     id: s.config.id.clone(),
                                     label: s.config.label.clone(),
                                     health: format!("{:?}", s.health),
-                                    discovered_tools: s.discovered_tools.iter().map(|t| {
-                                        McpToolInfoJson {
+                                    discovered_tools: s
+                                        .discovered_tools
+                                        .iter()
+                                        .map(|t| McpToolInfoJson {
                                             name: t.name.clone(),
                                             description: t.description.clone(),
                                             input_schema: t.input_schema.clone(),
-                                        }
-                                    }).collect(),
+                                        })
+                                        .collect(),
                                     last_error: s.last_error.clone(),
                                     enabled,
                                 }
-                            }).collect())
-                        })();
+                            })
+                            .collect());
                         let _ = response_tx.send(result);
                     }
-                    AgentRequest::RegisterMcpServer { config: mcp, response_tx } => {
+                    AgentRequest::RegisterMcpServer {
+                        config: mcp,
+                        response_tx,
+                    } => {
                         if let Some(config) = build_mcp_config(&mcp) {
                             agent.register_mcp_server(config);
                             let _ = response_tx.send(Ok(()));
@@ -338,18 +348,26 @@ pub fn spawn_agent_worker(
                             let _ = response_tx.send(Err("Unknown transport".into()));
                         }
                     }
-                    AgentRequest::SetMcpServerEnabled { server_id, enabled, response_tx } => {
+                    AgentRequest::SetMcpServerEnabled {
+                        server_id,
+                        enabled,
+                        response_tx,
+                    } => {
                         session.set_mcp_server_enabled(&server_id, enabled);
                         let _ = response_tx.send(Ok(()));
                     }
                     AgentRequest::GetTokenCount { tab_id, app_handle } => {
                         emit_token_count(&session, &app_handle, &tab_id);
                     }
-                    AgentRequest::Compact { tab_id, app_handle, response_tx } => {
+                    AgentRequest::Compact {
+                        tab_id,
+                        app_handle,
+                        response_tx,
+                    } => {
                         let result = session
                             .checkpoint(iron_core::CompactionCheckpoint::TaskComplete)
                             .await
-                            .map_err(|e| format!("{e}"));
+                            .map_err(|e| e.to_string());
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
@@ -358,31 +376,36 @@ pub fn spawn_agent_worker(
                     }
                     AgentRequest::RefreshSkillCatalog { response_tx } => {
                         let diagnostics = session.refresh_skill_catalog();
-                        let result = Ok(diagnostics.into_iter().map(|d| SkillDiagnosticJson {
-                            level: format!("{:?}", d.level),
-                            message: d.message,
-                            skill_name: d.skill_name,
-                        }).collect());
+                        let result = Ok(diagnostics
+                            .into_iter()
+                            .map(|d| SkillDiagnosticJson {
+                                level: format!("{:?}", d.level),
+                                message: d.message,
+                                skill_name: d.skill_name,
+                            })
+                            .collect());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::ListAvailableSkills { response_tx } => {
                         let skills = session.list_available_skills();
-                        let result = Ok(skills.into_iter().map(|s| SkillMetadataJson {
-                            id: s.id,
-                            display_name: s.display_name,
-                            description: s.description,
-                            origin: format!("{:?}", s.origin),
-                            auto_activate: s.auto_activate,
-                            tags: s.tags,
-                            requires_tools: s.requires_tools,
-                            requires_capabilities: s.requires_capabilities,
-                            requires_trust: s.requires_trust,
-                        }).collect());
+                        let result = Ok(skills
+                            .into_iter()
+                            .map(|s| SkillMetadataJson {
+                                id: s.id,
+                                display_name: s.display_name,
+                                description: s.description,
+                                origin: format!("{:?}", s.origin),
+                                auto_activate: s.auto_activate,
+                                tags: s.tags,
+                                requires_tools: s.requires_tools,
+                                requires_capabilities: s.requires_capabilities,
+                                requires_trust: s.requires_trust,
+                            })
+                            .collect());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::ActivateSkill { name, response_tx } => {
-                        let result = session.activate_skill(&name)
-                            .map_err(|e| format!("{e}"));
+                        let result = session.activate_skill(&name).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::DeactivateSkill { name, response_tx } => {
@@ -394,13 +417,17 @@ pub fn spawn_agent_worker(
                         let _ = response_tx.send(Ok(skills));
                     }
                     AgentRequest::ExportHandoff { response_tx } => {
-                        let result = session.export_handoff("", None).await
-                            .map_err(|e| format!("{e}"));
+                        let result = session
+                            .export_handoff("", None)
+                            .await
+                            .map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
-                    AgentRequest::ImportHandoff { bundle, response_tx } => {
-                        let result = session.import_handoff(bundle)
-                            .map_err(|e| format!("{e}"));
+                    AgentRequest::ImportHandoff {
+                        bundle,
+                        response_tx,
+                    } => {
+                        let result = session.import_handoff(bundle).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::Shutdown => break,
@@ -589,7 +616,8 @@ async fn wait_for_approval(
                 };
             }
             Some(request) => {
-                if handle_active_request(request, session, app_handle, tab_id, prompt_handle).await {
+                if handle_active_request(request, session, app_handle, tab_id, prompt_handle).await
+                {
                     return ApprovalDecision::Cancel;
                 }
             }
@@ -617,19 +645,27 @@ async fn handle_active_request(
             false
         }
         AgentRequest::Compact { response_tx, .. } => {
-            let _ = response_tx.send(Err("Cannot compact a session while a prompt is running".into()));
+            let _ = response_tx.send(Err(
+                "Cannot compact a session while a prompt is running".into()
+            ));
             false
         }
         AgentRequest::RegisterMcpServer { response_tx, .. } => {
-            let _ = response_tx.send(Err("Cannot register MCP servers while a prompt is running".into()));
+            let _ = response_tx.send(Err(
+                "Cannot register MCP servers while a prompt is running".into()
+            ));
             false
         }
         AgentRequest::GetMcpStatus { response_tx } => {
-            let _ = response_tx.send(Err("Cannot query MCP status while a prompt is running".into()));
+            let _ = response_tx.send(Err(
+                "Cannot query MCP status while a prompt is running".into()
+            ));
             false
         }
         AgentRequest::SetMcpServerEnabled { response_tx, .. } => {
-            let _ = response_tx.send(Err("Cannot change MCP enablement while a prompt is running".into()));
+            let _ = response_tx.send(Err(
+                "Cannot change MCP enablement while a prompt is running".into(),
+            ));
             false
         }
         AgentRequest::Prompt { response_tx, .. } => {
@@ -646,33 +682,38 @@ async fn handle_active_request(
         }
         AgentRequest::RefreshSkillCatalog { response_tx } => {
             let diagnostics = session.refresh_skill_catalog();
-            let result = Ok(diagnostics.into_iter().map(|d| SkillDiagnosticJson {
-                level: format!("{:?}", d.level),
-                message: d.message,
-                skill_name: d.skill_name,
-            }).collect());
+            let result = Ok(diagnostics
+                .into_iter()
+                .map(|d| SkillDiagnosticJson {
+                    level: format!("{:?}", d.level),
+                    message: d.message,
+                    skill_name: d.skill_name,
+                })
+                .collect());
             let _ = response_tx.send(result);
             false
         }
         AgentRequest::ListAvailableSkills { response_tx } => {
             let skills = session.list_available_skills();
-            let result = Ok(skills.into_iter().map(|s| SkillMetadataJson {
-                id: s.id,
-                display_name: s.display_name,
-                description: s.description,
-                origin: format!("{:?}", s.origin),
-                auto_activate: s.auto_activate,
-                tags: s.tags,
-                requires_tools: s.requires_tools,
-                requires_capabilities: s.requires_capabilities,
-                requires_trust: s.requires_trust,
-            }).collect());
+            let result = Ok(skills
+                .into_iter()
+                .map(|s| SkillMetadataJson {
+                    id: s.id,
+                    display_name: s.display_name,
+                    description: s.description,
+                    origin: format!("{:?}", s.origin),
+                    auto_activate: s.auto_activate,
+                    tags: s.tags,
+                    requires_tools: s.requires_tools,
+                    requires_capabilities: s.requires_capabilities,
+                    requires_trust: s.requires_trust,
+                })
+                .collect());
             let _ = response_tx.send(result);
             false
         }
         AgentRequest::ActivateSkill { name, response_tx } => {
-            let result = session.activate_skill(&name)
-                .map_err(|e| format!("{e}"));
+            let result = session.activate_skill(&name).map_err(|e| e.to_string());
             let _ = response_tx.send(result);
             false
         }
@@ -709,7 +750,11 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
                 #[cfg(windows)]
                 {
                     let mut command = command;
-                    if !command.is_empty() && !command.contains('.') && !command.contains('\\') && !command.contains('/') {
+                    if !command.is_empty()
+                        && !command.contains('.')
+                        && !command.contains('\\')
+                        && !command.contains('/')
+                    {
                         if let Ok(output) = std::process::Command::new("where")
                             .arg(format!("{}.cmd", command))
                             .output()
