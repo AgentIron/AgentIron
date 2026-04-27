@@ -288,7 +288,7 @@ const ProviderCard: Component<{
             </button>
           </label>
           <button
-            onClick={props.onRemove}
+            onClick={() => props.onRemove()}
             class="p-1 rounded text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
             title="Remove provider"
           >

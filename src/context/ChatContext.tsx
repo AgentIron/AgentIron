@@ -3,6 +3,7 @@ import {
   useContext,
   onMount,
   onCleanup,
+  untrack,
   type Component,
   type JSX,
 } from "solid-js";
@@ -84,7 +85,7 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
         const tabId = event.tabId;
 
         if (event.type === "approval_request") {
-          const autoApproved = state.autoApprovedToolsByTab[tabId] ?? [];
+          const autoApproved = untrack(() => state.autoApprovedToolsByTab[tabId] ?? []);
           if (event.toolName && autoApproved.includes(event.toolName)) {
             if (event.callId) {
               respondToApproval(tabId, event.callId, true);

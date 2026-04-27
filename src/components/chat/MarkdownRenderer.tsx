@@ -86,13 +86,17 @@ const marked = new Marked({
 
 export const MarkdownRenderer: Component<MarkdownRendererProps> = (props) => {
   // Debounce parsing during fast streaming to limit to ~20 parses/sec
-  const [debouncedContent, setDebouncedContent] = createSignal(props.content || "");
+  const [debouncedContent, setDebouncedContent] = createSignal("");
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   createEffect(() => {
     const c = props.content;
     clearTimeout(timer);
     timer = setTimeout(() => setDebouncedContent(c || ""), 50);
+  });
+  // Set initial content
+  createEffect(() => {
+    setDebouncedContent(props.content || "");
   });
   onCleanup(() => clearTimeout(timer));
 

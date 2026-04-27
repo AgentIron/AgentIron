@@ -381,7 +381,7 @@ export const MessageInput: Component = () => {
           onPaste={handlePaste}
           disabled={sending()}
           class="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none disabled:opacity-50 resize-none leading-relaxed py-1"
-          style="max-height: 200px;"
+          style={{"max-height":"200px"}}
         />
         <Show
           when={sending()}

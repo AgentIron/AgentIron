@@ -39,7 +39,7 @@ export const McpServerCard: Component<McpServerCardProps> = (props) => {
         <TbFillCircle size={8} class={healthColor()} />
         <div
           class="flex-1 min-w-0 cursor-pointer"
-          onClick={props.onClick}
+          onClick={() => props.onClick()}
         >
           <div class="text-sm font-medium text-text-primary truncate">{props.server.label}</div>
           <div class="flex items-center gap-2 text-xs text-text-tertiary">
