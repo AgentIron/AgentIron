@@ -1,0 +1,21 @@
+name: OpenCode Formal PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  opencode-review:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Run OpenCode formal review
+        uses: ./.github/actions/opencode-review
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          api-key: ${{ secrets.ZHIPU_API_KEY }}
+          model: 'zai-coding-plan/glm-5.1'
+          api-base: 'https://open.bigmodel.cn/api/paas/v4'

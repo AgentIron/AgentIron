@@ -1,0 +1,125 @@
+name: 'OpenCode Formal Review'
+description: 'Fetch PR diff, analyze with an LLM, and post a formal GitHub Review (COMMENT state)'
+branding:
+  icon: 'eye'
+  color: 'blue'
+
+inputs:
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+  api-key:
+    description: 'LLM API key (e.g. Zhipu AI, OpenAI, Anthropic)'
+    required: true
+  model:
+    description: 'Model identifier to use for the review'
+    required: true
+    default: 'glm-4-flash'
+  api-base:
+    description: 'Base URL for the LLM API (OpenAI-compatible format)'
+    required: false
+    default: 'https://open.bigmodel.cn/api/paas/v4'
+  max-diff-chars:
+    description: 'Maximum characters of diff to send to the LLM (truncates if larger)'
+    required: false
+    default: '30000'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate review and post via Review API
+      uses: actions/github-script@v7
+      env:
+        API_KEY: ${{ inputs.api-key }}
+        MODEL: ${{ inputs.model }}
+        API_BASE: ${{ inputs.api-base }}
+        MAX_DIFF_CHARS: ${{ inputs.max-diff-chars }}
+      with:
+        script: |
+          const MAX_DIFF_CHARS = parseInt(process.env.MAX_DIFF_CHARS, 10) || 30000;
+
+          // 1. Fetch the PR diff
+          const { data: diff } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            mediaType: { format: 'diff' }
+          });
+
+          let diffText = diff;
+          if (diffText.length > MAX_DIFF_CHARS) {
+            diffText = diffText.slice(0, MAX_DIFF_CHARS)
+              + '\n\n... [diff truncated due to size limit] ...';
+          }
+
+          // 2. Call LLM API (OpenAI-compatible)
+          const systemPrompt = `You are a senior staff engineer performing a thorough code review.
+
+Review the provided PR diff and produce a structured review with these sections:
+
+## Summary
+Brief overview of what the PR does.
+
+## Issues / Concerns
+- Security issues
+- Performance concerns
+- Correctness or logic bugs
+- Maintainability problems
+
+## Suggestions
+Specific, actionable improvements.
+
+## Overall Assessment
+Approve with minor suggestions, request changes, or neutral comment.
+
+Be concise but thorough. Focus on substantive issues rather than style nits.`;
+
+          const payload = {
+            model: process.env.MODEL,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Please review the following PR diff:\n\n${diffText}` }
+            ],
+            temperature: 0.2,
+            max_tokens: 4000
+          };
+
+          let reviewBody;
+          try {
+            const response = await fetch(`${process.env.API_BASE}/chat/completions`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              const errText = await response.text();
+              throw new Error(`LLM API error ${response.status}: ${errText}`);
+            }
+
+            const result = await response.json();
+            reviewBody = result.choices?.[0]?.message?.content;
+
+            if (!reviewBody) {
+              throw new Error('LLM returned empty review content');
+            }
+          } catch (err) {
+            reviewBody = `⚠️ **Review generation failed**\n\n${err.message}\n\nPlease check the workflow logs for details.`;
+          }
+
+          // 3. Post formal GitHub Review
+          await github.rest.pulls.createReview({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            body: reviewBody,
+            event: 'COMMENT'
+          });
