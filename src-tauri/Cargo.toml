@@ -1,6 +1,6 @@
 [package]
 name = "agentiron"
-version = "0.1.0"
+version = "0.1.1"
 description = "Cross-platform AI agent client for iron-core"
 authors = ["AgentIron"]
 license = "Apache-2.0"
