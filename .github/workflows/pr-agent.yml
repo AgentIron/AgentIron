@@ -2,7 +2,7 @@ name: PR Agent (Gemini)
 
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review]
   issue_comment:
 
 jobs:
@@ -27,3 +27,8 @@ jobs:
           github_action_config.auto_review: "true"
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "true"
+          config.publish_output: "true"
+          pr_code_suggestions.commitable_code_suggestions: "true"
+          pr_code_suggestions.dual_publishing_score_threshold: "0"
+          github.publish_inline_comments_fallback_with_verification: "true"
+          github.try_fix_invalid_inline_comments: "true"
