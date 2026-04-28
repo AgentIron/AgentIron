@@ -20,10 +20,10 @@ jobs:
 
       - name: Check issue reference
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-          
-          if echo "$PR_TITLE $PR_BODY" | grep -qiE '(closes?|fixes?|resolves?)\s*#[0-9]+'; then
+          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
+          PR_BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+
+          if echo "$PR_TITLE $PR_BODY" | grep -qiE '(closes?|fixes?|resolves?)[[:space:]]*#[0-9]+'; then
             echo "✓ Issue reference found"
           else
             echo "ERROR: PR must reference a GitHub issue using 'Closes #123', 'Fixes #456', etc."
@@ -71,12 +71,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: '9'
+          version: "9"
 
       - name: Cache pnpm dependencies
         uses: actions/cache@v4
@@ -94,3 +94,28 @@ jobs:
 
       - name: Build frontend
         run: pnpm run build
+
+  pr-checks:
+    name: PR Checks
+    runs-on: ubuntu-latest
+    needs: [validate, rust-checks, frontend-checks]
+    if: always()
+    steps:
+      - name: Verify required checks passed
+        run: |
+          if [[ "${{ needs.validate.result }}" != "success" ]]; then
+            echo "validate failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.rust-checks.result }}" != "success" ]]; then
+            echo "rust-checks failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.frontend-checks.result }}" != "success" ]]; then
+            echo "frontend-checks failed"
+            exit 1
+          fi
+
+          echo "All PR checks passed"

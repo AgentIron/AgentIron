@@ -1,0 +1,80 @@
+name: OpenCode Formal Review
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  formal-review:
+    if: ${{ github.event.sender.type != 'Bot' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+
+      - name: Install OpenCode
+        run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Add OpenCode to PATH
+        run: echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
+
+      - name: Build review context
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p .opencode-formal
+          {
+            echo "# Pull Request"
+            echo
+            echo "Number: ${PR_NUMBER}"
+            echo "Title: ${PR_TITLE}"
+            echo "Base: ${PR_BASE_REF}"
+            echo "Head: ${PR_HEAD_REF} (${PR_HEAD_SHA})"
+            echo
+            echo "# Body"
+            echo
+            printf '%s\n' "${PR_BODY}"
+            echo
+            echo "# Changed Files"
+            echo
+            git diff --name-status "origin/${PR_BASE_REF}...HEAD"
+            echo
+            echo "# Diff"
+            echo
+            git diff --no-ext-diff --unified=80 "origin/${PR_BASE_REF}...HEAD" | head -c 180000
+          } > .opencode-formal/context.md
+
+      - name: Run OpenCode review
+        env:
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          MODEL: zai-coding-plan/glm-5.1
+        run: |
+          opencode run \
+            --model "$MODEL" \
+            --format json \
+            --file .opencode-formal/context.md \
+            < .github/scripts/opencode-formal-review-prompt.md > .opencode-formal/opencode.jsonl
+
+      - name: Submit formal GitHub review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          OPENCODE_OUTPUT_PATH: .opencode-formal/opencode.jsonl
+        run: node .github/scripts/submit-opencode-formal-review.mjs
