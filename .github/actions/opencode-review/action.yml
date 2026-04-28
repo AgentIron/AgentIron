@@ -18,7 +18,7 @@ inputs:
   api-base:
     description: 'Base URL for the LLM API (OpenAI-compatible format)'
     required: false
-    default: 'https://open.bigmodel.cn/api/paas/v4'
+    default: 'https://api.z.ai/api/coding/paas/v4'
   max-diff-chars:
     description: 'Maximum characters of diff to send to the LLM (truncates if larger)'
     required: false

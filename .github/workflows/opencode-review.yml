@@ -21,4 +21,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           api-key: ${{ secrets.ZHIPU_API_KEY }}
           model: 'zai-coding-plan/glm-5.1'
-          api-base: 'https://open.bigmodel.cn/api/paas/v4'
+          api-base: 'https://api.z.ai/api/coding/paas/v4'
