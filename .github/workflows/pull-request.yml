@@ -94,3 +94,28 @@ jobs:
 
       - name: Build frontend
         run: pnpm run build
+
+  pr-checks:
+    name: PR Checks
+    runs-on: ubuntu-latest
+    needs: [validate, rust-checks, frontend-checks]
+    if: always()
+    steps:
+      - name: Verify required checks passed
+        run: |
+          if [[ "${{ needs.validate.result }}" != "success" ]]; then
+            echo "validate failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.rust-checks.result }}" != "success" ]]; then
+            echo "rust-checks failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.frontend-checks.result }}" != "success" ]]; then
+            echo "frontend-checks failed"
+            exit 1
+          fi
+
+          echo "All PR checks passed"
