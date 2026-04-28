@@ -20,8 +20,8 @@ jobs:
 
       - name: Check issue reference
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
+          PR_BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
 
           if echo "$PR_TITLE $PR_BODY" | grep -qiE '(closes?|fixes?|resolves?)[[:space:]]*#[0-9]+'; then
             echo "✓ Issue reference found"
