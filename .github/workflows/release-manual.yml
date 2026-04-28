@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version_type:
-        description: 'Version bump type'
+        description: Version bump type
         required: true
-        default: 'patch'
+        default: patch
         type: choice
         options:
           - patch
@@ -14,13 +14,15 @@ on:
           - major
 
 jobs:
-  release:
+  create-release-pr:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust
@@ -34,12 +36,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: '9'
+          version: "9"
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -70,27 +72,32 @@ jobs:
         id: bump
         run: |
           NEW_VERSION=$(python scripts/bump_version.py ${{ github.event.inputs.version_type }})
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "branch_name=chore/release-v$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "Bumped to $NEW_VERSION"
 
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${{ steps.bump.outputs.branch_name }}"
           git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
           git commit -m "chore(release): bump version to ${{ steps.bump.outputs.new_version }}"
-          git push
+          git push --force-with-lease origin "${{ steps.bump.outputs.branch_name }}"
 
-      - name: Create tag
-        run: |
-          git tag "v${{ steps.bump.outputs.new_version }}"
-          git push origin "v${{ steps.bump.outputs.new_version }}"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.bump.outputs.new_version }}
-          name: Release v${{ steps.bump.outputs.new_version }}
-          generate_release_notes: true
+      - name: Create release PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING_PR=$(gh pr list --head "${{ steps.bump.outputs.branch_name }}" --state open --json number --jq '.[0].number // ""')
+
+          if [[ -n "$EXISTING_PR" ]]; then
+            echo "Release PR already exists: #$EXISTING_PR"
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head "${{ steps.bump.outputs.branch_name }}" \
+            --title "chore(release): bump version to ${{ steps.bump.outputs.new_version }}" \
+            --body "Manual ${{ github.event.inputs.version_type }} release version bump. Merge this PR to publish v${{ steps.bump.outputs.new_version }}."
