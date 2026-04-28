@@ -20,6 +20,11 @@ jobs:
 
       - name: Check issue reference
         run: |
+          if [[ "${{ github.head_ref }}" == chore/release-v* ]]; then
+            echo "✓ Release PRs do not require an issue reference"
+            exit 0
+          fi
+
           PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
           PR_BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
 
