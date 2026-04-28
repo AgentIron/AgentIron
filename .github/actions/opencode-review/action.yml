@@ -58,26 +58,20 @@ runs:
           }
 
           // 2. Call LLM API (OpenAI-compatible)
-          const systemPrompt = `You are a senior staff engineer performing a thorough code review.
-
-Review the provided PR diff and produce a structured review with these sections:
-
-## Summary
-Brief overview of what the PR does.
-
-## Issues / Concerns
-- Security issues
-- Performance concerns
-- Correctness or logic bugs
-- Maintainability problems
-
-## Suggestions
-Specific, actionable improvements.
-
-## Overall Assessment
-Approve with minor suggestions, request changes, or neutral comment.
-
-Be concise but thorough. Focus on substantive issues rather than style nits.`;
+          const systemPrompt = "You are a senior staff engineer performing a thorough code review.\n\n" +
+            "Review the provided PR diff and produce a structured review with these sections:\n\n" +
+            "## Summary\n" +
+            "Brief overview of what the PR does.\n\n" +
+            "## Issues / Concerns\n" +
+            "- Security issues\n" +
+            "- Performance concerns\n" +
+            "- Correctness or logic bugs\n" +
+            "- Maintainability problems\n\n" +
+            "## Suggestions\n" +
+            "Specific, actionable improvements.\n\n" +
+            "## Overall Assessment\n" +
+            "Approve with minor suggestions, request changes, or neutral comment.\n\n" +
+            "Be concise but thorough. Focus on substantive issues rather than style nits.";
 
           const payload = {
             model: process.env.MODEL,
