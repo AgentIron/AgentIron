@@ -12,6 +12,9 @@ jobs:
       pull-requests: write
       contents: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Run OpenCode formal review
         uses: ./.github/actions/opencode-review
         with:
