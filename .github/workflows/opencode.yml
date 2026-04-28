@@ -21,6 +21,9 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Run OpenCode
         uses: anomalyco/opencode/github@latest
         with:

@@ -68,8 +68,7 @@ jobs:
             --model "$MODEL" \
             --format json \
             --file .opencode-formal/context.md \
-            "$(cat .github/scripts/opencode-formal-review-prompt.md)" \
-            > .opencode-formal/opencode.jsonl
+            < .github/scripts/opencode-formal-review-prompt.md > .opencode-formal/opencode.jsonl
 
       - name: Submit formal GitHub review
         env:
