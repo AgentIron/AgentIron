@@ -5,6 +5,7 @@ A cross-platform AI agent client built on [iron-core](https://github.com/AgentIr
 ## Features
 
 ### Chat & Agent Interaction
+
 - Multi-tab agent sessions with independent conversations
 - Streaming responses with real-time token display
 - Markdown rendering with syntax-highlighted code blocks
@@ -16,6 +17,7 @@ A cross-platform AI agent client built on [iron-core](https://github.com/AgentIr
 - `/compact` command for context compaction
 
 ### Built-in Tools
+
 - **File operations** — read, write, edit files
 - **Search** — glob (file patterns), grep (content search with regex)
 - **Shell** — bash and PowerShell execution
@@ -23,6 +25,7 @@ A cross-platform AI agent client built on [iron-core](https://github.com/AgentIr
 - **Python** — embedded Python execution for computation and tool orchestration
 
 ### Provider Support
+
 - **OpenAI** — GPT-4o, GPT-4.1, o3-mini, o4-mini
 - **Anthropic** — Claude Sonnet 4, Claude 3.7 Sonnet, Claude 3.5 Haiku
 - **Minimax** — MiniMax M2.7, M2.5 (general and coding)
@@ -33,12 +36,14 @@ A cross-platform AI agent client built on [iron-core](https://github.com/AgentIr
 - Dynamic model registry sync via [models.dev](https://models.dev)
 
 ### MCP (Model Context Protocol) Support
+
 - Configure MCP servers (stdio, HTTP, HTTP+SSE transports)
 - Live health monitoring and tool discovery
 - Session-scoped server enable/disable
 - Side panel showing server status and available tools
 
 ### Settings & Configuration
+
 - Persistent settings stored in SQLite
 - Provider management with API key storage
 - Model favorites with starred quick-switching
@@ -47,6 +52,7 @@ A cross-platform AI agent client built on [iron-core](https://github.com/AgentIr
 - MCP server management
 
 ### Desktop Features
+
 - System tray with minimize-to-tray
 - Per-tab working directory with folder picker
 - Editable tab/session names
@@ -135,6 +141,7 @@ Download the latest release for your platform from the [Releases](https://github
 ### Linux
 
 **Debian/Ubuntu:**
+
 ```bash
 sudo dpkg -i agentiron_*.deb
 # If dependency errors occur:
@@ -142,6 +149,7 @@ sudo apt-get install -f
 ```
 
 **Other distributions (AppImage):**
+
 ```bash
 chmod +x agentiron_*.AppImage
 ./agentiron_*.AppImage
@@ -153,9 +161,14 @@ See [Prerequisites](#prerequisites) and [Getting Started](#getting-started) abov
 
 ## Release Build Secrets
 
-The following repository secrets are **optional** but recommended for signed release builds. The workflow will produce unsigned artifacts if secrets are not configured.
+The release automation token is required for manual releases. Signing secrets are optional but recommended; the workflow will produce unsigned artifacts if signing secrets are not configured.
+
+### Release Automation
+
+- `AGENTIRON_RELEASE_TOKEN` — Token for the dedicated release automation identity. It must have `contents: read/write` permission and be allowed to bypass the `main` branch PR requirement for release version commits.
 
 ### macOS Signing (Optional)
+
 - `APPLE_CERTIFICATE` — Base64-encoded Apple Developer ID Application certificate (`.p12`)
 - `APPLE_CERTIFICATE_PASSWORD` — Password for the `.p12` file
 - `APPLE_ID` — Apple ID email for notarization
@@ -163,10 +176,12 @@ The following repository secrets are **optional** but recommended for signed rel
 - `APPLE_TEAM_ID` — Apple Developer Team ID
 
 ### Windows Signing (Optional)
+
 - `WINDOWS_CERTIFICATE` — Base64-encoded code signing certificate (`.pfx`)
 - `WINDOWS_CERTIFICATE_PASSWORD` — Password for the `.pfx` file
 
 ### Auto-Updater (Future)
+
 - `TAURI_SIGNING_PRIVATE_KEY` — Private key for update bundle signing (only needed if auto-updater is enabled)
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — Password for the private key
 
@@ -177,6 +192,7 @@ We follow the same workflow pattern as [iron-core](https://github.com/AgentIron/
 ### Branch Protection
 
 The `main` branch is protected with the following rules:
+
 - **Pull Request required** — All changes must go through a PR with at least 1 approval
 - **Up-to-date branch** — PR branches must be up to date with `main` before merging
 - **Status checks** — PR Checks workflow must pass (Rust fmt, clippy, build, test + frontend lint, build)
@@ -193,9 +209,11 @@ The `main` branch is protected with the following rules:
 
 ### Release Process
 
-- **Patch releases** — Automatic on every merge to `main` (via `release-patch.yml`)
-- **Minor/Major releases** — Manual workflow dispatch (via `release-manual.yml`)
-- See [Release Build Secrets](#release-build-secrets) for signing configuration
+- Releases are intentional and maintainer-triggered via the `Release Manual` workflow.
+- Choose a `patch`, `minor`, or `major` bump when running the workflow.
+- The workflow updates `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`, commits the version bump directly to `main` using the release automation identity, tags that exact commit, builds platform packages, and creates a draft GitHub Release with the artifacts.
+- The `AGENTIRON_RELEASE_TOKEN` secret must be configured with permission to push release version commits and tags to `main`; the corresponding release identity must be allowed to bypass the protected-branch PR requirement.
+- See [Release Build Secrets](#release-build-secrets) for signing configuration.
 
 ## License
 
