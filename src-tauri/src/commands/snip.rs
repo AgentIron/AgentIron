@@ -89,10 +89,17 @@ pub async fn capture_snip(
     // Capture the primary monitor
     let monitors =
         xcap::Monitor::all().map_err(|e| format!("Failed to enumerate monitors: {e}"))?;
-    let primary = monitors
-        .into_iter()
-        .find(|m| m.is_primary())
-        .ok_or("No primary monitor found")?;
+    let mut primary = None;
+    for monitor in monitors {
+        if monitor
+            .is_primary()
+            .map_err(|e| format!("Failed to check primary monitor: {e}"))?
+        {
+            primary = Some(monitor);
+            break;
+        }
+    }
+    let primary = primary.ok_or("No primary monitor found")?;
 
     let screenshot = primary
         .capture_image()
