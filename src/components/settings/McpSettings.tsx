@@ -166,7 +166,7 @@ export const McpSettings: Component = () => {
           <Show when={!formOpen()}>
             <button
               onClick={openAdd}
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-white hover:bg-accent-hover transition-colors"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors"
             >
               <TbOutlinePlus size={14} />
               Add Server
@@ -201,7 +201,7 @@ export const McpSettings: Component = () => {
                       onClick={() => setTransport(t)}
                       class={`px-3 py-1.5 rounded-md text-xs transition-colors ${
                         transport() === t
-                          ? "bg-accent text-white"
+                          ? "bg-accent text-void"
                           : "bg-bg-elevated text-text-secondary hover:bg-bg-hover"
                       }`}
                     >
@@ -290,7 +290,7 @@ export const McpSettings: Component = () => {
               <button
                 onClick={handleSave}
                 disabled={!canSave()}
-                class="px-4 py-1.5 rounded-md text-xs bg-accent text-white hover:bg-accent-hover transition-colors disabled:opacity-50"
+                class="px-4 py-1.5 rounded-md text-xs bg-accent text-void hover:bg-accent-hover transition-colors disabled:opacity-50"
               >
                 {isEditing() ? "Save" : "Add"}
               </button>
@@ -320,8 +320,8 @@ export const McpSettings: Component = () => {
                 </div>
                 <span class={`text-xs px-2 py-0.5 rounded-full ${
                   server.transport === "stdio"
-                    ? "bg-purple-500/15 text-purple-400"
-                    : "bg-cyan-500/15 text-cyan-400"
+                    ? "bg-bg-elevated text-text-secondary"
+                    : "bg-bg-elevated text-text-secondary"
                 }`}>
                   {server.transport === "stdio" ? "Stdio" : server.transport === "http" ? "HTTP" : "SSE"}
                 </span>

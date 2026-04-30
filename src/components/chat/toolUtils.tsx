@@ -15,22 +15,22 @@ export function toolIcon(name: string | undefined): JSX.Element {
   const cls = "flex-shrink-0";
   switch (name) {
     case "read":
-      return <TbOutlineFileText size={size} class={`${cls} text-blue-400`} />;
+      return <TbOutlineFileText size={size} class={`${cls} text-amber-light`} />;
     case "write":
-      return <TbOutlineFile size={size} class={`${cls} text-amber-400`} />;
+      return <TbOutlineFile size={size} class={`${cls} text-amber-light`} />;
     case "edit":
-      return <TbOutlinePencil size={size} class={`${cls} text-amber-400`} />;
+      return <TbOutlinePencil size={size} class={`${cls} text-amber-light`} />;
     case "glob":
-      return <TbOutlineSearch size={size} class={`${cls} text-emerald-400`} />;
+      return <TbOutlineSearch size={size} class={`${cls} text-success`} />;
     case "grep":
-      return <TbOutlineCode size={size} class={`${cls} text-emerald-400`} />;
+      return <TbOutlineCode size={size} class={`${cls} text-success`} />;
     case "bash":
     case "powershell":
-      return <TbOutlineTerminal size={size} class={`${cls} text-purple-400`} />;
+      return <TbOutlineTerminal size={size} class={`${cls} text-text-secondary`} />;
     case "python_exec":
-      return <TbOutlineBrandPython size={size} class={`${cls} text-yellow-400`} />;
+      return <TbOutlineBrandPython size={size} class={`${cls} text-warning`} />;
     case "webfetch":
-      return <TbOutlineWorldWww size={size} class={`${cls} text-cyan-400`} />;
+      return <TbOutlineWorldWww size={size} class={`${cls} text-amber-light`} />;
     default:
       return <TbOutlineTerminal size={size} class={`${cls} text-text-tertiary`} />;
   }

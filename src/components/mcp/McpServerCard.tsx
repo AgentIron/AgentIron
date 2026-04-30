@@ -15,9 +15,9 @@ export const McpServerCard: Component<McpServerCardProps> = (props) => {
   const healthColor = () => {
     if (!props.status) return "text-text-tertiary";
     switch (props.status.health) {
-      case "Connected": return "text-green-400";
-      case "Connecting": return "text-yellow-400";
-      case "Error": return "text-red-400";
+      case "Connected": return "text-success";
+      case "Connecting": return "text-warning";
+      case "Error": return "text-error";
       case "Disabled": return "text-text-tertiary";
       default: return "text-text-tertiary";
     }
@@ -49,7 +49,7 @@ export const McpServerCard: Component<McpServerCardProps> = (props) => {
             </Show>
           </div>
           <Show when={props.status?.health === "Error" && props.status?.lastError}>
-            <div class="text-xs text-red-400 truncate mt-0.5">
+            <div class="text-xs text-error truncate mt-0.5">
               {props.status!.lastError}
             </div>
           </Show>

@@ -9,8 +9,10 @@ export async function createAgent(
   providerId?: string,
   mcpServers?: import("@/types/settings").McpServerConfig[],
   transport?: string,
+  trustProjectSkills?: boolean,
+  additionalSkillDirs?: string[],
 ): Promise<AgentConnection> {
-  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers, transport: transport ?? "in-process" });
+  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers, transport: transport ?? "in-process", trustProjectSkills, additionalSkillDirs });
 }
 
 export async function disconnectAgent(tabId: string): Promise<void> {

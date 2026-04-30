@@ -1,12 +1,12 @@
 // ACP client interface — calls into Rust backend
 // which manages iron-core agent instances
 
-import { connectAgent, disconnectAgent, listAgents, sendMessage } from "@lib/tauri/commands";
+import { disconnectAgent, listAgents, sendMessage } from "@lib/tauri/commands";
 import type { AgentConnection } from "@/types/agent";
 
 export class AcpClient {
-  async connect(transport: string, endpoint?: string): Promise<AgentConnection> {
-    return connectAgent(transport, endpoint);
+  async connect(_transport: string, _endpoint?: string): Promise<AgentConnection> {
+    throw new Error("Direct ACP transport connections are not supported by the current backend");
   }
 
   async disconnect(agentId: string): Promise<void> {

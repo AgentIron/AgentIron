@@ -67,7 +67,7 @@ export const ProviderSettings: Component = () => {
             <button
               onClick={() => setShowAddMenu(!showAddMenu())}
               disabled={availableToAdd().length === 0}
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-white hover:bg-accent-hover transition-colors disabled:opacity-50"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors disabled:opacity-50"
             >
               <TbOutlinePlus size={14} />
               Add Provider
@@ -243,7 +243,7 @@ export const ProviderSettings: Component = () => {
                       onClick={() => toggleStarredModel(model.id)}
                       class="p-1.5 rounded transition-colors hover:bg-bg-hover"
                     >
-                      <TbFillStar size={16} class="text-amber-400" />
+                      <TbFillStar size={16} class="text-amber-light" />
                     </button>
                   </div>
                 );
@@ -382,13 +382,13 @@ const ProviderModelGroup: Component<{
                         <span class="text-xs text-text-tertiary">{formatContext(model.contextWindow!)}</span>
                       </Show>
                       <Show when={model.toolCall}>
-                        <span class="text-xs px-1 rounded bg-blue-500/15 text-blue-400" title="Tool calling">🔧</span>
+                        <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Tool calling">🔧</span>
                       </Show>
                       <Show when={model.reasoning}>
-                        <span class="text-xs px-1 rounded bg-purple-500/15 text-purple-400" title="Reasoning">🧠</span>
+                        <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Reasoning">🧠</span>
                       </Show>
                       <Show when={model.vision}>
-                        <span class="text-xs px-1 rounded bg-emerald-500/15 text-emerald-400" title="Vision">👁</span>
+                        <span class="text-xs px-1 rounded bg-success/15 text-success" title="Vision">👁</span>
                       </Show>
                     </div>
                   </div>
@@ -400,7 +400,7 @@ const ProviderModelGroup: Component<{
                   class="p-1 rounded transition-colors hover:bg-bg-hover"
                 >
                   {props.starredModels.includes(model.id) ? (
-                    <TbFillStar size={15} class="text-amber-400" />
+                    <TbFillStar size={15} class="text-amber-light" />
                   ) : (
                     <TbOutlineStar size={15} class="text-text-tertiary" />
                   )}

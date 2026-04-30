@@ -15,15 +15,15 @@ import type { JSX } from "solid-js";
 function toolIcon(id: string): JSX.Element {
   const size = 16;
   switch (id) {
-    case "read": return <TbOutlineFileText size={size} class="text-blue-400" />;
-    case "write": return <TbOutlineFile size={size} class="text-amber-400" />;
-    case "edit": return <TbOutlinePencil size={size} class="text-amber-400" />;
-    case "glob": return <TbOutlineSearch size={size} class="text-emerald-400" />;
-    case "grep": return <TbOutlineCode size={size} class="text-emerald-400" />;
+    case "read": return <TbOutlineFileText size={size} class="text-amber-light" />;
+    case "write": return <TbOutlineFile size={size} class="text-amber-light" />;
+    case "edit": return <TbOutlinePencil size={size} class="text-amber-light" />;
+    case "glob": return <TbOutlineSearch size={size} class="text-success" />;
+    case "grep": return <TbOutlineCode size={size} class="text-success" />;
     case "bash":
-    case "powershell": return <TbOutlineTerminal size={size} class="text-purple-400" />;
-    case "python_exec": return <TbOutlineBrandPython size={size} class="text-yellow-400" />;
-    case "webfetch": return <TbOutlineWorldWww size={size} class="text-cyan-400" />;
+    case "powershell": return <TbOutlineTerminal size={size} class="text-text-secondary" />;
+    case "python_exec": return <TbOutlineBrandPython size={size} class="text-warning" />;
+    case "webfetch": return <TbOutlineWorldWww size={size} class="text-amber-light" />;
     default: return <TbOutlineTerminal size={size} class="text-text-tertiary" />;
   }
 }

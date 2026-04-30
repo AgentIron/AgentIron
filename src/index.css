@@ -1,27 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  /* Modern minimal palette — dark-mode-first (Linear/Raycast inspired) */
-  --color-bg-primary: #0a0a0b;
-  --color-bg-secondary: #111113;
-  --color-bg-tertiary: #1a1a1e;
-  --color-bg-elevated: #222226;
-  --color-bg-hover: #2a2a2f;
+  /* Warm Terminal palette — AgentIron brand */
+  --color-void: #0D0D12;
+  --color-surface: #1A1A24;
+  --color-surface-light: #22222E;
+  --color-surface-lighter: #2A2A38;
+  --color-surface-hover: #323240;
 
-  --color-border-default: #2a2a2f;
-  --color-border-subtle: #1f1f24;
+  --color-border-default: rgba(255, 255, 255, 0.08);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
 
-  --color-text-primary: #ececef;
-  --color-text-secondary: #8b8b93;
-  --color-text-tertiary: #5c5c66;
+  --color-text-primary: #F5F5F0;
+  --color-text-secondary: #9CA3AF;
+  --color-text-tertiary: #6B7280;
 
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
-  --color-accent-muted: rgba(99, 102, 241, 0.15);
+  --color-amber: #D97706;
+  --color-amber-dark: #B45309;
+  --color-amber-light: #F59E0B;
+  --color-accent: #D97706;
+  --color-accent-hover: #F59E0B;
+  --color-accent-muted: rgba(217, 119, 6, 0.15);
 
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-success: #4ADE80;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  /* Legacy aliases for gradual migration */
+  --color-bg-primary: #0D0D12;
+  --color-bg-secondary: #1A1A24;
+  --color-bg-tertiary: #22222E;
+  --color-bg-elevated: #2A2A38;
+  --color-bg-hover: #323240;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
@@ -137,7 +147,7 @@ body {
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.85em;
-  color: var(--color-accent-hover);
+  color: var(--color-amber-light);
 }
 
 .prose-custom pre {
@@ -172,7 +182,7 @@ body {
   font-style: italic;
 }
 
-/* ── Prism syntax highlighting tokens ── */
+/* ── Prism syntax highlighting tokens — Warm Terminal ── */
 
 .token.comment,
 .token.prolog,
@@ -185,33 +195,33 @@ body {
 .token.keyword,
 .token.tag,
 .token.selector {
-  color: #c084fc;
+  color: #FB7185;
 }
 
 .token.string,
 .token.attr-value,
 .token.template-string {
-  color: #86efac;
+  color: #86EFAC;
 }
 
 .token.number,
 .token.boolean {
-  color: #fdba74;
+  color: #FDBA74;
 }
 
 .token.function {
-  color: #93c5fd;
+  color: #FCD34D;
 }
 
 .token.operator,
 .token.arrow {
-  color: #f9a8d4;
+  color: #FCA5A5;
 }
 
 .token.class-name,
 .token.builtin,
 .token.constant {
-  color: #fde68a;
+  color: #FDE68A;
 }
 
 .token.punctuation {
@@ -224,11 +234,11 @@ body {
 }
 
 .token.attr-name {
-  color: #93c5fd;
+  color: #FCD34D;
 }
 
 .token.regex {
-  color: #fca5a5;
+  color: #FDA4AF;
 }
 
 /* ── Animations (respects prefers-reduced-motion) ── */

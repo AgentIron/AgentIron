@@ -7,7 +7,7 @@ import { parseModelSlug } from "@lib/models";
 
 export const ModelSwitcher: Component = () => {
   const { activeConnection, changeModel } = useAgent();
-  const { settings, activeApiKey, allModels } = useSettings();
+  const { settings, allModels } = useSettings();
   const [open, setOpen] = createSignal(false);
   const [switching, setSwitching] = createSignal(false);
 

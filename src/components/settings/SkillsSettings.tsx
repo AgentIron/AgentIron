@@ -172,8 +172,8 @@ export const SkillsSettings: Component = () => {
             <For each={diagnostics()}>
               {(d) => (
                 <div class={`flex items-start gap-1.5 rounded-md px-3 py-1.5 text-xs ${
-                  d.level === "Error" ? "bg-red-500/10 text-red-400" :
-                  d.level === "Warning" ? "bg-yellow-500/10 text-yellow-400" :
+                  d.level === "Error" ? "bg-error/10 text-error" :
+                  d.level === "Warning" ? "bg-warning/10 text-warning" :
                   "bg-bg-elevated text-text-tertiary"
                 }`}>
                   <TbOutlineAlertCircle size={13} class="mt-0.5 flex-shrink-0" />
@@ -201,7 +201,7 @@ export const SkillsSettings: Component = () => {
                     <span class="text-sm font-medium text-text-primary">{skill.displayName}</span>
                     <span class="text-xs text-text-tertiary">{skill.origin}</span>
                     {skill.requiresTrust && (
-                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">Trust required</span>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-warning/10 text-warning">Trust required</span>
                     )}
                   </div>
                   <p class="text-xs text-text-tertiary mt-0.5">{skill.description}</p>
@@ -219,7 +219,7 @@ export const SkillsSettings: Component = () => {
                   onClick={() => toggleSkill(skill.id, skill.active)}
                   class={`flex-shrink-0 ml-2 px-2 py-1 rounded-md text-xs transition-colors ${
                     skill.active
-                      ? "bg-accent text-white hover:bg-accent-hover"
+                      ? "bg-accent text-void hover:bg-accent-hover"
                       : "bg-bg-secondary text-text-secondary hover:bg-bg-hover"
                   }`}
                 >

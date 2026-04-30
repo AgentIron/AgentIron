@@ -20,9 +20,9 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
   const healthColor = () => {
     if (!props.status) return "text-text-tertiary";
     switch (props.status.health) {
-      case "Connected": return "text-green-400";
-      case "Connecting": return "text-yellow-400";
-      case "Error": return "text-red-400";
+      case "Connected": return "text-success";
+      case "Connecting": return "text-warning";
+      case "Error": return "text-error";
       case "Disabled": return "text-text-tertiary";
       default: return "text-text-tertiary";
     }
@@ -71,8 +71,8 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
         {/* Error */}
         <Show when={props.status?.health === "Error" && props.status?.lastError}>
           <div>
-            <h3 class="text-xs font-medium text-red-400 uppercase tracking-wide mb-1">Error</h3>
-            <p class="text-xs text-red-300 font-mono bg-bg-tertiary rounded p-2 border border-red-900/30 break-all">
+            <h3 class="text-xs font-medium text-error uppercase tracking-wide mb-1">Error</h3>
+            <p class="text-xs text-error/80 font-mono bg-bg-tertiary rounded p-2 border border-error/20 break-all">
               {props.status!.lastError}
             </p>
           </div>
@@ -92,9 +92,9 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
           <div class="rounded-lg bg-bg-tertiary border border-border-subtle p-3 space-y-2">
             <div class="flex items-center gap-2">
               {props.server.transport === "stdio" ? (
-                <TbOutlineTerminal size={14} class="text-purple-400" />
+                <TbOutlineTerminal size={14} class="text-text-secondary" />
               ) : (
-                <TbOutlineWorldWww size={14} class="text-cyan-400" />
+                <TbOutlineWorldWww size={14} class="text-text-secondary" />
               )}
               <span class="text-xs font-medium text-text-primary">
                 {props.server.transport === "stdio"
