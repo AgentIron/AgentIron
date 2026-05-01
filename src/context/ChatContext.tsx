@@ -52,14 +52,6 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
     autoApprovedToolsByTab: {},
   });
 
-  // Active tab ID ref — updated by consumers via the agent context
-  // We need to read it inside event handlers, so we track it loosely
-  let activeTabRef = "";
-
-  const setActiveTabRef = (tabId: string) => {
-    activeTabRef = tabId;
-  };
-
   // ── Event listeners (moved from ChatArea) ──
 
   const unlisteners: UnlistenFn[] = [];

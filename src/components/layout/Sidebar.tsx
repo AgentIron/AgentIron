@@ -12,8 +12,13 @@ export const Sidebar: Component = () => {
 
   return (
     <aside class="w-56 flex-shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
-      <div class="px-4 py-4 text-sm font-semibold tracking-wide text-text-secondary uppercase">
-        AgentIron
+      <div class="px-4 py-4 flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded-md bg-accent flex items-center justify-center">
+          <span class="text-void text-xs font-bold">AI</span>
+        </div>
+        <span class="text-sm font-bold tracking-tight text-text-primary">
+          AgentIron
+        </span>
       </div>
       <nav class="flex-1 px-2 space-y-1">
         <SidebarItem
@@ -61,7 +66,7 @@ const SidebarItem: Component<SidebarItemProps> = (props) => {
       onClick={() => props.onClick?.()}
       class={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
         props.active
-          ? "bg-bg-hover text-text-primary"
+          ? "bg-accent-muted text-accent"
           : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
       }`}
     >

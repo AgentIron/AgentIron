@@ -391,7 +391,7 @@ export const MessageInput: Component = () => {
               disabled={!text().trim() && images().length === 0}
               class={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                 text().trim() || images().length > 0
-                  ? "bg-accent text-white hover:bg-accent-hover"
+                  ? "bg-accent text-void hover:bg-accent-hover"
                   : "bg-bg-elevated text-text-tertiary"
               }`}
             >

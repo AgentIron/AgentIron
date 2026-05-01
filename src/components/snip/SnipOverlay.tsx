@@ -156,75 +156,29 @@ export const SnipOverlay = () => {
     <>
       {/* Phase 1: Widget */}
       <Show when={phase() === "widget"}>
-        <div style={{
-          width: "100vw",
-          height: "100vh",
-          overflow: "hidden",
-          display: "flex",
-          "align-items": "center",
-          "justify-content": "center",
-          "background-color": "#111113",
-          "font-family": "Inter, system-ui, sans-serif",
-          color: "white",
-        }}>
-          <div style={{
-            display: "flex",
-            "flex-direction": "column",
-            "align-items": "center",
-            gap: "12px",
-          }}>
-            <div style={{ "font-size": "12px", color: "#8b8b93" }}>
+        <div class="w-screen h-screen overflow-hidden flex items-center justify-center bg-bg-secondary font-sans text-white">
+          <div class="flex flex-col items-center gap-3">
+            <div class="text-xs text-text-secondary">
               Arrange your screen, then capture
             </div>
-            <div style={{ display: "flex", gap: "6px" }}>
+            <div class="flex gap-1.5">
               <button
                 onClick={captureNow}
-                style={{
-                  display: "flex",
-                  "align-items": "center",
-                  gap: "5px",
-                  padding: "6px 14px",
-                  "border-radius": "6px",
-                  border: "none",
-                  "background-color": "#6366f1",
-                  color: "white",
-                  "font-size": "12px",
-                  cursor: "pointer",
-                }}
+                class="flex items-center gap-1 px-3.5 py-1.5 rounded-md border-none bg-accent text-void text-xs cursor-pointer hover:bg-accent-hover"
               >
                 <TbOutlineScreenshot size={14} />
                 Capture Now
               </button>
               <button
                 onClick={captureWithDelay}
-                style={{
-                  display: "flex",
-                  "align-items": "center",
-                  gap: "5px",
-                  padding: "6px 14px",
-                  "border-radius": "6px",
-                  border: "1px solid #2a2a2f",
-                  "background-color": "#1a1a1e",
-                  color: "#ececef",
-                  "font-size": "12px",
-                  cursor: "pointer",
-                }}
+                class="flex items-center gap-1 px-3.5 py-1.5 rounded-md border border-border-default bg-bg-tertiary text-text-primary text-xs cursor-pointer hover:bg-bg-hover"
               >
                 <TbOutlineClock size={14} />
                 3s Delay
               </button>
               <button
                 onClick={cancel}
-                style={{
-                  display: "flex",
-                  "align-items": "center",
-                  padding: "6px",
-                  "border-radius": "6px",
-                  border: "1px solid #2a2a2f",
-                  "background-color": "#1a1a1e",
-                  color: "#8b8b93",
-                  cursor: "pointer",
-                }}
+                class="flex items-center p-1.5 rounded-md border border-border-default bg-bg-tertiary text-text-secondary cursor-pointer hover:bg-bg-hover"
               >
                 <TbOutlineX size={14} />
               </button>
@@ -235,22 +189,8 @@ export const SnipOverlay = () => {
 
       {/* Phase 1.5: Countdown */}
       <Show when={phase() === "countdown"}>
-        <div style={{
-          width: "100vw",
-          height: "100vh",
-          overflow: "hidden",
-          display: "flex",
-          "align-items": "center",
-          "justify-content": "center",
-          "background-color": "#111113",
-          "font-family": "Inter, system-ui, sans-serif",
-          color: "white",
-        }}>
-          <div style={{
-            "font-size": "48px",
-            "font-weight": "600",
-            color: "#6366f1",
-          }}>
+        <div class="w-screen h-screen overflow-hidden flex items-center justify-center bg-bg-secondary font-sans text-white">
+          <div class="text-5xl font-semibold text-accent">
             {countdown()}
           </div>
         </div>
@@ -258,24 +198,13 @@ export const SnipOverlay = () => {
 
       {/* Phase 1.75: Capturing (blank while hidden) */}
       <Show when={phase() === "capturing"}>
-        <div style={{
-          width: "100vw",
-          height: "100vh",
-          "background-color": "#000",
-        }} />
+        <div class="w-screen h-screen bg-black" />
       </Show>
 
       {/* Phase 2: Selection */}
       <Show when={phase() === "selection"}>
         <div
-          style={{
-            position: "fixed",
-            inset: "0",
-            cursor: "crosshair",
-            "user-select": "none",
-            overflow: "hidden",
-            "background-color": "#000",
-          }}
+          class="fixed inset-0 cursor-crosshair select-none overflow-hidden bg-black"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -284,25 +213,16 @@ export const SnipOverlay = () => {
             <img
               src={imageDataUri()}
               onLoad={() => setImageLoaded(true)}
-              style={{
-                position: "absolute",
-                inset: "0",
-                width: "100%",
-                height: "100%",
-                "object-fit": "fill",
-                "pointer-events": "none",
-              }}
+              class="absolute inset-0 w-full h-full object-fill pointer-events-none"
               draggable={false}
             />
           </Show>
 
           <Show when={imageLoaded()}>
             <div
+              class="absolute inset-0 pointer-events-none"
               style={{
-                position: "absolute",
-                inset: "0",
                 "background-color": "rgba(0, 0, 0, 0.4)",
-                "pointer-events": "none",
                 "clip-path": clipPath(),
               }}
             />
@@ -311,14 +231,12 @@ export const SnipOverlay = () => {
           <Show when={selection()}>
             {(sel) => (
               <div
+                class="absolute pointer-events-none border-2 border-accent"
                 style={{
-                  position: "absolute",
                   left: `${sel().x}px`,
                   top: `${sel().y}px`,
                   width: `${sel().width}px`,
                   height: `${sel().height}px`,
-                  border: "2px solid #6366f1",
-                  "pointer-events": "none",
                   "box-shadow": "0 0 0 1px rgba(0,0,0,0.3)",
                 }}
               />
@@ -328,18 +246,12 @@ export const SnipOverlay = () => {
           <Show when={isDragging() && selection()}>
             {(sel) => (
               <div
+                class="absolute pointer-events-none whitespace-nowrap text-xs text-white px-2 py-0.5 rounded"
                 style={{
-                  position: "absolute",
                   left: `${sel().x + sel().width / 2}px`,
                   top: `${sel().y + sel().height + 8}px`,
                   transform: "translateX(-50%)",
                   "background-color": "rgba(0, 0, 0, 0.75)",
-                  color: "white",
-                  "font-size": "11px",
-                  padding: "2px 8px",
-                  "border-radius": "4px",
-                  "pointer-events": "none",
-                  "white-space": "nowrap",
                 }}
               >
                 {Math.round(sel().width)} × {Math.round(sel().height)}
@@ -349,18 +261,8 @@ export const SnipOverlay = () => {
 
           <Show when={imageLoaded() && !isDragging() && !selection()}>
             <div
-              style={{
-                position: "absolute",
-                bottom: "32px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                "background-color": "rgba(0, 0, 0, 0.75)",
-                color: "white",
-                "font-size": "14px",
-                padding: "8px 16px",
-                "border-radius": "8px",
-                "pointer-events": "none",
-              }}
+              class="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none text-sm text-white px-4 py-2 rounded-lg"
+              style={{ "background-color": "rgba(0, 0, 0, 0.75)" }}
             >
               Click and drag to select · Escape to cancel
             </div>

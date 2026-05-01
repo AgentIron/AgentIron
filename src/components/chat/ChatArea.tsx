@@ -55,8 +55,8 @@ export const ChatArea: Component = () => {
   const hasError = () => serverStatuses().some((s) => s.health === "Error");
   const mcpButtonColor = () => {
     if (mcpPaneOpen()) return "text-accent bg-accent-muted";
-    if (hasError()) return "text-red-400 hover:bg-bg-hover";
-    if (connectedCount() > 0) return "text-green-400 hover:bg-bg-hover";
+    if (hasError()) return "text-error hover:bg-bg-hover";
+    if (connectedCount() > 0) return "text-success hover:bg-bg-hover";
     return "text-text-secondary hover:text-text-primary hover:bg-bg-hover";
   };
 

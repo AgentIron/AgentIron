@@ -17,7 +17,7 @@ export const ApiKeyPrompt: Component = () => {
         </p>
         <button
           onClick={() => setCurrentView("settings")}
-          class="w-full rounded-lg bg-accent px-4 py-2.5 text-sm text-white hover:bg-accent-hover transition-colors"
+          class="w-full rounded-lg bg-accent px-4 py-2.5 text-sm text-void hover:bg-accent-hover transition-colors"
         >
           Open Provider Settings
         </button>

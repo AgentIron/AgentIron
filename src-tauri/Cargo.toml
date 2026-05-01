@@ -20,11 +20,11 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
-iron-core = { git = "https://github.com/AgentIron/iron-core.git", rev = "b552805cb7bb35155e4375005edf106ef1eeb581", features = ["embedded-python"] }
-iron-providers = "0.1.7"
+iron-core = { git = "https://github.com/AgentIron/iron-core.git", rev = "b9d45930efbd354e67bf607e296376f97a85c03a", features = ["embedded-python"] }
+iron-providers = "0.1.8"
 uuid = { version = "1", features = ["v4"] }
 dirs = "6"
-xcap = "0.3.3"
+xcap = "0.9.4"
 image = "0.25"
 base64 = "0.22"
 tauri-plugin-dialog = "2"

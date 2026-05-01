@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { query, execute } from "@lib/tauri/db";
-import { KNOWN_MODELS, DEFAULT_PROVIDERS, parseModelSlug, makeModelSlug } from "@lib/models";
+import { KNOWN_MODELS, DEFAULT_PROVIDERS, parseModelSlug } from "@lib/models";
 import { updateModelRegistry as fetchModelRegistry } from "@lib/tauri/commands";
 import type { AppSettings, ProviderConfig, McpServerConfig, ModelInfo } from "@/types/settings";
 

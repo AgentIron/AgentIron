@@ -86,7 +86,7 @@ export function renderArgsDetail(toolName: string | undefined, args: unknown): J
 
 // ── Result renderer ──
 
-export function renderResult(toolName: string | undefined, result: unknown): JSX.Element {
+export function renderResult(_toolName: string | undefined, result: unknown): JSX.Element {
   if (result === null || result === undefined) return null;
 
   if (typeof result === "object" && (result as any).error) {
