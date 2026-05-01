@@ -10,8 +10,7 @@ import {
   TbOutlineWorldWww,
 } from "solid-icons/tb";
 
-export function toolIcon(name: string | undefined): JSX.Element {
-  const size = 14;
+export function toolIcon(name: string | undefined, size = 14): JSX.Element {
   const cls = "flex-shrink-0";
   switch (name) {
     case "read":

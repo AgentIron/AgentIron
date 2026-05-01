@@ -318,11 +318,7 @@ export const McpSettings: Component = () => {
                       : server.url}
                   </div>
                 </div>
-                <span class={`text-xs px-2 py-0.5 rounded-full ${
-                  server.transport === "stdio"
-                    ? "bg-bg-elevated text-text-secondary"
-                    : "bg-bg-elevated text-text-secondary"
-                }`}>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-bg-elevated text-text-secondary">
                   {server.transport === "stdio" ? "Stdio" : server.transport === "http" ? "HTTP" : "SSE"}
                 </span>
                 <div class="flex items-center gap-1 flex-shrink-0">
