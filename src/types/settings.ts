@@ -47,12 +47,28 @@ export interface McpToolInfo {
   inputSchema: unknown;
 }
 
+export type McpErrorCategory =
+  | "transportSetup"
+  | "initialize"
+  | "responseParse"
+  | "auth"
+  | "toolDiscovery"
+  | "serverError"
+  | "unknown";
+
+export type McpErrorStage = "connection" | "initialize" | "toolDiscovery";
+
 export interface McpServerStatus {
   id: string;
   label: string;
   health: McpServerHealth;
+  transport: string;
+  endpoint: string;
   discoveredTools: McpToolInfo[];
   lastError: string | null;
+  errorCategory: McpErrorCategory | null;
+  errorStage: McpErrorStage | null;
+  guidance: string | null;
   enabled: boolean;
 }
 

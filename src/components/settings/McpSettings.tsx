@@ -210,6 +210,16 @@ export const McpSettings: Component = () => {
                   )}
                 </For>
               </div>
+              <Show when={transport() === "http"}>
+                <p class="text-xs text-text-tertiary mt-1">
+                  Streamable HTTP &mdash; request/response with optional SSE streaming. Recommended for most servers.
+                </p>
+              </Show>
+              <Show when={transport() === "http_sse"}>
+                <p class="text-xs text-text-tertiary mt-1">
+                  Persistent SSE connection for server-to-client messages with HTTP POST for client-to-server. Use only if the server requires it.
+                </p>
+              </Show>
             </div>
 
             <Show when={transport() === "stdio"}>

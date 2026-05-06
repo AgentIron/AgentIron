@@ -7,7 +7,7 @@ import {
   type JSX,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { getMcpStatus, setMcpServerEnabled } from "@lib/tauri/commands";
+import { getMcpStatus, setMcpServerEnabled, reconnectMcpServer } from "@lib/tauri/commands";
 import { useAgent } from "@context/AgentContext";
 import { useUI } from "@context/UIContext";
 import { useSettings } from "@context/SettingsContext";
@@ -22,6 +22,7 @@ interface McpContextValue {
   serverStatuses: () => McpServerStatus[];
   getServerStatus: (id: string) => McpServerStatus | undefined;
   toggleServer: (serverId: string, enabled: boolean) => Promise<void>;
+  retryServer: (serverId: string) => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -97,6 +98,17 @@ export const McpProvider: Component<{ children: JSX.Element }> = (props) => {
         }
       }
       updateMcpServer(serverId, { enabledByDefault: enabled });
+      await refresh();
+    },
+    retryServer: async (serverId) => {
+      const tabId = agentState.activeTabId;
+      if (tabId) {
+        try {
+          await reconnectMcpServer(tabId, serverId);
+        } catch (e) {
+          console.error("Failed to reconnect MCP server:", e);
+        }
+      }
       await refresh();
     },
     refresh,

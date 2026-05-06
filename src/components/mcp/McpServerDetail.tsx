@@ -3,10 +3,11 @@ import {
   TbOutlineArrowLeft,
   TbOutlineTerminal,
   TbOutlineWorldWww,
+  TbOutlineRefresh,
   TbFillCircle,
 } from "solid-icons/tb";
 import { useMcp } from "@context/McpContext";
-import type { McpServerConfig, McpServerStatus } from "@/types/settings";
+import type { McpServerConfig, McpServerStatus, McpErrorCategory, McpErrorStage } from "@/types/settings";
 
 interface McpServerDetailProps {
   server: McpServerConfig;
@@ -14,8 +15,24 @@ interface McpServerDetailProps {
   onBack: () => void;
 }
 
+const CATEGORY_LABELS: Record<McpErrorCategory, string> = {
+  transportSetup: "Transport Setup",
+  initialize: "Initialize",
+  responseParse: "Response Parse",
+  auth: "Authentication",
+  toolDiscovery: "Tool Discovery",
+  serverError: "Server Error",
+  unknown: "Unknown",
+};
+
+const STAGE_LABELS: Record<McpErrorStage, string> = {
+  connection: "Connection",
+  initialize: "Initialize",
+  toolDiscovery: "Tool Discovery",
+};
+
 export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
-  const { toggleServer } = useMcp();
+  const { toggleServer, retryServer } = useMcp();
 
   const healthColor = () => {
     if (!props.status) return "text-text-tertiary";
@@ -37,6 +54,14 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
 
   const enabled = () => props.status?.enabled ?? props.server.enabledByDefault;
 
+  const hasError = () => props.status?.health === "Error" && !!props.status?.lastError;
+
+  const handleRetry = async () => {
+    if (props.status) {
+      await retryServer(props.status.id);
+    }
+  };
+
   return (
     <>
       <div class="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
@@ -50,31 +75,64 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* Status */}
+        {/* Status + Retry */}
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <TbFillCircle size={8} class={healthColor()} />
             <span class="text-sm text-text-secondary">{healthLabel()}</span>
           </div>
-          <button
-            onClick={() => toggleServer(props.server.id, !enabled())}
-            class={`relative w-9 h-5 rounded-full transition-colors ${
-              enabled() ? "bg-accent" : "bg-bg-elevated"
-            }`}
-          >
-            <span class={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-              enabled() ? "translate-x-4" : ""
-            }`} />
-          </button>
+          <div class="flex items-center gap-2">
+            <Show when={hasError()}>
+              <button
+                onClick={handleRetry}
+                class="flex items-center gap-1 px-2 py-1 rounded text-xs text-accent hover:bg-accent/10 transition-colors"
+                title="Reconnect server"
+              >
+                <TbOutlineRefresh size={12} />
+                Retry
+              </button>
+            </Show>
+            <button
+              onClick={() => toggleServer(props.server.id, !enabled())}
+              class={`relative w-9 h-5 rounded-full transition-colors ${
+                enabled() ? "bg-accent" : "bg-bg-elevated"
+              }`}
+            >
+              <span class={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                enabled() ? "translate-x-4" : ""
+              }`} />
+            </button>
+          </div>
         </div>
 
-        {/* Error */}
-        <Show when={props.status?.health === "Error" && props.status?.lastError}>
-          <div>
-            <h3 class="text-xs font-medium text-error uppercase tracking-wide mb-1">Error</h3>
-            <p class="text-xs text-error/80 font-mono bg-bg-tertiary rounded p-2 border border-error/20 break-all">
-              {props.status!.lastError}
-            </p>
+        {/* Error diagnostics */}
+        <Show when={hasError()}>
+          <div class="space-y-2">
+            <h3 class="text-xs font-medium text-error uppercase tracking-wide">Error</h3>
+            <div class="rounded-lg bg-bg-tertiary border border-error/20 p-3 space-y-2">
+              <p class="text-xs text-error/90 font-mono break-all">
+                {props.status!.lastError}
+              </p>
+              <Show when={props.status!.errorCategory}>
+                <div class="flex items-center gap-3 text-xs pt-1 border-t border-border-subtle">
+                  <span class="text-text-tertiary">Category:</span>
+                  <span class="text-text-secondary font-medium">
+                    {CATEGORY_LABELS[props.status!.errorCategory!]}
+                  </span>
+                  <Show when={props.status!.errorStage}>
+                    <span class="text-text-tertiary">Stage:</span>
+                    <span class="text-text-secondary font-medium">
+                      {STAGE_LABELS[props.status!.errorStage!]}
+                    </span>
+                  </Show>
+                </div>
+              </Show>
+              <Show when={props.status!.guidance}>
+                <p class="text-xs text-text-tertiary pt-1 border-t border-border-subtle">
+                  {props.status!.guidance}
+                </p>
+              </Show>
+            </div>
           </div>
         </Show>
 

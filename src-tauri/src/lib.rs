@@ -73,6 +73,7 @@ pub fn run() {
             commands::agent::register_mcp_server,
             commands::agent::get_mcp_status,
             commands::agent::set_mcp_server_enabled,
+            commands::agent::reconnect_mcp_server,
             commands::agent::refresh_skill_catalog,
             commands::agent::list_available_skills,
             commands::agent::activate_skill,

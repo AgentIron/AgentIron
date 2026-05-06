@@ -302,6 +302,35 @@ pub async fn set_mcp_server_enabled(
         .map_err(|_| "Agent worker dropped the response channel".to_string())?
 }
 
+#[tauri::command]
+pub async fn reconnect_mcp_server(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    server_id: String,
+) -> Result<(), String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::ReconnectMcpServer {
+            server_id,
+            response_tx,
+        })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
 // ---------------------------------------------------------------------------
 // Skill commands
 // ---------------------------------------------------------------------------
