@@ -42,6 +42,17 @@ export const ProviderSettings: Component = () => {
   const enabledProviders = () =>
     settings.providers.filter((p) => p.enabled && p.apiKey.trim());
 
+  const currentDefaultModel = () => {
+    const { providerId, modelId } = parseModelSlug(settings.defaultModel, allModels());
+    const model = allModels().find((item) => item.providerId === providerId && item.id === modelId);
+    const providerName = settings.providers.find((provider) => provider.id === providerId)?.name ?? providerId;
+
+    return {
+      label: model?.name ?? modelId,
+      providerName,
+    };
+  };
+
   const favoriteModels = () =>
     allModels().filter(
       (m) =>
@@ -109,48 +120,6 @@ export const ProviderSettings: Component = () => {
         </Show>
       </section>
 
-      {/* Default Model for New Tabs */}
-      <Show when={favoriteModels().length > 0}>
-        <section class="space-y-3">
-          <div>
-            <h2 class="text-base font-semibold text-text-primary">Default Model</h2>
-            <p class="text-xs text-text-tertiary mt-1">
-              Used when creating new agent tabs.
-            </p>
-          </div>
-          <div class="space-y-1">
-            <For each={favoriteModels()}>
-              {(model) => {
-                const slug = () => makeModelSlug(model.providerId, model.id);
-                const providerName = () =>
-                  settings.providers.find((p) => p.id === model.providerId)?.name ?? model.providerId;
-                return (
-                  <button
-                    onClick={() => updateSetting("defaultModel", slug())}
-                    class={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      settings.defaultModel === slug()
-                        ? "bg-accent-muted text-accent border border-accent/30"
-                        : "bg-bg-secondary border border-border-subtle hover:bg-bg-hover text-text-primary"
-                    }`}
-                  >
-                    <Show when={settings.defaultModel === slug()}>
-                      <TbOutlineCheck size={14} class="text-accent" />
-                    </Show>
-                    <span>{model.name}</span>
-                    <span class="text-xs text-text-tertiary ml-auto">{providerName()}</span>
-                  </button>
-                );
-              }}
-            </For>
-          </div>
-          <Show when={!favoriteModels().some((m) => makeModelSlug(m.providerId, m.id) === settings.defaultModel)}>
-            <p class="text-xs text-warning">
-              Current default "{settings.defaultModel}" is not in your favorites. Select one above.
-            </p>
-          </Show>
-        </section>
-      </Show>
-
       {/* Models by Provider (expandable) */}
       <Show when={enabledProviders().length > 0}>
         <section class="space-y-4">
@@ -158,7 +127,7 @@ export const ProviderSettings: Component = () => {
             <div>
               <h2 class="text-base font-semibold text-text-primary">Models</h2>
               <p class="text-xs text-text-tertiary mt-1">
-                Select a default model and star your favorites.
+                Used when creating new agent tabs.
                 <Show when={registryLastUpdated()}>
                   {" · Updated "}{new Date(registryLastUpdated()!).toLocaleDateString()}
                 </Show>
@@ -183,6 +152,62 @@ export const ProviderSettings: Component = () => {
               {updating() ? "Updating..." : "Update Models"}
             </button>
           </div>
+          <div class="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-sm text-text-primary">
+            <span class="font-medium">Default Model:</span>{" "}
+            <span>{currentDefaultModel().label}</span>
+            <span class="ml-2 text-xs text-text-tertiary">{currentDefaultModel().providerName}</span>
+          </div>
+          <Show when={favoriteModels().length > 0}>
+            <div class="space-y-2">
+              <div>
+                <h3 class="text-sm font-medium text-text-primary">Favorites</h3>
+                <p class="text-xs text-text-tertiary mt-1">
+                  Starred models for quick switching.
+                </p>
+              </div>
+              <div class="space-y-1">
+                <For each={favoriteModels()}>
+                  {(model) => {
+                    const slug = () => makeModelSlug(model.providerId, model.id);
+                    const providerName = () =>
+                      settings.providers.find((p) => p.id === model.providerId)?.name ?? model.providerId;
+                    const isDefault = () => settings.defaultModel === slug();
+                    return (
+                      <div class={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                        isDefault()
+                          ? "border-accent/30 bg-accent-muted"
+                          : "border-border-subtle bg-bg-secondary"
+                      }`}>
+                        <div class="min-w-0 flex-1">
+                          <div class={`truncate ${isDefault() ? "text-accent" : "text-text-primary"}`}>
+                            {model.name}
+                          </div>
+                          <div class="text-xs text-text-tertiary">{providerName()}</div>
+                        </div>
+                        <Show when={isDefault()}>
+                          <span class="text-xs text-accent">Default</span>
+                        </Show>
+                        <button
+                          onClick={() => updateSetting("defaultModel", slug())}
+                          disabled={isDefault()}
+                          class="px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50 disabled:hover:bg-bg-elevated"
+                        >
+                          Set Default
+                        </button>
+                        <button
+                          onClick={() => toggleStarredModel(model.id)}
+                          class="p-1.5 rounded transition-colors hover:bg-bg-hover"
+                          title="Remove from favorites"
+                        >
+                          <TbFillStar size={16} class="text-amber-light" />
+                        </button>
+                      </div>
+                    );
+                  }}
+                </For>
+              </div>
+            </div>
+          </Show>
           <For each={enabledProviders()}>
             {(provider) => {
               const models = () =>
@@ -205,51 +230,6 @@ export const ProviderSettings: Component = () => {
               );
             }}
           </For>
-        </section>
-      </Show>
-
-      {/* Favorite Models (quick reference) */}
-      <Show when={favoriteModels().length > 0}>
-        <section class="space-y-4">
-          <div>
-            <h2 class="text-base font-semibold text-text-primary">Favorites</h2>
-            <p class="text-xs text-text-tertiary mt-1">
-              Starred models for quick switching.
-            </p>
-          </div>
-          <div class="space-y-1">
-            <For each={favoriteModels()}>
-              {(model) => {
-                const slug = () => makeModelSlug(model.providerId, model.id);
-                const providerName = () =>
-                  settings.providers.find((p) => p.id === model.providerId)?.name ?? model.providerId;
-                return (
-                  <div class="flex items-center gap-3">
-                    <button
-                      onClick={() => updateSetting("defaultModel", slug())}
-                      class={`flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        settings.defaultModel === slug()
-                          ? "bg-accent-muted text-accent border border-accent/30"
-                          : "bg-bg-secondary border border-border-subtle hover:bg-bg-hover text-text-primary"
-                      }`}
-                    >
-                      <Show when={settings.defaultModel === slug()}>
-                        <TbOutlineCheck size={14} class="text-accent" />
-                      </Show>
-                      <span>{model.name}</span>
-                      <span class="text-xs text-text-tertiary ml-auto">{providerName()}</span>
-                    </button>
-                    <button
-                      onClick={() => toggleStarredModel(model.id)}
-                      class="p-1.5 rounded transition-colors hover:bg-bg-hover"
-                    >
-                      <TbFillStar size={16} class="text-amber-light" />
-                    </button>
-                  </div>
-                );
-              }}
-            </For>
-          </div>
         </section>
       </Show>
     </div>
@@ -364,35 +344,42 @@ const ProviderModelGroup: Component<{
                   const modelSlug = makeModelSlug(props.providerId, model.id);
                   const isDefault = () => props.defaultModelSlug === modelSlug;
                   return (
-                <button
-                  onClick={() => props.onSelectDefault(model.id)}
-                  class={`flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                    isDefault()
-                      ? "bg-accent-muted text-accent"
-                      : "hover:bg-bg-hover text-text-primary"
-                  }`}
-                >
-                  <Show when={isDefault()}>
-                    <TbOutlineCheck size={13} class="text-accent" />
-                  </Show>
-                  <div class="flex-1 min-w-0">
-                    <span>{model.name}</span>
-                    <div class="flex items-center gap-1 mt-0.5">
-                      <Show when={model.contextWindow}>
-                        <span class="text-xs text-text-tertiary">{formatContext(model.contextWindow!)}</span>
+                    <div class={`flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
+                      isDefault()
+                        ? "bg-accent-muted"
+                        : "text-text-primary"
+                    }`}>
+                      <Show when={isDefault()}>
+                        <TbOutlineCheck size={13} class="text-accent" />
                       </Show>
-                      <Show when={model.toolCall}>
-                        <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Tool calling">🔧</span>
+                      <div class="flex-1 min-w-0">
+                        <span class={isDefault() ? "text-accent" : "text-text-primary"}>{model.name}</span>
+                        <div class="flex items-center gap-1 mt-0.5">
+                          <Show when={model.contextWindow}>
+                            <span class="text-xs text-text-tertiary">{formatContext(model.contextWindow!)}</span>
+                          </Show>
+                          <Show when={model.toolCall}>
+                            <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Tool calling">🔧</span>
+                          </Show>
+                          <Show when={model.reasoning}>
+                            <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Reasoning">🧠</span>
+                          </Show>
+                          <Show when={model.vision}>
+                            <span class="text-xs px-1 rounded bg-success/15 text-success" title="Vision">👁</span>
+                          </Show>
+                        </div>
+                      </div>
+                      <Show when={isDefault()}>
+                        <span class="text-xs text-accent">Default</span>
                       </Show>
-                      <Show when={model.reasoning}>
-                        <span class="text-xs px-1 rounded bg-amber/15 text-amber-light" title="Reasoning">🧠</span>
-                      </Show>
-                      <Show when={model.vision}>
-                        <span class="text-xs px-1 rounded bg-success/15 text-success" title="Vision">👁</span>
-                      </Show>
+                      <button
+                        onClick={() => props.onSelectDefault(model.id)}
+                        disabled={isDefault()}
+                        class="px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50 disabled:hover:bg-bg-elevated"
+                      >
+                        Set Default
+                      </button>
                     </div>
-                  </div>
-                </button>
                   );
                 })()}
                 <button
