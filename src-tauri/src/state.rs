@@ -111,7 +111,6 @@ pub enum McpErrorCategory {
     Auth,
     ToolDiscovery,
     ServerError,
-    Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
@@ -200,7 +199,6 @@ fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
         McpErrorCategory::ToolDiscovery => McpErrorStage::ToolDiscovery,
         McpErrorCategory::ResponseParse => McpErrorStage::Initialize,
         McpErrorCategory::ServerError => McpErrorStage::Connection,
-        McpErrorCategory::Unknown => McpErrorStage::Connection,
     };
 
     let guidance = match category {
@@ -210,7 +208,6 @@ fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
         McpErrorCategory::ResponseParse => "The server returned an unexpected response. If using HTTP+SSE, try switching to HTTP (Streamable HTTP). Some servers do not fully support SSE transport.".into(),
         McpErrorCategory::ToolDiscovery => "The server connected but tool discovery failed. The server may not implement the tools/list method correctly.".into(),
         McpErrorCategory::ServerError => "The server reported an internal error. Check server logs for details.".into(),
-        McpErrorCategory::Unknown => "An unexpected error occurred. Check server logs for details.".into(),
     };
 
     (category, stage, guidance)
