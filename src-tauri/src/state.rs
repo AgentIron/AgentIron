@@ -43,6 +43,11 @@ pub enum AgentRequest {
         enabled: bool,
         response_tx: oneshot::Sender<Result<(), String>>,
     },
+    /// Force-reconnect an MCP server.
+    ReconnectMcpServer {
+        server_id: String,
+        response_tx: oneshot::Sender<Result<(), String>>,
+    },
     /// Query the current token count.
     #[allow(dead_code)]
     GetTokenCount {
@@ -97,6 +102,25 @@ pub struct ImageDataJson {
     pub mime_type: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum McpErrorCategory {
+    TransportSetup,
+    Initialize,
+    ResponseParse,
+    Auth,
+    ToolDiscovery,
+    ServerError,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum McpErrorStage {
+    Connection,
+    Initialize,
+    ToolDiscovery,
+}
+
 /// MCP server status returned to the frontend.
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -104,9 +128,106 @@ pub struct McpServerStatusJson {
     pub id: String,
     pub label: String,
     pub health: String,
+    pub transport: String,
+    pub endpoint: String,
     pub discovered_tools: Vec<McpToolInfoJson>,
     pub last_error: Option<String>,
+    pub error_category: Option<McpErrorCategory>,
+    pub error_stage: Option<McpErrorStage>,
+    pub guidance: Option<String>,
     pub enabled: bool,
+}
+
+fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
+    let lower = error.to_lowercase();
+
+    let category = if lower.contains("tool")
+        && (lower.contains("discover") || lower.contains("list") || lower.contains("fetch"))
+    {
+        McpErrorCategory::ToolDiscovery
+    } else if lower.contains("connection refused")
+        || lower.contains("connection reset")
+        || lower.contains("timed out")
+        || lower.contains("timeout")
+        || lower.contains("couldn't connect")
+        || lower.contains("no such host")
+        || lower.contains("dns")
+        || lower.contains("network")
+        || lower.contains("tcp")
+        || lower.contains("socket")
+        || lower.contains("transport")
+        || lower.contains("io error")
+        || lower.contains("process failed")
+        || lower.contains("spawn")
+        || lower.contains("command not found")
+        || lower.contains("executable not found")
+        || lower.contains("no such file")
+        || lower.contains("executable ")
+    {
+        McpErrorCategory::TransportSetup
+    } else if lower.contains("unauthorized")
+        || lower.contains("forbidden")
+        || lower.contains("401")
+        || lower.contains("403")
+        || lower.contains("authentication")
+        || lower.contains("api key")
+        || lower.contains("invalid token")
+        || lower.contains("access denied")
+    {
+        McpErrorCategory::Auth
+    } else if lower.contains("initialize")
+        || lower.contains("handshake")
+        || lower.contains("protocol version")
+        || lower.contains("capabilities")
+    {
+        McpErrorCategory::Initialize
+    } else if lower.contains("parse")
+        || lower.contains("json")
+        || lower.contains("deserialize")
+        || lower.contains("expected token")
+        || lower.contains("expected value")
+        || lower.contains("expected object")
+        || lower.contains("expected array")
+        || lower.contains("unexpected token")
+        || lower.contains("invalid response")
+        || lower.contains("event stream")
+        || lower.contains("text/event-stream")
+        || lower.contains("server-sent event")
+        || lower.contains("content-type")
+    {
+        McpErrorCategory::ResponseParse
+    } else {
+        McpErrorCategory::ServerError
+    };
+
+    let stage = match category {
+        McpErrorCategory::TransportSetup | McpErrorCategory::Auth => McpErrorStage::Connection,
+        McpErrorCategory::Initialize => McpErrorStage::Initialize,
+        McpErrorCategory::ToolDiscovery => McpErrorStage::ToolDiscovery,
+        McpErrorCategory::ResponseParse => McpErrorStage::Initialize,
+        McpErrorCategory::ServerError => McpErrorStage::Connection,
+    };
+
+    let guidance = match category {
+        McpErrorCategory::TransportSetup => "Check that the server is running and reachable. For stdio, verify the command is installed. For HTTP, verify the URL and network connectivity.".into(),
+        McpErrorCategory::Auth => "Check your API key or authentication headers in the server configuration.".into(),
+        McpErrorCategory::Initialize => "The server may be running an incompatible MCP protocol version. Check server logs for details.".into(),
+        McpErrorCategory::ResponseParse => "The server returned an unexpected response. If using HTTP+SSE, try switching to HTTP (Streamable HTTP). Some servers do not fully support SSE transport.".into(),
+        McpErrorCategory::ToolDiscovery => "The server connected but tool discovery failed. The server may not implement the tools/list method correctly.".into(),
+        McpErrorCategory::ServerError => "The server reported an internal error. Check server logs for details.".into(),
+    };
+
+    (category, stage, guidance)
+}
+
+fn mcp_health_label(health: iron_core::McpServerHealth) -> &'static str {
+    match health {
+        iron_core::McpServerHealth::Configured => "Configured",
+        iron_core::McpServerHealth::Connecting => "Connecting",
+        iron_core::McpServerHealth::Connected => "Connected",
+        iron_core::McpServerHealth::Error => "Error",
+        iron_core::McpServerHealth::Disabled => "Disabled",
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -317,10 +438,37 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                                 let enabled = session
                                     .is_mcp_server_enabled(&s.config.id)
                                     .unwrap_or(s.config.enabled_by_default);
+
+                                let (transport_label, endpoint) = match &s.config.transport {
+                                    iron_core::McpTransport::Stdio { command, args, .. } => (
+                                        "stdio".into(),
+                                        if args.is_empty() {
+                                            command.clone()
+                                        } else {
+                                            format!("{} {}", command, args.join(" "))
+                                        },
+                                    ),
+                                    iron_core::McpTransport::Http { config } => {
+                                        ("http".into(), config.url.clone())
+                                    }
+                                    iron_core::McpTransport::HttpSse { config } => {
+                                        ("http_sse".into(), config.url.clone())
+                                    }
+                                };
+
+                                let (error_category, error_stage, guidance) = s
+                                    .last_error
+                                    .as_deref()
+                                    .map(categorize_error)
+                                    .map(|(c, st, g)| (Some(c), Some(st), Some(g)))
+                                    .unwrap_or((None, None, None));
+
                                 McpServerStatusJson {
                                     id: s.config.id.clone(),
                                     label: s.config.label.clone(),
-                                    health: format!("{:?}", s.health),
+                                    health: mcp_health_label(s.health).into(),
+                                    transport: transport_label,
+                                    endpoint,
                                     discovered_tools: s
                                         .discovered_tools
                                         .iter()
@@ -331,6 +479,9 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                                         })
                                         .collect(),
                                     last_error: s.last_error.clone(),
+                                    error_category,
+                                    error_stage,
+                                    guidance,
                                     enabled,
                                 }
                             })
@@ -355,6 +506,23 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                     } => {
                         session.set_mcp_server_enabled(&server_id, enabled);
                         let _ = response_tx.send(Ok(()));
+                    }
+                    AgentRequest::ReconnectMcpServer {
+                        server_id,
+                        response_tx,
+                    } => {
+                        let manager = agent.runtime().mcp_connection_manager();
+                        manager.reconnect_server(&server_id).await;
+                        let server_state = agent.mcp_registry().get_server(&server_id);
+                        let connected = manager.is_connected(&server_id).await;
+                        let result = match server_state {
+                            Some(_) if connected => Ok(()),
+                            Some(server) => Err(server.last_error.unwrap_or_else(|| {
+                                format!("MCP server {server_id} did not reconnect")
+                            })),
+                            None => Err(format!("MCP server {server_id} is not registered")),
+                        };
+                        let _ = response_tx.send(result);
                     }
                     AgentRequest::GetTokenCount { tab_id, app_handle } => {
                         emit_token_count(&session, &app_handle, &tab_id);
@@ -665,6 +833,12 @@ async fn handle_active_request(
         AgentRequest::SetMcpServerEnabled { response_tx, .. } => {
             let _ = response_tx.send(Err(
                 "Cannot change MCP enablement while a prompt is running".into(),
+            ));
+            false
+        }
+        AgentRequest::ReconnectMcpServer { response_tx, .. } => {
+            let _ = response_tx.send(Err(
+                "Cannot reconnect MCP servers while a prompt is running".into(),
             ));
             false
         }

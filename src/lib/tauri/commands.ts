@@ -75,6 +75,13 @@ export async function setMcpServerEnabled(
   return invoke("set_mcp_server_enabled", { tabId, serverId, enabled });
 }
 
+export async function reconnectMcpServer(
+  tabId: string,
+  serverId: string,
+): Promise<void> {
+  return invoke("reconnect_mcp_server", { tabId, serverId });
+}
+
 export async function updateModelRegistry(): Promise<import("@/types/settings").ModelInfo[]> {
   return invoke("update_model_registry");
 }

@@ -7,7 +7,7 @@ import {
 } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
 import { useAgent } from "@context/AgentContext";
-import { registerMcpServer } from "@lib/tauri/commands";
+import { reconnectMcpServer, registerMcpServer } from "@lib/tauri/commands";
 import type { McpServerConfig } from "@/types/settings";
 
 /** Parse "KEY=VALUE" lines into a Record */
@@ -119,8 +119,26 @@ export const McpSettings: Component = () => {
     }
 
     if (isEditing()) {
-      // Update existing
-      updateMcpServer(editingId()!, server);
+      const id = editingId()!;
+      const existing = settings.mcpServers.find((s) => s.id === id);
+      if (!existing) return;
+
+      const updatedServer: McpServerConfig = {
+        ...existing,
+        ...server,
+        id,
+        enabledByDefault: existing.enabledByDefault,
+      };
+
+      updateMcpServer(id, updatedServer);
+
+      for (const conn of agentState.connections) {
+        registerMcpServer(conn.id, updatedServer)
+          .then(() => reconnectMcpServer(conn.id, id))
+          .catch((e) =>
+            console.error(`Failed to update MCP server on tab ${conn.id}:`, e),
+          );
+      }
     } else {
       // Create new
       let id = slugify(label);
@@ -210,6 +228,16 @@ export const McpSettings: Component = () => {
                   )}
                 </For>
               </div>
+              <Show when={transport() === "http"}>
+                <p class="text-xs text-text-tertiary mt-1">
+                  Streamable HTTP &mdash; request/response with optional SSE streaming. Recommended for most servers.
+                </p>
+              </Show>
+              <Show when={transport() === "http_sse"}>
+                <p class="text-xs text-text-tertiary mt-1">
+                  Persistent SSE connection for server-to-client messages with HTTP POST for client-to-server. Use only if the server requires it.
+                </p>
+              </Show>
             </div>
 
             <Show when={transport() === "stdio"}>
