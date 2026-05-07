@@ -1,4 +1,4 @@
-import { Show, For, type Component } from "solid-js";
+import { Show, For, createSignal, type Component } from "solid-js";
 import {
   TbOutlineArrowLeft,
   TbOutlineTerminal,
@@ -22,7 +22,6 @@ const CATEGORY_LABELS: Record<McpErrorCategory, string> = {
   auth: "Authentication",
   toolDiscovery: "Tool Discovery",
   serverError: "Server Error",
-  unknown: "Unknown",
 };
 
 const STAGE_LABELS: Record<McpErrorStage, string> = {
@@ -33,6 +32,7 @@ const STAGE_LABELS: Record<McpErrorStage, string> = {
 
 export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
   const { toggleServer, retryServer } = useMcp();
+  const [retrying, setRetrying] = createSignal(false);
 
   const healthColor = () => {
     if (!props.status) return "text-text-tertiary";
@@ -57,8 +57,15 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
   const hasError = () => props.status?.health === "Error" && !!props.status?.lastError;
 
   const handleRetry = async () => {
-    if (props.status) {
+    if (!props.status || retrying()) {
+      return;
+    }
+
+    setRetrying(true);
+    try {
       await retryServer(props.status.id);
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -85,11 +92,12 @@ export const McpServerDetail: Component<McpServerDetailProps> = (props) => {
             <Show when={hasError()}>
               <button
                 onClick={handleRetry}
-                class="flex items-center gap-1 px-2 py-1 rounded text-xs text-accent hover:bg-accent/10 transition-colors"
+                disabled={retrying()}
+                class="flex items-center gap-1 px-2 py-1 rounded text-xs text-accent hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 title="Reconnect server"
               >
                 <TbOutlineRefresh size={12} />
-                Retry
+                {retrying() ? "Retrying" : "Retry"}
               </button>
             </Show>
             <button

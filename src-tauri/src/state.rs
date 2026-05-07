@@ -141,7 +141,11 @@ pub struct McpServerStatusJson {
 fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
     let lower = error.to_lowercase();
 
-    let category = if lower.contains("connection refused")
+    let category = if lower.contains("tool")
+        && (lower.contains("discover") || lower.contains("list") || lower.contains("fetch"))
+    {
+        McpErrorCategory::ToolDiscovery
+    } else if lower.contains("connection refused")
         || lower.contains("connection reset")
         || lower.contains("timed out")
         || lower.contains("timeout")
@@ -155,8 +159,10 @@ fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
         || lower.contains("io error")
         || lower.contains("process failed")
         || lower.contains("spawn")
-        || lower.contains("not found")
-        || lower.contains("executable")
+        || lower.contains("command not found")
+        || lower.contains("executable not found")
+        || lower.contains("no such file")
+        || lower.contains("executable ")
     {
         McpErrorCategory::TransportSetup
     } else if lower.contains("unauthorized")
@@ -178,17 +184,18 @@ fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
     } else if lower.contains("parse")
         || lower.contains("json")
         || lower.contains("deserialize")
-        || lower.contains("expected")
+        || lower.contains("expected token")
+        || lower.contains("expected value")
+        || lower.contains("expected object")
+        || lower.contains("expected array")
         || lower.contains("unexpected token")
         || lower.contains("invalid response")
-        || lower.contains("sse")
+        || lower.contains("event stream")
+        || lower.contains("text/event-stream")
+        || lower.contains("server-sent event")
         || lower.contains("content-type")
     {
         McpErrorCategory::ResponseParse
-    } else if lower.contains("tool")
-        && (lower.contains("discover") || lower.contains("list") || lower.contains("fetch"))
-    {
-        McpErrorCategory::ToolDiscovery
     } else {
         McpErrorCategory::ServerError
     };
@@ -211,6 +218,16 @@ fn categorize_error(error: &str) -> (McpErrorCategory, McpErrorStage, String) {
     };
 
     (category, stage, guidance)
+}
+
+fn mcp_health_label(health: iron_core::McpServerHealth) -> &'static str {
+    match health {
+        iron_core::McpServerHealth::Configured => "Configured",
+        iron_core::McpServerHealth::Connecting => "Connecting",
+        iron_core::McpServerHealth::Connected => "Connected",
+        iron_core::McpServerHealth::Error => "Error",
+        iron_core::McpServerHealth::Disabled => "Disabled",
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -449,7 +466,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                                 McpServerStatusJson {
                                     id: s.config.id.clone(),
                                     label: s.config.label.clone(),
-                                    health: format!("{:?}", s.health),
+                                    health: mcp_health_label(s.health).into(),
                                     transport: transport_label,
                                     endpoint,
                                     discovered_tools: s
@@ -496,7 +513,16 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                     } => {
                         let manager = agent.runtime().mcp_connection_manager();
                         manager.reconnect_server(&server_id).await;
-                        let _ = response_tx.send(Ok(()));
+                        let server_state = agent.mcp_registry().get_server(&server_id);
+                        let connected = manager.is_connected(&server_id).await;
+                        let result = match server_state {
+                            Some(_) if connected => Ok(()),
+                            Some(server) => Err(server.last_error.unwrap_or_else(|| {
+                                format!("MCP server {server_id} did not reconnect")
+                            })),
+                            None => Err(format!("MCP server {server_id} is not registered")),
+                        };
+                        let _ = response_tx.send(result);
                     }
                     AgentRequest::GetTokenCount { tab_id, app_handle } => {
                         emit_token_count(&session, &app_handle, &tab_id);

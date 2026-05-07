@@ -90,26 +90,30 @@ export const McpProvider: Component<{ children: JSX.Element }> = (props) => {
     getServerStatus: (id) => state.statuses[id],
     toggleServer: async (serverId, enabled) => {
       const tabId = agentState.activeTabId;
-      if (tabId) {
-        try {
+      try {
+        if (tabId) {
           await setMcpServerEnabled(tabId, serverId, enabled);
-        } catch (e) {
-          console.error("Failed to toggle MCP server:", e);
         }
+        updateMcpServer(serverId, { enabledByDefault: enabled });
+      } catch (e) {
+        console.error("Failed to toggle MCP server:", e);
+        throw e;
+      } finally {
+        await refresh();
       }
-      updateMcpServer(serverId, { enabledByDefault: enabled });
-      await refresh();
     },
     retryServer: async (serverId) => {
       const tabId = agentState.activeTabId;
-      if (tabId) {
-        try {
+      try {
+        if (tabId) {
           await reconnectMcpServer(tabId, serverId);
-        } catch (e) {
-          console.error("Failed to reconnect MCP server:", e);
         }
+      } catch (e) {
+        console.error("Failed to reconnect MCP server:", e);
+        throw e;
+      } finally {
+        await refresh();
       }
-      await refresh();
     },
     refresh,
   };

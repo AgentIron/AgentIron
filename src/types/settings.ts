@@ -53,8 +53,7 @@ export type McpErrorCategory =
   | "responseParse"
   | "auth"
   | "toolDiscovery"
-  | "serverError"
-  | "unknown";
+  | "serverError";
 
 export type McpErrorStage = "connection" | "initialize" | "toolDiscovery";
 
