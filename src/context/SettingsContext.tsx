@@ -9,7 +9,7 @@ import {
 import { createStore, produce } from "solid-js/store";
 import { query, execute } from "@lib/tauri/db";
 import { KNOWN_MODELS, DEFAULT_PROVIDERS, parseModelSlug } from "@lib/models";
-import { updateModelRegistry as fetchModelRegistry } from "@lib/tauri/commands";
+import { updateModelRegistry as fetchModelRegistry, getProviderAuthStatus } from "@lib/tauri/commands";
 import type { AppSettings, ProviderConfig, McpServerConfig, ModelInfo } from "@/types/settings";
 
 const DEFAULTS: AppSettings = {
@@ -25,9 +25,20 @@ const DEFAULTS: AppSettings = {
   skills: { trustProjectSkills: false, additionalSkillDirs: [] },
 };
 
+export interface ProviderAuthStatus {
+  provider: string;
+  status: string;
+  expiresAt?: number;
+  reason?: string;
+}
+
 interface SettingsContextValue {
   settings: AppSettings;
   loaded: () => boolean;
+  authStatusesLoaded: () => boolean;
+  authStatuses: () => Record<string, ProviderAuthStatus>;
+  refreshAuthStatus: (providerId: string) => Promise<void>;
+  refreshAllAuthStatuses: () => Promise<void>;
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
   updateProvider: (id: string, patch: Partial<ProviderConfig>) => void;
   addProvider: (id: string) => void;
@@ -47,6 +58,7 @@ interface SettingsContextValue {
   activeApiKey: () => string;
   apiKeyForProvider: (providerId: string) => string;
   hasConfiguredProvider: () => boolean;
+  isProviderConfigured: (providerId: string) => boolean;
 }
 
 const SettingsContext = createContext<SettingsContextValue>();
@@ -143,6 +155,8 @@ async function loadAllSettings(): Promise<Partial<AppSettings>> {
 export const SettingsProvider: Component<{ children: JSX.Element }> = (props) => {
   const [settings, setSettings] = createStore<AppSettings>({ ...DEFAULTS });
   const [loaded, setLoaded] = createSignal(false);
+  const [authStatusesLoaded, setAuthStatusesLoaded] = createSignal(false);
+  const [authStatuses, setAuthStatuses] = createSignal<Record<string, ProviderAuthStatus>>({});
   const [registryModels, setRegistryModels] = createSignal<ModelInfo[]>([]);
   const [registryUpdated, setRegistryUpdated] = createSignal<string | null>(null);
 
@@ -179,12 +193,57 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
       }
     } catch { /* ignore */ }
 
+    // Load provider auth statuses
+    await refreshAllAuthStatuses();
+    setAuthStatusesLoaded(true);
+
     setLoaded(true);
   });
+
+  const refreshAuthStatus = async (providerId: string) => {
+    try {
+      const provider = settings.providers.find((p) => p.id === providerId);
+      const apiKey = provider?.apiKey ?? "";
+      const status = await getProviderAuthStatus(providerId, apiKey || undefined);
+      setAuthStatuses((prev) => ({ ...prev, [providerId]: status }));
+    } catch (e) {
+      console.error(`[Auth] Failed to refresh status for ${providerId}:`, e);
+    }
+  };
+
+  const refreshAllAuthStatuses = async () => {
+    const statuses: Record<string, ProviderAuthStatus> = {};
+    for (const provider of settings.providers) {
+      if (!provider.enabled) continue;
+      try {
+        const apiKey = provider.apiKey ?? "";
+        const status = await getProviderAuthStatus(provider.id, apiKey || undefined);
+        statuses[provider.id] = status;
+      } catch (e) {
+        console.error(`[Auth] Failed to load status for ${provider.id}:`, e);
+      }
+    }
+    setAuthStatuses(statuses);
+  };
+
+  const isProviderConfigured = (providerId: string): boolean => {
+    const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
+    if (!provider) return false;
+    if (provider.apiKey.trim().length > 0) return true;
+    const auth = authStatuses()[providerId];
+    if (auth && (auth.status === "connectedOAuth" || auth.status === "configuredApiKey")) {
+      return true;
+    }
+    return false;
+  };
 
   const value: SettingsContextValue = {
     settings,
     loaded,
+    authStatusesLoaded,
+    authStatuses,
+    refreshAuthStatus,
+    refreshAllAuthStatuses,
     updateSetting: (key, val) => {
       setSettings(key, val as any);
       persistSetting(key, val);
@@ -325,7 +384,8 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
       return provider?.apiKey ?? "";
     },
     hasConfiguredProvider: () =>
-      settings.providers.some((p) => p.enabled && p.apiKey.trim().length > 0),
+      settings.providers.some((p) => p.enabled && isProviderConfigured(p.id)),
+    isProviderConfigured,
   };
 
   return (

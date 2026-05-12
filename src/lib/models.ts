@@ -1,5 +1,28 @@
 import type { ModelInfo, ProviderConfig } from "@/types/settings";
 
+export type AuthCapability = "api_key" | "oauth" | "dual";
+
+export interface ProviderMetadata {
+  id: string;
+  name: string;
+  auth: AuthCapability;
+}
+
+/** Provider metadata with auth capabilities */
+export const PROVIDER_METADATA: ProviderMetadata[] = [
+  { id: "openai", name: "OpenAI", auth: "api_key" },
+  { id: "anthropic", name: "Anthropic", auth: "api_key" },
+  { id: "openrouter", name: "OpenRouter", auth: "api_key" },
+  { id: "minimax", name: "Minimax", auth: "api_key" },
+  { id: "minimax-code", name: "Minimax Code", auth: "api_key" },
+  { id: "zai", name: "Zai (Zhipu AI)", auth: "api_key" },
+  { id: "zai-code", name: "Zai Code", auth: "api_key" },
+  { id: "kimi", name: "Kimi (Moonshot)", auth: "api_key" },
+  { id: "kimi-code", name: "Kimi for Coding", auth: "dual" },
+  { id: "codex", name: "Codex (OpenAI)", auth: "oauth" },
+  { id: "requesty", name: "Requesty", auth: "api_key" },
+];
+
 /** All known providers with their default configuration */
 export const DEFAULT_PROVIDERS: ProviderConfig[] = [
   { id: "openai", name: "OpenAI", apiKey: "", enabled: true },
@@ -11,6 +34,7 @@ export const DEFAULT_PROVIDERS: ProviderConfig[] = [
   { id: "zai-code", name: "Zai Code", apiKey: "", enabled: false },
   { id: "kimi", name: "Kimi (Moonshot)", apiKey: "", enabled: false },
   { id: "kimi-code", name: "Kimi for Coding", apiKey: "", enabled: false },
+  { id: "codex", name: "Codex (OpenAI)", apiKey: "", enabled: false },
   { id: "requesty", name: "Requesty", apiKey: "", enabled: false },
 ];
 
@@ -67,9 +91,12 @@ export const KNOWN_MODELS: ModelInfo[] = [
   { id: "deepseek/deepseek-chat-v3-0324", name: "DeepSeek V3", providerId: "openrouter", contextWindow: 128_000 },
   { id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", providerId: "openrouter", contextWindow: 1_000_000 },
 
+  // Codex (OpenAI-backed, OAuth-only)
+  { id: "codex-latest", name: "Codex Latest", providerId: "codex", contextWindow: 128_000 },
+
   // Requesty (pass-through, provider/model format)
   { id: "openai/gpt-4o", name: "GPT-4o", providerId: "requesty", contextWindow: 128_000 },
-  { id: "anthropic/claude-sonnet-4-20250514", name: "Claude Sonnet 4", providerId: "requesty", contextWindow: 200_000 },
+  { id: "anthropic/claude_sonnet-4-20250514", name: "Claude Sonnet 4", providerId: "requesty", contextWindow: 200_000 },
 ];
 
 /** Format a token count for display (e.g. 128000 → "128K", 1000000 → "1M") */

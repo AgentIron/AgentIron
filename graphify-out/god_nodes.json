@@ -1,0 +1,77 @@
+[
+  {
+    "id": "context_settingscontext_usesettings",
+    "label": "useSettings()",
+    "degree": 27
+  },
+  {
+    "id": "context_agentcontext_useagent",
+    "label": "useAgent()",
+    "degree": 23
+  },
+  {
+    "id": "context_uicontext_useui",
+    "label": "useUI()",
+    "degree": 15
+  },
+  {
+    "id": "chat_toolutils_toolicon",
+    "label": "toolIcon()",
+    "degree": 10
+  },
+  {
+    "id": "context_mcpcontext_usemcp",
+    "label": "useMcp()",
+    "degree": 9
+  },
+  {
+    "id": "lib_models_parsemodelslug",
+    "label": "parseModelSlug()",
+    "degree": 8
+  },
+  {
+    "id": "src_state_spawn_agent_worker",
+    "label": "spawn_agent_worker()",
+    "degree": 7
+  },
+  {
+    "id": "chat_chatarea_chatarea",
+    "label": "ChatArea()",
+    "degree": 7
+  },
+  {
+    "id": "context_chatcontext_usechat",
+    "label": "useChat()",
+    "degree": 7
+  },
+  {
+    "id": "types_settings_mcpserverconfig",
+    "label": "McpServerConfig",
+    "degree": 7
+  },
+  {
+    "id": "chat_contextindicator_contextindicator",
+    "label": "ContextIndicator()",
+    "degree": 5
+  },
+  {
+    "id": "chat_tooldetailrenderers_renderargsdetail",
+    "label": "renderArgsDetail()",
+    "degree": 5
+  },
+  {
+    "id": "chat_tooldetailrenderers_renderresult",
+    "label": "renderResult()",
+    "degree": 5
+  },
+  {
+    "id": "chat_toolutils_formatargssummary",
+    "label": "formatArgsSummary()",
+    "degree": 5
+  },
+  {
+    "id": "layout_appshell_appshell",
+    "label": "AppShell()",
+    "degree": 5
+  }
+]

@@ -7,7 +7,7 @@ import { parseModelSlug } from "@lib/models";
 
 export const ModelSwitcher: Component = () => {
   const { activeConnection, changeModel } = useAgent();
-  const { settings, allModels } = useSettings();
+  const { settings, allModels, authStatuses } = useSettings();
   const [open, setOpen] = createSignal(false);
   const [switching, setSwitching] = createSignal(false);
 
@@ -18,14 +18,19 @@ export const ModelSwitcher: Component = () => {
     return allModels().find((m) => m.id === id)?.name ?? id;
   };
 
-  // Only show starred models from enabled providers with API keys
+  // Only show starred models from enabled providers that are configured
+  const isProviderReady = (providerId: string) => {
+    const provider = settings.providers.find((p) => p.id === providerId);
+    if (!provider || !provider.enabled) return false;
+    if (provider.apiKey.trim().length > 0) return true;
+    const auth = authStatuses()[providerId];
+    return auth?.status === "connectedOAuth" || auth?.status === "configuredApiKey";
+  };
+
   const starredModels = () =>
     allModels().filter(
       (m) =>
-        settings.starredModels.includes(m.id) &&
-        settings.providers.some(
-          (p) => p.id === m.providerId && p.enabled && p.apiKey.trim(),
-        ),
+        settings.starredModels.includes(m.id) && isProviderReady(m.providerId),
     );
 
   const handleSelect = async (modelId: string, providerId: string) => {
@@ -35,13 +40,13 @@ export const ModelSwitcher: Component = () => {
     setOpen(false);
     if (modelId === currentModel()) return;
 
-    // Find the API key for this provider
+    // Find the API key for this provider (may be empty for OAuth providers)
     const provider = settings.providers.find((p) => p.id === providerId);
-    if (!provider?.apiKey) return;
+    if (!provider) return;
 
     setSwitching(true);
     try {
-      await changeModel(conn.id, provider.apiKey, modelId, providerId);
+      await changeModel(conn.id, provider.apiKey ?? "", modelId, providerId);
     } catch (err) {
       console.error("Failed to switch model:", err);
     } finally {

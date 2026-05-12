@@ -15,21 +15,33 @@
     "mtime": 1776055042.1870232,
     "hash": "6d3973b716c7252ea0e7579fe610cff2"
   },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/migrations/002_provider_credentials.sql": {
+    "mtime": 1778560218.6749532,
+    "hash": "b79f7776e9207ffd8a5c66ac0af04be6"
+  },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/main.rs": {
     "mtime": 1776665922.8046296,
     "hash": "ec57c8a695533b5566bc4c74ac24a6dd"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/lib.rs": {
-    "mtime": 1778128611.5693624,
-    "hash": "6bb443cacd433ed7e739f5183e59fc8a"
+    "mtime": 1778561419.028604,
+    "hash": "4dc5ce3b5ef7f8432d3e5da4ca11c4c9"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/state.rs": {
-    "mtime": 1778128611.5693624,
-    "hash": "1ef47d28fcdfa3138a90d30ab28257fe"
+    "mtime": 1778561409.7004507,
+    "hash": "f2f6bdb8d863d2a6e5193625521ed614"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/credential_store.rs": {
+    "mtime": 1778562044.6868823,
+    "hash": "fb48f364bf0391989a3db22969bf4d7d"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/provider_box.rs": {
+    "mtime": 1778561390.299132,
+    "hash": "9074a149b55e3d843a3fb5b19250f16d"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/mod.rs": {
-    "mtime": 1776055042.1876826,
-    "hash": "7e1d732a82cc3b17461ad905b2c984c8"
+    "mtime": 1778560429.6924005,
+    "hash": "199d665cd2aa18b8859828215ea81cb9"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/chat.rs": {
     "mtime": 1777263743.5586152,
@@ -44,8 +56,12 @@
     "hash": "3096757f31164f2b1efc3a4d80dcf289"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/agent.rs": {
-    "mtime": 1778128611.5693624,
-    "hash": "60ee8c7aecb92e8ac813726892e50464"
+    "mtime": 1778562297.6640382,
+    "hash": "9b68539ebe45b4ff3d291c593398596e"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/oauth.rs": {
+    "mtime": 1778562292.049946,
+    "hash": "a7d7cdbbaf3b4cf534b596452cb1a72d"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/App.tsx": {
     "mtime": 1776055042.1876826,
@@ -120,8 +136,8 @@
     "hash": "1d555baf4b5cf81f45290cc047ff4eb7"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ModelSwitcher.tsx": {
-    "mtime": 1777606266.158558,
-    "hash": "131d1ca1d6a6c7ad01e93cd7a6e10100"
+    "mtime": 1778560837.0290697,
+    "hash": "e436df81cf7c03adf8867c4317271884"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ToolDetailRenderers.tsx": {
     "mtime": 1777606266.158558,
@@ -144,16 +160,16 @@
     "hash": "05f580276e0b90fd9eb15513bd94fcb9"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/AppShell.tsx": {
-    "mtime": 1776666435.1318169,
-    "hash": "20ce1c36f4c43dc29c0250b20d190dc0"
+    "mtime": 1778560756.8937576,
+    "hash": "9cc95419a1abe6d80937dcdfbaf37af3"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/Tab.tsx": {
     "mtime": 1776055042.1882784,
     "hash": "16c801bd4c6cdbebedb838d342d09503"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/TabBar.tsx": {
-    "mtime": 1776666444.2806447,
-    "hash": "194eeccc208cf8e53f8145fb12972045"
+    "mtime": 1778562281.1027663,
+    "hash": "f707c3131dccea3d379227d0496517bd"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/Sidebar.tsx": {
     "mtime": 1777606266.158558,
@@ -204,8 +220,8 @@
     "hash": "87622978e87a07db4307027ed96062ab"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/ProviderSettings.tsx": {
-    "mtime": 1778047420.8474073,
-    "hash": "cb5ae258724fe2a70b56344a9d722303"
+    "mtime": 1778562376.2423284,
+    "hash": "bf33f999dca02a3f31f3fa80413246e0"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/McpSettings.tsx": {
     "mtime": 1778128611.5703623,
@@ -240,16 +256,16 @@
     "hash": "75f3b118cfa7aee2795f852fbb5b2df8"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/context/SettingsContext.tsx": {
-    "mtime": 1777606266.1594121,
-    "hash": "5a50cc775a00bdf98e6fd69a4db26194"
+    "mtime": 1778562148.9715955,
+    "hash": "8dd16d4604d721d9ebcd57a44a2fce94"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/context/McpContext.tsx": {
     "mtime": 1778128611.5703623,
     "hash": "34a7a2617015b950d2875c8f22d141e3"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/lib/models.ts": {
-    "mtime": 1776055042.1887605,
-    "hash": "03fe97426606a2507b999ca5fbf3623f"
+    "mtime": 1778560597.4251468,
+    "hash": "61f8f0557bc9a623857c8f01efd43c8e"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/lib/timeago.ts": {
     "mtime": 1776055042.1888175,
@@ -292,8 +308,8 @@
     "hash": "47c751ee4982daa7cf328377970887f6"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/commands.ts": {
-    "mtime": 1778128611.5703623,
-    "hash": "622fc5054fedf22767ef21366a2d4d6a"
+    "mtime": 1778560558.7395134,
+    "hash": "5d1d34a070b3aa864ee7512655185960"
   },
   "/home/pmooring/src/AgentIron/AgentIron/src/types/message.ts": {
     "mtime": 1776055042.1889393,
@@ -434,6 +450,22 @@
   "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/simplify-manual-release-workflow/specs/release-workflow/spec.md": {
     "mtime": 1777606266.1505258,
     "hash": "61d31d6f77eb39213f678cabea99f77e"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/support-provider-oauth-authentication/proposal.md": {
+    "mtime": 1778559959.2017384,
+    "hash": "8ed5d0d866116f14664837986c4e2b0b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/support-provider-oauth-authentication/design.md": {
+    "mtime": 1778560004.4524734,
+    "hash": "410dcc2d643216f60adb11b8d265af36"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/support-provider-oauth-authentication/tasks.md": {
+    "mtime": 1778562355.2539845,
+    "hash": "ac2b1e5562834bb1e8929fa6feeca399"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md": {
+    "mtime": 1778560004.4544735,
+    "hash": "059cc925d16d4fb4cd9198b40a740de4"
   },
   "/home/pmooring/src/AgentIron/AgentIron/public/tauri.svg": {
     "mtime": 1776055042.1860502,

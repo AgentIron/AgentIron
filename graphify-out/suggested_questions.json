@@ -1,0 +1,52 @@
+[
+  {
+    "type": "bridge_node",
+    "question": "Why does `App()` connect `cancel_snip(), capture_snip(), complete_snip(), get_snip_screenshot(), SnipData` to `ApprovalBar(), ChatArea(), isLastAssistantInList(), ContextIndicator(), DirectoryIndicator()`?",
+    "why": "High betweenness centrality (0.268) - this node is a cross-community bridge."
+  },
+  {
+    "type": "bridge_node",
+    "question": "Why does `useSettings()` connect `ApprovalBar(), ChatArea(), isLastAssistantInList(), ContextIndicator(), DirectoryIndicator()` to `AcpClient, .disconnect(), .list(), .prompt(), AttachedImage`, `AgentCard(), AgentCardProps, AgentConfig(), AgentList(), Button()`, `McpContext, McpContextValue, McpState, useMcp(), McpPanel()`, `DB_KEY_MAP, DEFAULTS, JSON_KEYS, loadAllSettings(), persistSetting()`, `BUILTIN_TOOLS, BuiltinToolInfo, PluginsSettings(), ToolRow(), Section`?",
+    "why": "High betweenness centrality (0.014) - this node is a cross-community bridge."
+  },
+  {
+    "type": "isolated_nodes",
+    "question": "What connects `AgentRequest`, `ImageDataJson`, `McpErrorCategory` to the rest of the system?",
+    "why": "85 weakly-connected nodes found - possible documentation gaps or missing edges."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `ApprovalBar(), ChatArea(), isLastAssistantInList(), ContextIndicator(), DirectoryIndicator()` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.11 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `activate_skill(), AgentInfo, build_provider(), create_agent(), deactivate_skill()` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.06 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `CodeBlock(), CodeBlockProps, escapeHtml(), normalizeLang(), ToolActivityLine()` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.11 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `AcpClient, .disconnect(), .list(), .prompt(), AttachedImage` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.09 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `AgentCard(), AgentCardProps, AgentConfig(), AgentList(), Button()` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.06 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `McpContext, McpContextValue, McpState, useMcp(), McpPanel()` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.12 - nodes in this community are weakly interconnected."
+  },
+  {
+    "type": "low_cohesion",
+    "question": "Should `escapeHtml(), highlightCode(), MarkdownRenderer(), MarkdownRendererProps, marked` be split into smaller, more focused modules?",
+    "why": "Cohesion score 0.09 - nodes in this community are weakly interconnected."
+  }
+]

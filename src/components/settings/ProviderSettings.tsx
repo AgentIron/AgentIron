@@ -8,9 +8,12 @@ import {
   TbOutlineChevronDown,
   TbOutlineChevronRight,
   TbOutlineRefresh,
+  TbOutlineLink,
+  TbOutlineUnlink,
 } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
-import { DEFAULT_PROVIDERS, formatTokenCount, parseModelSlug, makeModelSlug } from "@lib/models";
+import { DEFAULT_PROVIDERS, PROVIDER_METADATA, formatTokenCount, parseModelSlug, makeModelSlug } from "@lib/models";
+import { startProviderOAuth, pollProviderOAuth, disconnectProviderOAuth } from "@lib/tauri/commands";
 import type { ProviderConfig, ModelInfo } from "@/types/settings";
 
 const formatContext = (tokens: number) => formatTokenCount(tokens) + " ctx";
@@ -28,6 +31,7 @@ export const ProviderSettings: Component = () => {
     allModels,
     updateModelRegistry,
     registryLastUpdated,
+    isProviderConfigured,
   } = useSettings();
   const [updating, setUpdating] = createSignal(false);
   const [showAddMenu, setShowAddMenu] = createSignal(false);
@@ -40,7 +44,7 @@ export const ProviderSettings: Component = () => {
     );
 
   const enabledProviders = () =>
-    settings.providers.filter((p) => p.enabled && p.apiKey.trim());
+    settings.providers.filter((p) => p.enabled && isProviderConfigured(p.id));
 
   const currentDefaultModel = () => {
     const { providerId, modelId } = parseModelSlug(settings.defaultModel, allModels());
@@ -71,7 +75,7 @@ export const ProviderSettings: Component = () => {
           <div>
             <h2 class="text-base font-semibold text-text-primary">Providers</h2>
             <p class="text-xs text-text-tertiary mt-1">
-              API keys are stored locally on this device.
+              API keys and OAuth credentials are stored locally on this device.
             </p>
           </div>
           <div class="relative">
@@ -244,11 +248,116 @@ const ProviderCard: Component<{
   onRemove: () => void;
 }> = (props) => {
   const [showKey, setShowKey] = createSignal(false);
+  const { authStatuses, refreshAuthStatus } = useSettings();
+  const meta = () => PROVIDER_METADATA.find((m) => m.id === props.provider.id);
+  const auth = () => authStatuses()[props.provider.id];
+
+  const [connecting, setConnecting] = createSignal(false);
+  const [deviceCodeData, setDeviceCodeData] = createSignal<{
+    deviceCode: string;
+    verificationUri: string;
+    userCode: string;
+    expiresInSecs: number;
+    intervalSecs: number;
+  } | null>(null);
+  const [pollAttempts, setPollAttempts] = createSignal(0);
+  const [connectError, setConnectError] = createSignal("");
+
+  const effectiveAuth = () => {
+    if (props.provider.apiKey.trim().length > 0) return "api_key";
+    const status = auth()?.status;
+    if (status === "connectedOAuth" || status === "configuredApiKey") return "oauth";
+    return "none";
+  };
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    setConnectError("");
+    try {
+      const start = await startProviderOAuth(props.provider.id);
+      setDeviceCodeData({
+        deviceCode: start.deviceCode,
+        verificationUri: start.verificationUri,
+        userCode: start.userCode,
+        expiresInSecs: start.expiresInSecs,
+        intervalSecs: start.intervalSecs,
+      });
+      setPollAttempts(0);
+
+      // Start polling
+      let attempts = 0;
+      const maxAttempts = Math.ceil(start.expiresInSecs / start.intervalSecs);
+      const poll = async () => {
+        if (attempts >= maxAttempts) {
+          setConnectError("Device code expired. Please try again.");
+          setDeviceCodeData(null);
+          setPollAttempts(0);
+          setConnecting(false);
+          return;
+        }
+        attempts++;
+        setPollAttempts(attempts);
+        try {
+          await pollProviderOAuth(props.provider.id, start.deviceCode);
+          await refreshAuthStatus(props.provider.id);
+          setDeviceCodeData(null);
+          setPollAttempts(0);
+          setConnecting(false);
+        } catch (e) {
+          const errMsg = String(e);
+          if (errMsg.includes("authorization pending") || errMsg.includes("polling too fast")) {
+            setTimeout(poll, start.intervalSecs * 1000);
+          } else {
+            setConnectError(errMsg);
+            setDeviceCodeData(null);
+            setPollAttempts(0);
+            setConnecting(false);
+          }
+        }
+      };
+      setTimeout(poll, start.intervalSecs * 1000);
+    } catch (e) {
+      setConnectError(String(e));
+      setPollAttempts(0);
+      setConnecting(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    await disconnectProviderOAuth(props.provider.id);
+    await refreshAuthStatus(props.provider.id);
+  };
 
   return (
     <div class="rounded-lg border border-border-default bg-bg-secondary p-4 space-y-3">
       <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-text-primary">{props.provider.name}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-text-primary">{props.provider.name}</span>
+          <Show when={effectiveAuth() === "api_key"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">API Key</span>
+          </Show>
+          <Show when={effectiveAuth() === "oauth"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">OAuth</span>
+          </Show>
+          <Show when={auth()?.status === "notConfigured" || (!auth()?.status && effectiveAuth() === "none")}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-bg-elevated text-text-tertiary">Not configured</span>
+          </Show>
+          <Show when={auth()?.status === "refreshing"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-warning/15 text-warning">Refreshing</span>
+          </Show>
+          <Show when={auth()?.status === "expired"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-warning/15 text-warning">Expired</span>
+          </Show>
+          <Show when={auth()?.status === "refreshFailed"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-error/15 text-error">Refresh Failed</span>
+          </Show>
+          <Show when={auth()?.status === "revoked"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-error/15 text-error">Revoked</span>
+          </Show>
+          <Show when={auth()?.status === "unsupportedCredential"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-error/15 text-error">Unsupported credential</span>
+          </Show>
+        </div>
         <div class="flex items-center gap-2">
           <label class="flex items-center gap-2 cursor-pointer">
             <span class="text-xs text-text-tertiary">
@@ -276,21 +385,107 @@ const ProviderCard: Component<{
           </button>
         </div>
       </div>
-      <div class="relative">
-        <input
-          type={showKey() ? "text" : "password"}
-          placeholder="API key..."
-          value={props.provider.apiKey}
-          onInput={(e) => props.onUpdate({ apiKey: e.currentTarget.value })}
-          class="w-full rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 pr-16 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
-        />
-        <button
-          onClick={() => setShowKey(!showKey())}
-          class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-text-tertiary hover:text-text-primary transition-colors"
-        >
-          {showKey() ? "Hide" : "Show"}
-        </button>
-      </div>
+
+      {/* API Key input (shown for api_key and dual providers) */}
+      <Show when={meta()?.auth !== "oauth"}>
+        <div class="relative">
+          <input
+            type={showKey() ? "text" : "password"}
+            placeholder="API key..."
+            value={props.provider.apiKey}
+            onInput={(e) => props.onUpdate({ apiKey: e.currentTarget.value })}
+            class="w-full rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 pr-16 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
+          />
+          <button
+            onClick={() => setShowKey(!showKey())}
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-text-tertiary hover:text-text-primary transition-colors"
+          >
+            {showKey() ? "Hide" : "Show"}
+          </button>
+        </div>
+      </Show>
+
+      {/* OAuth controls (shown for oauth and dual providers) */}
+      <Show when={meta()?.auth !== "api_key"}>
+        <div class="space-y-2">
+          <Show when={!deviceCodeData() && !connecting()}>
+            <Show when={auth()?.status === "connectedOAuth"}>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-success">Connected via OAuth</span>
+                <button
+                  onClick={handleDisconnect}
+                  class="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors"
+                >
+                  <TbOutlineUnlink size={12} />
+                  Disconnect
+                </button>
+              </div>
+            </Show>
+            <Show when={!auth()?.status || auth()?.status === "notConfigured"}>
+              <button
+                onClick={handleConnect}
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors"
+              >
+                <TbOutlineLink size={14} />
+                Connect OAuth
+              </button>
+            </Show>
+            <Show when={auth()?.status === "refreshing"}>
+              <span class="text-xs text-warning">OAuth token is refreshing. Try again shortly.</span>
+            </Show>
+            <Show when={auth()?.status === "unsupportedCredential"}>
+              <span class="text-xs text-error">This provider does not support the configured credential type.</span>
+            </Show>
+            <Show when={auth()?.status === "expired" || auth()?.status === "refreshFailed" || auth()?.status === "revoked"}>
+              <div class="space-y-2">
+                <span class="text-xs text-error">
+                  {auth()?.status === "expired" && "OAuth token expired"}
+                  {auth()?.status === "refreshFailed" && `Refresh failed: ${auth()?.reason}`}
+                  {auth()?.status === "revoked" && "OAuth credential revoked"}
+                </span>
+                <button
+                  onClick={handleConnect}
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors"
+                >
+                  <TbOutlineLink size={14} />
+                  Reconnect OAuth
+                </button>
+              </div>
+            </Show>
+          </Show>
+
+          <Show when={deviceCodeData()}>
+            <div class="rounded-lg border border-accent/30 bg-accent-muted p-3 space-y-2">
+              <p class="text-sm text-text-primary">Connect via device code</p>
+              <div class="text-xs text-text-secondary space-y-1">
+                <p>Visit: <a href={deviceCodeData()!.verificationUri} target="_blank" class="text-accent underline">{deviceCodeData()!.verificationUri}</a></p>
+                <p>Code: <span class="font-mono font-bold text-text-primary">{deviceCodeData()!.userCode}</span></p>
+              </div>
+              <p class="text-xs text-text-tertiary">Waiting for authorization...</p>
+              <p class="text-xs text-text-tertiary">
+                Expires in {Math.ceil(deviceCodeData()!.expiresInSecs / 60)} minutes. Polling every {deviceCodeData()!.intervalSecs}s.
+              </p>
+              <p class="text-xs text-text-tertiary">
+                Attempt {pollAttempts()} of {Math.ceil(deviceCodeData()!.expiresInSecs / deviceCodeData()!.intervalSecs)}
+              </p>
+              <button
+                onClick={() => {
+                  setDeviceCodeData(null);
+                  setPollAttempts(0);
+                  setConnecting(false);
+                }}
+                class="text-xs text-text-tertiary hover:text-text-primary transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </Show>
+
+          <Show when={connectError()}>
+            <p class="text-xs text-error">{connectError()}</p>
+          </Show>
+        </div>
+      </Show>
     </div>
   );
 };

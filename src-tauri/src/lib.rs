@@ -3,6 +3,8 @@ use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
 mod commands;
+mod credential_store;
+mod provider_box;
 mod state;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,12 +16,20 @@ pub fn run() {
             tauri_plugin_sql::Builder::new()
                 .add_migrations(
                     "sqlite:agentiron.db",
-                    vec![tauri_plugin_sql::Migration {
-                        version: 1,
-                        description: "Initial schema",
-                        sql: include_str!("../migrations/001_initial.sql"),
-                        kind: tauri_plugin_sql::MigrationKind::Up,
-                    }],
+                    vec![
+                        tauri_plugin_sql::Migration {
+                            version: 1,
+                            description: "Initial schema",
+                            sql: include_str!("../migrations/001_initial.sql"),
+                            kind: tauri_plugin_sql::MigrationKind::Up,
+                        },
+                        tauri_plugin_sql::Migration {
+                            version: 2,
+                            description: "Add provider credential storage",
+                            sql: include_str!("../migrations/002_provider_credentials.sql"),
+                            kind: tauri_plugin_sql::MigrationKind::Up,
+                        },
+                    ],
                 )
                 .build(),
         );
@@ -37,7 +47,10 @@ pub fn run() {
     builder
         .setup(|app| {
             // Register managed state
-            app.manage(state::AppState::new());
+            let app_data_dir = app.path().app_data_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let db_path = app_data_dir.join("agentiron.db");
+            let credential_store = std::sync::Arc::new(credential_store::SqliteCredentialStore::new(db_path));
+            app.manage(state::AppState::new().with_credential_store(credential_store));
             app.manage(commands::snip::SnipState::new());
 
             // System tray (desktop only)
@@ -89,6 +102,10 @@ pub fn run() {
             commands::chat::cancel_active_prompt,
             commands::chat::compact_session,
             commands::models::update_model_registry,
+            commands::oauth::start_provider_oauth,
+            commands::oauth::poll_provider_oauth,
+            commands::oauth::disconnect_provider_oauth,
+            commands::oauth::get_provider_auth_status,
             commands::snip::start_snip,
             commands::snip::capture_snip,
             commands::snip::get_snip_screenshot,

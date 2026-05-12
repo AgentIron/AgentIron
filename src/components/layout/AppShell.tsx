@@ -12,7 +12,7 @@ import { parseModelSlug } from "@lib/models";
 
 export const AppShell: Component = () => {
   const { state: agentState, createAgentForTab } = useAgent();
-  const { loaded, hasConfiguredProvider, apiKeyForProvider, settings, allModels } = useSettings();
+  const { loaded, authStatusesLoaded, hasConfiguredProvider, isProviderConfigured, apiKeyForProvider, settings, allModels } = useSettings();
   const { currentView } = useUI();
 
   // Auto-create a tab on first load when a provider is configured
@@ -23,8 +23,9 @@ export const AppShell: Component = () => {
 
     if (
       loaded() &&
+      authStatusesLoaded() &&
       hasConfiguredProvider() &&
-      apiKey &&
+      isProviderConfigured(providerId) &&
       !agentState.activeTabId &&
       !autoCreated
     ) {

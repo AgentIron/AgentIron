@@ -2,6 +2,8 @@ use crate::state::{
     spawn_agent_worker, AgentHandle, AgentParams, AgentRequest, AppState, McpServerConfigJson,
     McpServerStatusJson,
 };
+use crate::provider_box::ProviderBox;
+use iron_core::provider_credential::domain::{ProviderAuthError, ProviderPromptContext};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tokio::sync::mpsc;
@@ -17,13 +19,41 @@ pub struct AgentInfo {
     pub working_directory: String,
 }
 
-/// Build a provider profile for the given provider ID.
-/// Known providers use their iron-providers registry profiles.
-/// OpenAI is added manually since it's not in the default registry.
-fn build_provider(
+/// Build a provider for the given provider ID using upstream registry and credential resolution.
+/// Falls back to manual profile construction when no credential resolver is available.
+async fn build_provider(
+    state: &AppState,
     provider_id: &str,
     api_key: &str,
-) -> Result<iron_providers::GenericProvider, String> {
+    model: &str,
+) -> Result<Box<dyn iron_core::Provider>, String> {
+    // Prefer credential resolver when available
+    if let Some(resolver) = &state.credential_resolver {
+        let context = ProviderPromptContext {
+            provider_slug: iron_core::provider_credential::domain::ProviderSlug::new(provider_id),
+            model: model.to_string(),
+            api_key: if api_key.trim().is_empty() {
+                None
+            } else {
+                Some(api_key.to_string())
+            },
+        };
+
+        let resolved = resolver
+            .resolve(&context, context.api_key.clone())
+            .await
+            .map_err(credential_resolution_message)?;
+
+        let runtime_config =
+            iron_providers::RuntimeConfig::from_credential(resolved.provider_credential);
+
+        let registry = iron_providers::ProviderRegistry::default();
+        return registry
+            .get(provider_id, runtime_config)
+            .map_err(|e| format!("Provider registry error: {e}"));
+    }
+
+    // Fallback: manual profile construction (backward compatibility)
     let profile = match provider_id {
         "openai" => iron_providers::ProviderProfile::new(
             "openai",
@@ -98,7 +128,28 @@ fn build_provider(
 
     let runtime_config = iron_providers::RuntimeConfig::new(api_key);
     iron_providers::GenericProvider::from_profile(profile, runtime_config)
+        .map(|p| Box::new(p) as Box<dyn iron_core::Provider>)
         .map_err(|e| format!("Provider error: {e}"))
+}
+
+fn credential_resolution_message(error: ProviderAuthError) -> String {
+    match error {
+        ProviderAuthError::NotConfigured(provider) => format!(
+            "Provider '{provider}' is not configured. Add an API key or connect OAuth in Settings > Providers."
+        ),
+        ProviderAuthError::UnsupportedCredential { provider, mode } => format!(
+            "Provider '{provider}' does not support {mode:?} credentials. Use a supported authentication method in Settings > Providers."
+        ),
+        ProviderAuthError::Expired(provider) => format!(
+            "OAuth token expired for provider '{provider}'. Reconnect OAuth in Settings > Providers."
+        ),
+        ProviderAuthError::RefreshFailed { provider, reason } => format!(
+            "OAuth refresh failed for provider '{provider}': {reason}. Reconnect OAuth in Settings > Providers."
+        ),
+        ProviderAuthError::Revoked(provider) => format!(
+            "OAuth credential for provider '{provider}' was revoked. Reconnect OAuth in Settings > Providers."
+        ),
+    }
 }
 
 #[tauri::command]
@@ -124,7 +175,7 @@ pub async fn create_agent(
     }
 
     let pid = provider_id.unwrap_or_else(|| "openai".to_string());
-    let provider = build_provider(&pid, &api_key)?;
+    let provider = build_provider(&state, &pid, &api_key, &model).await?;
 
     let mut skill_config = iron_core::config::SkillConfig::new()
         .with_trust_project_skills(trust_project_skills.unwrap_or(false));
@@ -162,7 +213,7 @@ pub async fn create_agent(
     spawn_agent_worker(
         AgentParams {
             config,
-            provider,
+            provider: ProviderBox(provider),
             working_directory: work_dir,
             mcp_servers: mcp_servers.unwrap_or_default(),
         },

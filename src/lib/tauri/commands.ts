@@ -133,3 +133,46 @@ export async function saveHandoffBundle(tabId: string, filePath: string): Promis
 export async function loadHandoffBundle(filePath: string): Promise<unknown> {
   return invoke("load_handoff_bundle", { filePath });
 }
+
+// ── Provider OAuth commands ──
+
+export interface DeviceCodeStartResponse {
+  deviceCode: string;
+  verificationUri: string;
+  userCode: string;
+  expiresInSecs: number;
+  intervalSecs: number;
+}
+
+export interface ProviderAuthStatusResponse {
+  provider: string;
+  status: string;
+  expiresAt?: number;
+  reason?: string;
+}
+
+export async function startProviderOAuth(
+  providerId: string,
+): Promise<DeviceCodeStartResponse> {
+  return invoke("start_provider_oauth", { providerId });
+}
+
+export async function pollProviderOAuth(
+  providerId: string,
+  deviceCode: string,
+): Promise<ProviderAuthStatusResponse> {
+  return invoke("poll_provider_oauth", { providerId, deviceCode });
+}
+
+export async function disconnectProviderOAuth(
+  providerId: string,
+): Promise<void> {
+  return invoke("disconnect_provider_oauth", { providerId });
+}
+
+export async function getProviderAuthStatus(
+  providerId: string,
+  apiKey?: string,
+): Promise<ProviderAuthStatusResponse> {
+  return invoke("get_provider_auth_status", { providerId, apiKey });
+}

@@ -284,7 +284,7 @@ pub struct McpServerConfigJson {
 /// Parameters needed to create an agent on the worker thread.
 pub struct AgentParams {
     pub config: iron_core::Config,
-    pub provider: iron_providers::GenericProvider,
+    pub provider: ProviderBox,
     pub working_directory: PathBuf,
     pub mcp_servers: Vec<McpServerConfigJson>,
 }
@@ -297,16 +297,32 @@ pub struct AgentHandle {
     pub name: String,
 }
 
+use iron_core::provider_credential::resolver::CredentialResolver;
+use crate::provider_box::ProviderBox;
+
 /// Managed application state held by Tauri.
 pub struct AppState {
     pub agents: Arc<RwLock<HashMap<String, AgentHandle>>>,
+    pub credential_store: Option<std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>>,
+    pub credential_resolver: Option<Arc<CredentialResolver>>,
 }
 
 impl AppState {
     pub fn new() -> Self {
         Self {
             agents: Arc::new(RwLock::new(HashMap::new())),
+            credential_store: None,
+            credential_resolver: None,
         }
+    }
+
+    pub fn with_credential_store(
+        mut self,
+        store: std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>,
+    ) -> Self {
+        self.credential_store = Some(store.clone());
+        self.credential_resolver = Some(Arc::new(CredentialResolver::new(store)));
+        self
     }
 }
 
