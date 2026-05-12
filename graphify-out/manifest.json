@@ -1,0 +1,506 @@
+{
+  "/home/pmooring/src/AgentIron/AgentIron/eslint.config.js": {
+    "mtime": 1776665427.3033683,
+    "hash": "2e0d5cb5886b7c8705b447480adbbc35"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/vite.config.ts": {
+    "mtime": 1776055042.1889393,
+    "hash": "30df2d1e3ed3a749c9fde7ccd05456df"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/build.rs": {
+    "mtime": 1776055042.1865778,
+    "hash": "1be34a5c61c2c35365de3dab14298f0b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/migrations/001_initial.sql": {
+    "mtime": 1776055042.1870232,
+    "hash": "6d3973b716c7252ea0e7579fe610cff2"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/main.rs": {
+    "mtime": 1776665922.8046296,
+    "hash": "ec57c8a695533b5566bc4c74ac24a6dd"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/lib.rs": {
+    "mtime": 1778128611.5693624,
+    "hash": "6bb443cacd433ed7e739f5183e59fc8a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/state.rs": {
+    "mtime": 1778128611.5693624,
+    "hash": "1ef47d28fcdfa3138a90d30ab28257fe"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/mod.rs": {
+    "mtime": 1776055042.1876826,
+    "hash": "7e1d732a82cc3b17461ad905b2c984c8"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/chat.rs": {
+    "mtime": 1777263743.5586152,
+    "hash": "1006c88d7cea615227e668f1b917ebba"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/models.rs": {
+    "mtime": 1777263743.5586152,
+    "hash": "f82b7370b196c9262af13be86b8f6a9b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/snip.rs": {
+    "mtime": 1777606266.1564121,
+    "hash": "3096757f31164f2b1efc3a4d80dcf289"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/src/commands/agent.rs": {
+    "mtime": 1778128611.5693624,
+    "hash": "60ee8c7aecb92e8ac813726892e50464"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/App.tsx": {
+    "mtime": 1776055042.1876826,
+    "hash": "48b901b83d8965c06947636ef15956a5"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/index.tsx": {
+    "mtime": 1776055042.1886332,
+    "hash": "2b3d8e3ad54397e65bdd16265d9443e7"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/vite-env.d.ts": {
+    "mtime": 1776055042.1889393,
+    "hash": "0352474ba2918efe13895edbc3780d94"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/agents/AgentCard.tsx": {
+    "mtime": 1776055042.1878784,
+    "hash": "96d72a411745ed2fffdf44f79a5e23f5"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/agents/AgentList.tsx": {
+    "mtime": 1776055042.1878982,
+    "hash": "a50d2aad68474ad033771ee99dd6bf88"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/agents/AgentConfig.tsx": {
+    "mtime": 1777263743.5586152,
+    "hash": "9f9884ca67d408d61231a5d89c6df3b2"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ApprovalBar.tsx": {
+    "mtime": 1776055042.1878982,
+    "hash": "0ffa4db7955e10e34709dc4623df2db6"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/CodeBlock.tsx": {
+    "mtime": 1776665504.2908554,
+    "hash": "5a8b791d988d8ad90fe72cbabd71e2bd"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ContextIndicator.tsx": {
+    "mtime": 1776055042.187954,
+    "hash": "ad9276764707fda524492974b23e9ae4"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/DirectoryIndicator.tsx": {
+    "mtime": 1776666435.1320834,
+    "hash": "7c958b4453018ed2b1c4c1f586201515"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ToolCallMessage.tsx": {
+    "mtime": 1776055042.187954,
+    "hash": "e72cc60e0be505ba8a0063ecbeb5a60b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/groupEntries.ts": {
+    "mtime": 1776055042.187954,
+    "hash": "6609e18ebbe260865b761596062aedaa"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ToolActivityLine.tsx": {
+    "mtime": 1777263743.5586152,
+    "hash": "35ded43ca0c041cb1ec7d523f12aab7c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ToolActivitySummary.tsx": {
+    "mtime": 1777263743.5586152,
+    "hash": "8a3f178d2fba9dbf3c7e5c6646795c89"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/MarkdownRenderer.tsx": {
+    "mtime": 1777267335.3295434,
+    "hash": "891153e9a5695791fcbc69988a0352d5"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/MessageBubble.tsx": {
+    "mtime": 1777521573.848859,
+    "hash": "d11e680cd4715d87e844c69739e88d9a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ChatArea.tsx": {
+    "mtime": 1777606266.157412,
+    "hash": "383650f94e4037b8e7c43c2530a00c38"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/MessageInput.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "1d555baf4b5cf81f45290cc047ff4eb7"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ModelSwitcher.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "131d1ca1d6a6c7ad01e93cd7a6e10100"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/ToolDetailRenderers.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "e7e4bdb2f265e25f24da8d692ba8f4d9"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/chat/toolUtils.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "375ba68224ab25e2ea487eadfe988057"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/common/Input.tsx": {
+    "mtime": 1776055042.1882322,
+    "hash": "1be49db95aa0133f3fb4520ffebc8478"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/common/Modal.tsx": {
+    "mtime": 1777267335.3295434,
+    "hash": "d1ef79468bfc2a56d33a1fb0f6c5a4ce"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/common/Button.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "05f580276e0b90fd9eb15513bd94fcb9"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/AppShell.tsx": {
+    "mtime": 1776666435.1318169,
+    "hash": "20ce1c36f4c43dc29c0250b20d190dc0"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/Tab.tsx": {
+    "mtime": 1776055042.1882784,
+    "hash": "16c801bd4c6cdbebedb838d342d09503"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/TabBar.tsx": {
+    "mtime": 1776666444.2806447,
+    "hash": "194eeccc208cf8e53f8145fb12972045"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/layout/Sidebar.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "ba67be220de76945ab7c4edb651d953a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/mcp/McpPanel.tsx": {
+    "mtime": 1776055042.1882784,
+    "hash": "feedf21d3c47e913f2c28516650d2440"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/mcp/McpServerCard.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "05f720d217a11bc5d3f4560be5268318"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/mcp/McpServerDetail.tsx": {
+    "mtime": 1778128611.5703623,
+    "hash": "cc531d36b3c401f539c57ffa9d03bd7b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/quicklaunch/CommandInput.tsx": {
+    "mtime": 1776055042.188341,
+    "hash": "6adcc4549ac851b4bdc4a221ec157588"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/quicklaunch/CommandResults.tsx": {
+    "mtime": 1776665504.2923064,
+    "hash": "fa83b4ad25c9cbdc4c4b95d1554535a5"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/quicklaunch/QuickLaunchOverlay.tsx": {
+    "mtime": 1776055042.1883993,
+    "hash": "043a90d7d45cd66fe7b4f32089c89690"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/UserSettings.tsx": {
+    "mtime": 1776055042.188442,
+    "hash": "de7ec50589eaeb9d6211cb02bbb2764f"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/SettingsPanel.tsx": {
+    "mtime": 1777263743.5586152,
+    "hash": "0143602f398f8f99bdf784c6ca2eb904"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/ApiKeyPrompt.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "c420e4d039fb0111d0e4a7f0f11cdc6e"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/PluginsSettings.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "5db2942649b67236c3201a0f2743c472"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/SkillsSettings.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "87622978e87a07db4307027ed96062ab"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/ProviderSettings.tsx": {
+    "mtime": 1778047420.8474073,
+    "hash": "cb5ae258724fe2a70b56344a9d722303"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/settings/McpSettings.tsx": {
+    "mtime": 1778128611.5703623,
+    "hash": "fa70bb88ad92611cd1dc00272abb2385"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/snip/SnipOverlay.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "5af445ae399e83d1eb244676589a3969"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/tasks/TaskForm.tsx": {
+    "mtime": 1776055042.188442,
+    "hash": "04b7696cadd56dc2ac2b30f9355b5fed"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/tasks/TaskList.tsx": {
+    "mtime": 1776055042.188586,
+    "hash": "a6af5255d17820271d41d3ceeb8f0008"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/components/tasks/TaskScheduler.tsx": {
+    "mtime": 1776055042.188586,
+    "hash": "0e18de2e6856bfa3073ee4f8b9d86e09"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/context/UIContext.tsx": {
+    "mtime": 1776055042.1886332,
+    "hash": "bc6920818a65be93dda6ce2415a4b621"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/context/AgentContext.tsx": {
+    "mtime": 1777263743.5586152,
+    "hash": "98138cfb6631f79d8e4739ae75af35d8"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/context/ChatContext.tsx": {
+    "mtime": 1777606266.158558,
+    "hash": "75f3b118cfa7aee2795f852fbb5b2df8"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/context/SettingsContext.tsx": {
+    "mtime": 1777606266.1594121,
+    "hash": "5a50cc775a00bdf98e6fd69a4db26194"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/context/McpContext.tsx": {
+    "mtime": 1778128611.5703623,
+    "hash": "34a7a2617015b950d2875c8f22d141e3"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/models.ts": {
+    "mtime": 1776055042.1887605,
+    "hash": "03fe97426606a2507b999ca5fbf3623f"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/timeago.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "d0ed5ab20c3d9c33f5608bb4367fca8e"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tools.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "cfcdb9f6b07d55588433f5589becd426"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/acp/events.ts": {
+    "mtime": 1776055042.1887605,
+    "hash": "797b36e062456e95df84d7ee61d70c3f"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/acp/types.ts": {
+    "mtime": 1777263743.5586152,
+    "hash": "53b4d6ab039999b20616d8595b6f9c24"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/acp/client.ts": {
+    "mtime": 1777606266.1594121,
+    "hash": "4bc0d7c62d3e5e3d019cf1f1459c9b30"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/autostart.ts": {
+    "mtime": 1776055042.1887605,
+    "hash": "8cf44cbd16a84ddfb5e395662bde03c5"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/db.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "a1e4951c04d1ffbb0ec067d87a1018a7"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/events.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "d1e63f12f258709320590b7ecb6b38ea"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/shortcuts.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "42da5cb7a465499e9873235cca2e1410"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/tray.ts": {
+    "mtime": 1776055042.1888175,
+    "hash": "47c751ee4982daa7cf328377970887f6"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/lib/tauri/commands.ts": {
+    "mtime": 1778128611.5703623,
+    "hash": "622fc5054fedf22767ef21366a2d4d6a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/types/message.ts": {
+    "mtime": 1776055042.1889393,
+    "hash": "5764a7d8214aa2a3dd4e674c410ba3cb"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/types/plugin.ts": {
+    "mtime": 1776055042.1889393,
+    "hash": "02c99ec5d0d5fefcf7bfdd0e73765c94"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/types/task.ts": {
+    "mtime": 1776055042.1889393,
+    "hash": "7fdb127ad61bed533ef01a118e4a2f23"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/types/agent.ts": {
+    "mtime": 1777263743.5586152,
+    "hash": "c2356b3dbf7845edf9cc8797310f8c59"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/types/settings.ts": {
+    "mtime": 1778128611.5703623,
+    "hash": "3ee7ca3d27e7cab2e6a2e8a0eecebf53"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/scripts/bump_version.py": {
+    "mtime": 1777263743.5586152,
+    "hash": "15bd17285e994f3eccb85149375760b0"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/CLAUDE.md": {
+    "mtime": 1776055042.1860502,
+    "hash": "993702663fc6b08f0a97c3129721f03c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/index.html": {
+    "mtime": 1776055042.1860502,
+    "hash": "3f17c460c92bab4ce5b62cb38a8e8710"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/README.md": {
+    "mtime": 1777606266.1500716,
+    "hash": "4ec3b5349d6e229cdc22dc647937e218"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/AGENTS.md": {
+    "mtime": 1778555837.2734406,
+    "hash": "da79aa9343cd2b362206f03762160abc"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/config.yaml": {
+    "mtime": 1776744670.3701842,
+    "hash": "9e3e7672b387a282583011181ab35f9a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-auth-and-rich-results/design.md": {
+    "mtime": 1777263743.557724,
+    "hash": "b60ba9a5ca1613d83a464d39cb43eadd"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-auth-and-rich-results/proposal.md": {
+    "mtime": 1777263743.557724,
+    "hash": "0cad9504d671b99ffe216976ba4fa17b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-auth-and-rich-results/tasks.md": {
+    "mtime": 1777263743.5578194,
+    "hash": "7c21d40a011fe3b005221d2c0771aaab"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-auth-and-rich-results/specs/plugin-auth-and-rich-results/spec.md": {
+    "mtime": 1777263743.5578194,
+    "hash": "f05197afcceeff3c10d63128b8d6ff14"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-runtime-support/design.md": {
+    "mtime": 1777263743.5579994,
+    "hash": "398efffe7e076962bc5f8997ecf17883"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-runtime-support/proposal.md": {
+    "mtime": 1777263743.5579994,
+    "hash": "de0da24eaeb77ad68c7f0e51fcb49d3f"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-runtime-support/tasks.md": {
+    "mtime": 1777263743.5582266,
+    "hash": "931f8a274773d5b18b666c2942dced4b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-plugin-runtime-support/specs/plugin-runtime-support/spec.md": {
+    "mtime": 1777263743.5582266,
+    "hash": "4c972fd87d183be4267c20513277a326"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-release-builds/design.md": {
+    "mtime": 1777263743.5583434,
+    "hash": "f8d237ac69ca06fa913f7b346408ada0"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-release-builds/proposal.md": {
+    "mtime": 1777263743.5583434,
+    "hash": "0578cad62af8a27924c2b269bcdf3c87"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-release-builds/tasks.md": {
+    "mtime": 1777263743.5584004,
+    "hash": "72167748037c7d950dfe1aa32b109179"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/add-release-builds/specs/release-builds/spec.md": {
+    "mtime": 1777263743.5584004,
+    "hash": "c908dcb3ed839e070d6d971c1ae8ad6c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-runtime-control-and-transport-support/design.md": {
+    "mtime": 1777263743.5584717,
+    "hash": "13ce73f55e16b97dc8375ec0bb30e6b8"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-runtime-control-and-transport-support/proposal.md": {
+    "mtime": 1777263743.5584717,
+    "hash": "4b0db1e0a8798b65df726eac77bfc717"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-runtime-control-and-transport-support/tasks.md": {
+    "mtime": 1777263743.5585122,
+    "hash": "828a69375616b39517035c45eaab8821"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-runtime-control-and-transport-support/specs/runtime-control-and-transport-support/spec.md": {
+    "mtime": 1777263743.5585122,
+    "hash": "666d72ba8cbaf938a8fc45a8ae828d8c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-skills-and-handoff-support/design.md": {
+    "mtime": 1777263743.5585763,
+    "hash": "d2ad14d0145d75570fab74b8203b8236"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-skills-and-handoff-support/proposal.md": {
+    "mtime": 1777263743.5585763,
+    "hash": "a9b70a8feeaea965e08cb6a1614c448a"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-skills-and-handoff-support/tasks.md": {
+    "mtime": 1777263743.5586152,
+    "hash": "202a9a03d50a3f08bb359b8824d4bec0"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/archive/2026-04-20-add-skills-and-handoff-support/specs/skills-and-handoff-support/spec.md": {
+    "mtime": 1777263743.5586152,
+    "hash": "ee09b6feb94ece7a759a36d2be7f7d1f"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/simplify-manual-release-workflow/design.md": {
+    "mtime": 1777606266.150423,
+    "hash": "7f5fe94c7d0e457dae6fdc42d1df401c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/simplify-manual-release-workflow/proposal.md": {
+    "mtime": 1777606266.150423,
+    "hash": "b36e28be255b01f933bfe86b780715df"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/simplify-manual-release-workflow/tasks.md": {
+    "mtime": 1777606266.1505258,
+    "hash": "1257ff873bbeb1fd977b29615ee20215"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/openspec/changes/simplify-manual-release-workflow/specs/release-workflow/spec.md": {
+    "mtime": 1777606266.1505258,
+    "hash": "61d31d6f77eb39213f678cabea99f77e"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/public/tauri.svg": {
+    "mtime": 1776055042.1860502,
+    "hash": "f49b888a6830a38f02ffeb65891186b1"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/public/vite.svg": {
+    "mtime": 1776055042.1865442,
+    "hash": "8e3a10e157f75ada21ab742c022d5430"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/128x128.png": {
+    "mtime": 1776055042.1865778,
+    "hash": "fdd248e915476e6212afcb096c330992"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/128x128@2x.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "fd32cf41af4c52d279b92e9c61676130"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/32x32.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "1344a8f2569a67c695807140fb49cf10"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square107x107Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "24754965fb63f23a0fad45db0ef2554b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square142x142Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "55d92879c6bd61fc7e79a84e1dcc51f6"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square150x150Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "6e41a89b0a2b484f3e7f1b3a5db65730"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square284x284Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "b5f57838809a4d93eed8ef656ce7c2c4"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square30x30Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "7a18f38b895070303fda351bd8ae757d"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square310x310Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "eeabbd0c2b13960e089e468c20f99e51"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square44x44Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "42c67a38757b409cec4b6eb0c25c714c"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square71x71Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "0670843e2fc39a0e53817a47b2b3399d"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/Square89x89Logo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "2bfa099bf584686f0dd98cfafb10bda3"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/StoreLogo.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "02859e2326344ae7c9559f1af0abba34"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src-tauri/icons/icon.png": {
+    "mtime": 1776055042.1870232,
+    "hash": "3fa4420986811b429d7f1654da77ac3b"
+  },
+  "/home/pmooring/src/AgentIron/AgentIron/src/assets/logo.svg": {
+    "mtime": 1776055042.187852,
+    "hash": "2be7a61a1b41e2d88c3130948efad4a3"
+  }
+}
