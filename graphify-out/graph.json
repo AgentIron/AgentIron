@@ -8,1764 +8,1764 @@
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L1",
-      "id": "openspec_changes_support_provider_oauth_authentication_design_md",
       "community": 12,
-      "norm_label": "design.md"
+      "norm_label": "design.md",
+      "id": "openspec_changes_support_provider_oauth_authentication_design_md"
     },
     {
       "label": "Context",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L1",
-      "id": "support_provider_oauth_authentication_design_context",
       "community": 12,
-      "norm_label": "context"
+      "norm_label": "context",
+      "id": "support_provider_oauth_authentication_design_context"
     },
     {
       "label": "Goals / Non-Goals",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L15",
-      "id": "support_provider_oauth_authentication_design_goals_non_goals",
       "community": 12,
-      "norm_label": "goals / non-goals"
+      "norm_label": "goals / non-goals",
+      "id": "support_provider_oauth_authentication_design_goals_non_goals"
     },
     {
       "label": "Decisions",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L37",
-      "id": "support_provider_oauth_authentication_design_decisions",
       "community": 12,
-      "norm_label": "decisions"
+      "norm_label": "decisions",
+      "id": "support_provider_oauth_authentication_design_decisions"
     },
     {
       "label": "Use SQLite for the first OAuth credential store",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L39",
-      "id": "support_provider_oauth_authentication_design_use_sqlite_for_the_first_oauth_credential_store",
       "community": 12,
-      "norm_label": "use sqlite for the first oauth credential store"
+      "norm_label": "use sqlite for the first oauth credential store",
+      "id": "support_provider_oauth_authentication_design_use_sqlite_for_the_first_oauth_credential_store"
     },
     {
       "label": "Keep API keys in existing settings for this change",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L50",
-      "id": "support_provider_oauth_authentication_design_keep_api_keys_in_existing_settings_for_this_change",
       "community": 12,
-      "norm_label": "keep api keys in existing settings for this change"
+      "norm_label": "keep api keys in existing settings for this change",
+      "id": "support_provider_oauth_authentication_design_keep_api_keys_in_existing_settings_for_this_change"
     },
     {
       "label": "Do not add an auth-mode preference for the MVP",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L56",
-      "id": "support_provider_oauth_authentication_design_do_not_add_an_auth_mode_preference_for_the_mvp",
       "community": 12,
-      "norm_label": "do not add an auth-mode preference for the mvp"
+      "norm_label": "do not add an auth-mode preference for the mvp",
+      "id": "support_provider_oauth_authentication_design_do_not_add_an_auth_mode_preference_for_the_mvp"
     },
     {
       "label": "code:text (if provider has a non-empty API key:)",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L60",
-      "id": "support_provider_oauth_authentication_design_codeblock_1",
       "community": 12,
-      "norm_label": "code:text (if provider has a non-empty api key:)"
+      "norm_label": "code:text (if provider has a non-empty api key:)",
+      "id": "support_provider_oauth_authentication_design_codeblock_1"
     },
     {
       "label": "Use frontend-owned device-code polling",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L71",
-      "id": "support_provider_oauth_authentication_design_use_frontend_owned_device_code_polling",
       "community": 12,
-      "norm_label": "use frontend-owned device-code polling"
+      "norm_label": "use frontend-owned device-code polling",
+      "id": "support_provider_oauth_authentication_design_use_frontend_owned_device_code_polling"
     },
     {
       "label": "Cache provider auth status in frontend state",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L77",
-      "id": "support_provider_oauth_authentication_design_cache_provider_auth_status_in_frontend_state",
       "community": 12,
-      "norm_label": "cache provider auth status in frontend state"
+      "norm_label": "cache provider auth status in frontend state",
+      "id": "support_provider_oauth_authentication_design_cache_provider_auth_status_in_frontend_state"
     },
     {
       "label": "Wait for provider auth statuses before default session creation",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L83",
-      "id": "support_provider_oauth_authentication_design_wait_for_provider_auth_statuses_before_default_session_creation",
       "community": 12,
-      "norm_label": "wait for provider auth statuses before default session creation"
+      "norm_label": "wait for provider auth statuses before default session creation",
+      "id": "support_provider_oauth_authentication_design_wait_for_provider_auth_statuses_before_default_session_creation"
     },
     {
       "label": "Use `ProviderRegistry::default()` for provider construction",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L87",
-      "id": "support_provider_oauth_authentication_design_use_providerregistry_default_for_provider_construction",
       "community": 12,
-      "norm_label": "use `providerregistry::default()` for provider construction"
+      "norm_label": "use `providerregistry::default()` for provider construction",
+      "id": "support_provider_oauth_authentication_design_use_providerregistry_default_for_provider_construction"
     },
     {
       "label": "Keep the existing provider-injection worker architecture",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L93",
-      "id": "support_provider_oauth_authentication_design_keep_the_existing_provider_injection_worker_architecture",
       "community": 12,
-      "norm_label": "keep the existing provider-injection worker architecture"
+      "norm_label": "keep the existing provider-injection worker architecture",
+      "id": "support_provider_oauth_authentication_design_keep_the_existing_provider_injection_worker_architecture"
     },
     {
       "label": "Risks / Trade-offs",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L99",
-      "id": "support_provider_oauth_authentication_design_risks_trade_offs",
       "community": 12,
-      "norm_label": "risks / trade-offs"
+      "norm_label": "risks / trade-offs",
+      "id": "support_provider_oauth_authentication_design_risks_trade_offs"
     },
     {
       "label": "Migration Plan",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L108",
-      "id": "support_provider_oauth_authentication_design_migration_plan",
       "community": 12,
-      "norm_label": "migration plan"
+      "norm_label": "migration plan",
+      "id": "support_provider_oauth_authentication_design_migration_plan"
     },
     {
       "label": "Open Questions",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/design.md",
       "source_location": "L116",
-      "id": "support_provider_oauth_authentication_design_open_questions",
       "community": 12,
-      "norm_label": "open questions"
+      "norm_label": "open questions",
+      "id": "support_provider_oauth_authentication_design_open_questions"
     },
     {
       "label": "proposal.md",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L1",
-      "id": "openspec_changes_support_provider_oauth_authentication_proposal_md",
       "community": 25,
-      "norm_label": "proposal.md"
+      "norm_label": "proposal.md",
+      "id": "openspec_changes_support_provider_oauth_authentication_proposal_md"
     },
     {
       "label": "Why",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L1",
-      "id": "support_provider_oauth_authentication_proposal_why",
       "community": 25,
-      "norm_label": "why"
+      "norm_label": "why",
+      "id": "support_provider_oauth_authentication_proposal_why"
     },
     {
       "label": "What Changes",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L5",
-      "id": "support_provider_oauth_authentication_proposal_what_changes",
       "community": 25,
-      "norm_label": "what changes"
+      "norm_label": "what changes",
+      "id": "support_provider_oauth_authentication_proposal_what_changes"
     },
     {
       "label": "Capabilities",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L15",
-      "id": "support_provider_oauth_authentication_proposal_capabilities",
       "community": 25,
-      "norm_label": "capabilities"
+      "norm_label": "capabilities",
+      "id": "support_provider_oauth_authentication_proposal_capabilities"
     },
     {
       "label": "New Capabilities",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L17",
-      "id": "support_provider_oauth_authentication_proposal_new_capabilities",
       "community": 25,
-      "norm_label": "new capabilities"
+      "norm_label": "new capabilities",
+      "id": "support_provider_oauth_authentication_proposal_new_capabilities"
     },
     {
       "label": "Modified Capabilities",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L20",
-      "id": "support_provider_oauth_authentication_proposal_modified_capabilities",
       "community": 25,
-      "norm_label": "modified capabilities"
+      "norm_label": "modified capabilities",
+      "id": "support_provider_oauth_authentication_proposal_modified_capabilities"
     },
     {
       "label": "Impact",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/proposal.md",
       "source_location": "L22",
-      "id": "support_provider_oauth_authentication_proposal_impact",
       "community": 25,
-      "norm_label": "impact"
+      "norm_label": "impact",
+      "id": "support_provider_oauth_authentication_proposal_impact"
     },
     {
       "label": "spec.md",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L1",
-      "id": "openspec_changes_support_provider_oauth_authentication_specs_provider_oauth_authentication_spec_md",
       "community": 7,
-      "norm_label": "spec.md"
+      "norm_label": "spec.md",
+      "id": "openspec_changes_support_provider_oauth_authentication_specs_provider_oauth_authentication_spec_md"
     },
     {
       "label": "ADDED Requirements",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L1",
-      "id": "provider_oauth_authentication_spec_added_requirements",
       "community": 7,
-      "norm_label": "added requirements"
+      "norm_label": "added requirements",
+      "id": "provider_oauth_authentication_spec_added_requirements"
     },
     {
       "label": "Requirement: AgentIron SHALL store OAuth provider credentials separately from settings JSON",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L3",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_store_oauth_provider_credentials_separately_from_settings_json",
       "community": 7,
-      "norm_label": "requirement: agentiron shall store oauth provider credentials separately from settings json"
+      "norm_label": "requirement: agentiron shall store oauth provider credentials separately from settings json",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_store_oauth_provider_credentials_separately_from_settings_json"
     },
     {
       "label": "Scenario: OAuth credential is saved after token exchange",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L6",
-      "id": "provider_oauth_authentication_spec_scenario_oauth_credential_is_saved_after_token_exchange",
       "community": 7,
-      "norm_label": "scenario: oauth credential is saved after token exchange"
+      "norm_label": "scenario: oauth credential is saved after token exchange",
+      "id": "provider_oauth_authentication_spec_scenario_oauth_credential_is_saved_after_token_exchange"
     },
     {
       "label": "Scenario: Existing API keys remain in provider settings",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L10",
-      "id": "provider_oauth_authentication_spec_scenario_existing_api_keys_remain_in_provider_settings",
       "community": 7,
-      "norm_label": "scenario: existing api keys remain in provider settings"
+      "norm_label": "scenario: existing api keys remain in provider settings",
+      "id": "provider_oauth_authentication_spec_scenario_existing_api_keys_remain_in_provider_settings"
     },
     {
       "label": "Requirement: AgentIron SHALL use explicit API keys before OAuth credentials",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L14",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_use_explicit_api_keys_before_oauth_credentials",
       "community": 7,
-      "norm_label": "requirement: agentiron shall use explicit api keys before oauth credentials"
+      "norm_label": "requirement: agentiron shall use explicit api keys before oauth credentials",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_use_explicit_api_keys_before_oauth_credentials"
     },
     {
       "label": "Scenario: Provider has both API key and OAuth credential",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L17",
-      "id": "provider_oauth_authentication_spec_scenario_provider_has_both_api_key_and_oauth_credential",
       "community": 7,
-      "norm_label": "scenario: provider has both api key and oauth credential"
+      "norm_label": "scenario: provider has both api key and oauth credential",
+      "id": "provider_oauth_authentication_spec_scenario_provider_has_both_api_key_and_oauth_credential"
     },
     {
       "label": "Scenario: Provider has OAuth credential and no API key",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L21",
-      "id": "provider_oauth_authentication_spec_scenario_provider_has_oauth_credential_and_no_api_key",
       "community": 7,
-      "norm_label": "scenario: provider has oauth credential and no api key"
+      "norm_label": "scenario: provider has oauth credential and no api key",
+      "id": "provider_oauth_authentication_spec_scenario_provider_has_oauth_credential_and_no_api_key"
     },
     {
       "label": "Requirement: AgentIron SHALL expose device-code OAuth provider commands",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L25",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_expose_device_code_oauth_provider_commands",
       "community": 7,
-      "norm_label": "requirement: agentiron shall expose device-code oauth provider commands"
+      "norm_label": "requirement: agentiron shall expose device-code oauth provider commands",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_expose_device_code_oauth_provider_commands"
     },
     {
       "label": "Scenario: User starts device-code OAuth",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L28",
-      "id": "provider_oauth_authentication_spec_scenario_user_starts_device_code_oauth",
       "community": 7,
-      "norm_label": "scenario: user starts device-code oauth"
+      "norm_label": "scenario: user starts device-code oauth",
+      "id": "provider_oauth_authentication_spec_scenario_user_starts_device_code_oauth"
     },
     {
       "label": "Scenario: Frontend polls OAuth token exchange",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L32",
-      "id": "provider_oauth_authentication_spec_scenario_frontend_polls_oauth_token_exchange",
       "community": 7,
-      "norm_label": "scenario: frontend polls oauth token exchange"
+      "norm_label": "scenario: frontend polls oauth token exchange",
+      "id": "provider_oauth_authentication_spec_scenario_frontend_polls_oauth_token_exchange"
     },
     {
       "label": "Scenario: User disconnects OAuth",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L36",
-      "id": "provider_oauth_authentication_spec_scenario_user_disconnects_oauth",
       "community": 7,
-      "norm_label": "scenario: user disconnects oauth"
+      "norm_label": "scenario: user disconnects oauth",
+      "id": "provider_oauth_authentication_spec_scenario_user_disconnects_oauth"
     },
     {
       "label": "Scenario: Frontend requests provider auth status",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L40",
-      "id": "provider_oauth_authentication_spec_scenario_frontend_requests_provider_auth_status",
       "community": 7,
-      "norm_label": "scenario: frontend requests provider auth status"
+      "norm_label": "scenario: frontend requests provider auth status",
+      "id": "provider_oauth_authentication_spec_scenario_frontend_requests_provider_auth_status"
     },
     {
       "label": "Requirement: AgentIron SHALL load provider auth status before automatic session creation",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L44",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_load_provider_auth_status_before_automatic_session_creation",
       "community": 7,
-      "norm_label": "requirement: agentiron shall load provider auth status before automatic session creation"
+      "norm_label": "requirement: agentiron shall load provider auth status before automatic session creation",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_load_provider_auth_status_before_automatic_session_creation"
     },
     {
       "label": "Scenario: Default provider is OAuth-connected",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L47",
-      "id": "provider_oauth_authentication_spec_scenario_default_provider_is_oauth_connected",
       "community": 7,
-      "norm_label": "scenario: default provider is oauth-connected"
+      "norm_label": "scenario: default provider is oauth-connected",
+      "id": "provider_oauth_authentication_spec_scenario_default_provider_is_oauth_connected"
     },
     {
       "label": "Scenario: Default provider status is not configured",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L51",
-      "id": "provider_oauth_authentication_spec_scenario_default_provider_status_is_not_configured",
       "community": 7,
-      "norm_label": "scenario: default provider status is not configured"
+      "norm_label": "scenario: default provider status is not configured",
+      "id": "provider_oauth_authentication_spec_scenario_default_provider_status_is_not_configured"
     },
     {
       "label": "Requirement: AgentIron SHALL refresh OAuth access tokens during provider resolution",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L55",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_refresh_oauth_access_tokens_during_provider_resolution",
       "community": 7,
-      "norm_label": "requirement: agentiron shall refresh oauth access tokens during provider resolution"
+      "norm_label": "requirement: agentiron shall refresh oauth access tokens during provider resolution",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_refresh_oauth_access_tokens_during_provider_resolution"
     },
     {
       "label": "Scenario: OAuth access token needs refresh",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L58",
-      "id": "provider_oauth_authentication_spec_scenario_oauth_access_token_needs_refresh",
       "community": 7,
-      "norm_label": "scenario: oauth access token needs refresh"
+      "norm_label": "scenario: oauth access token needs refresh",
+      "id": "provider_oauth_authentication_spec_scenario_oauth_access_token_needs_refresh"
     },
     {
       "label": "Scenario: OAuth refresh fails",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L62",
-      "id": "provider_oauth_authentication_spec_scenario_oauth_refresh_fails",
       "community": 7,
-      "norm_label": "scenario: oauth refresh fails"
+      "norm_label": "scenario: oauth refresh fails",
+      "id": "provider_oauth_authentication_spec_scenario_oauth_refresh_fails"
     },
     {
       "label": "Requirement: AgentIron SHALL construct providers through the upstream provider registry",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L66",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_construct_providers_through_the_upstream_provider_registry",
       "community": 7,
-      "norm_label": "requirement: agentiron shall construct providers through the upstream provider registry"
+      "norm_label": "requirement: agentiron shall construct providers through the upstream provider registry",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_construct_providers_through_the_upstream_provider_registry"
     },
     {
       "label": "Scenario: Codex provider is selected",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L69",
-      "id": "provider_oauth_authentication_spec_scenario_codex_provider_is_selected",
       "community": 7,
-      "norm_label": "scenario: codex provider is selected"
+      "norm_label": "scenario: codex provider is selected",
+      "id": "provider_oauth_authentication_spec_scenario_codex_provider_is_selected"
     },
     {
       "label": "Scenario: Kimi Code provider is selected",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L73",
-      "id": "provider_oauth_authentication_spec_scenario_kimi_code_provider_is_selected",
       "community": 7,
-      "norm_label": "scenario: kimi code provider is selected"
+      "norm_label": "scenario: kimi code provider is selected",
+      "id": "provider_oauth_authentication_spec_scenario_kimi_code_provider_is_selected"
     },
     {
       "label": "Requirement: AgentIron SHALL include Codex in provider selection",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L77",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_include_codex_in_provider_selection",
       "community": 7,
-      "norm_label": "requirement: agentiron shall include codex in provider selection"
+      "norm_label": "requirement: agentiron shall include codex in provider selection",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_include_codex_in_provider_selection"
     },
     {
       "label": "Scenario: User views provider settings",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L80",
-      "id": "provider_oauth_authentication_spec_scenario_user_views_provider_settings",
       "community": 7,
-      "norm_label": "scenario: user views provider settings"
+      "norm_label": "scenario: user views provider settings",
+      "id": "provider_oauth_authentication_spec_scenario_user_views_provider_settings"
     },
     {
       "label": "Scenario: User selects a Codex model",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L84",
-      "id": "provider_oauth_authentication_spec_scenario_user_selects_a_codex_model",
       "community": 7,
-      "norm_label": "scenario: user selects a codex model"
+      "norm_label": "scenario: user selects a codex model",
+      "id": "provider_oauth_authentication_spec_scenario_user_selects_a_codex_model"
     },
     {
       "label": "Requirement: AgentIron SHALL keep provider-specific OAuth research separate from app integration",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L88",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_keep_provider_specific_oauth_research_separate_from_app_integration",
       "community": 7,
-      "norm_label": "requirement: agentiron shall keep provider-specific oauth research separate from app integration"
+      "norm_label": "requirement: agentiron shall keep provider-specific oauth research separate from app integration",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_keep_provider_specific_oauth_research_separate_from_app_integration"
     },
     {
       "label": "Scenario: Provider OAuth metadata needs correction",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L91",
-      "id": "provider_oauth_authentication_spec_scenario_provider_oauth_metadata_needs_correction",
       "community": 7,
-      "norm_label": "scenario: provider oauth metadata needs correction"
+      "norm_label": "scenario: provider oauth metadata needs correction",
+      "id": "provider_oauth_authentication_spec_scenario_provider_oauth_metadata_needs_correction"
     },
     {
       "label": "Requirement: AgentIron SHALL track OS secure storage as follow-up work",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L95",
-      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_track_os_secure_storage_as_follow_up_work",
       "community": 7,
-      "norm_label": "requirement: agentiron shall track os secure storage as follow-up work"
+      "norm_label": "requirement: agentiron shall track os secure storage as follow-up work",
+      "id": "provider_oauth_authentication_spec_requirement_agentiron_shall_track_os_secure_storage_as_follow_up_work"
     },
     {
       "label": "Scenario: OAuth integration change is prepared",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/specs/provider-oauth-authentication/spec.md",
       "source_location": "L98",
-      "id": "provider_oauth_authentication_spec_scenario_oauth_integration_change_is_prepared",
       "community": 7,
-      "norm_label": "scenario: oauth integration change is prepared"
+      "norm_label": "scenario: oauth integration change is prepared",
+      "id": "provider_oauth_authentication_spec_scenario_oauth_integration_change_is_prepared"
     },
     {
       "label": "tasks.md",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L1",
-      "id": "openspec_changes_support_provider_oauth_authentication_tasks_md",
       "community": 23,
-      "norm_label": "tasks.md"
+      "norm_label": "tasks.md",
+      "id": "openspec_changes_support_provider_oauth_authentication_tasks_md"
     },
     {
       "label": "1. Backend Credential Storage",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L1",
-      "id": "support_provider_oauth_authentication_tasks_1_backend_credential_storage",
       "community": 23,
-      "norm_label": "1. backend credential storage"
+      "norm_label": "1. backend credential storage",
+      "id": "support_provider_oauth_authentication_tasks_1_backend_credential_storage"
     },
     {
       "label": "2. Backend OAuth Commands",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L8",
-      "id": "support_provider_oauth_authentication_tasks_2_backend_oauth_commands",
       "community": 23,
-      "norm_label": "2. backend oauth commands"
+      "norm_label": "2. backend oauth commands",
+      "id": "support_provider_oauth_authentication_tasks_2_backend_oauth_commands"
     },
     {
       "label": "3. Provider Construction",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L17",
-      "id": "support_provider_oauth_authentication_tasks_3_provider_construction",
       "community": 23,
-      "norm_label": "3. provider construction"
+      "norm_label": "3. provider construction",
+      "id": "support_provider_oauth_authentication_tasks_3_provider_construction"
     },
     {
       "label": "4. Frontend Command Bindings And Types",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L25",
-      "id": "support_provider_oauth_authentication_tasks_4_frontend_command_bindings_and_types",
       "community": 23,
-      "norm_label": "4. frontend command bindings and types"
+      "norm_label": "4. frontend command bindings and types",
+      "id": "support_provider_oauth_authentication_tasks_4_frontend_command_bindings_and_types"
     },
     {
       "label": "5. Frontend Auth Status State",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L32",
-      "id": "support_provider_oauth_authentication_tasks_5_frontend_auth_status_state",
       "community": 23,
-      "norm_label": "5. frontend auth status state"
+      "norm_label": "5. frontend auth status state",
+      "id": "support_provider_oauth_authentication_tasks_5_frontend_auth_status_state"
     },
     {
       "label": "6. Provider Settings UX",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L39",
-      "id": "support_provider_oauth_authentication_tasks_6_provider_settings_ux",
       "community": 23,
-      "norm_label": "6. provider settings ux"
+      "norm_label": "6. provider settings ux",
+      "id": "support_provider_oauth_authentication_tasks_6_provider_settings_ux"
     },
     {
       "label": "7. Follow-Up Tracking",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L47",
-      "id": "support_provider_oauth_authentication_tasks_7_follow_up_tracking",
       "community": 23,
-      "norm_label": "7. follow-up tracking"
+      "norm_label": "7. follow-up tracking",
+      "id": "support_provider_oauth_authentication_tasks_7_follow_up_tracking"
     },
     {
       "label": "8. Verification",
       "file_type": "document",
       "source_file": "openspec/changes/support-provider-oauth-authentication/tasks.md",
       "source_location": "L53",
-      "id": "support_provider_oauth_authentication_tasks_8_verification",
       "community": 23,
-      "norm_label": "8. verification"
+      "norm_label": "8. verification",
+      "id": "support_provider_oauth_authentication_tasks_8_verification"
     },
     {
       "label": "agent.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_commands_agent_rs",
       "community": 2,
-      "norm_label": "agent.rs"
+      "norm_label": "agent.rs",
+      "id": "src_tauri_src_commands_agent_rs"
     },
     {
       "label": "AgentInfo",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L14",
-      "id": "commands_agent_agentinfo",
       "community": 2,
-      "norm_label": "agentinfo"
+      "norm_label": "agentinfo",
+      "id": "commands_agent_agentinfo"
     },
     {
       "label": "build_provider()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L24",
-      "id": "commands_agent_build_provider",
       "community": 2,
-      "norm_label": "build_provider()"
+      "norm_label": "build_provider()",
+      "id": "commands_agent_build_provider"
     },
     {
       "label": "credential_resolution_message()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L135",
-      "id": "commands_agent_credential_resolution_message",
       "community": 2,
-      "norm_label": "credential_resolution_message()"
+      "norm_label": "credential_resolution_message()",
+      "id": "commands_agent_credential_resolution_message"
     },
     {
       "label": "create_agent()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L157",
-      "id": "commands_agent_create_agent",
       "community": 2,
-      "norm_label": "create_agent()"
+      "norm_label": "create_agent()",
+      "id": "commands_agent_create_agent"
     },
     {
       "label": "disconnect_agent()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L244",
-      "id": "commands_agent_disconnect_agent",
       "community": 2,
-      "norm_label": "disconnect_agent()"
+      "norm_label": "disconnect_agent()",
+      "id": "commands_agent_disconnect_agent"
     },
     {
       "label": "list_agents()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L256",
-      "id": "commands_agent_list_agents",
       "community": 2,
-      "norm_label": "list_agents()"
+      "norm_label": "list_agents()",
+      "id": "commands_agent_list_agents"
     },
     {
       "label": "register_mcp_server()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L272",
-      "id": "commands_agent_register_mcp_server",
       "community": 2,
-      "norm_label": "register_mcp_server()"
+      "norm_label": "register_mcp_server()",
+      "id": "commands_agent_register_mcp_server"
     },
     {
       "label": "get_mcp_status()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L301",
-      "id": "commands_agent_get_mcp_status",
       "community": 2,
-      "norm_label": "get_mcp_status()"
+      "norm_label": "get_mcp_status()",
+      "id": "commands_agent_get_mcp_status"
     },
     {
       "label": "set_mcp_server_enabled()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L326",
-      "id": "commands_agent_set_mcp_server_enabled",
       "community": 2,
-      "norm_label": "set_mcp_server_enabled()"
+      "norm_label": "set_mcp_server_enabled()",
+      "id": "commands_agent_set_mcp_server_enabled"
     },
     {
       "label": "reconnect_mcp_server()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L357",
-      "id": "commands_agent_reconnect_mcp_server",
       "community": 2,
-      "norm_label": "reconnect_mcp_server()"
+      "norm_label": "reconnect_mcp_server()",
+      "id": "commands_agent_reconnect_mcp_server"
     },
     {
       "label": "refresh_skill_catalog()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L390",
-      "id": "commands_agent_refresh_skill_catalog",
       "community": 2,
-      "norm_label": "refresh_skill_catalog()"
+      "norm_label": "refresh_skill_catalog()",
+      "id": "commands_agent_refresh_skill_catalog"
     },
     {
       "label": "list_available_skills()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L415",
-      "id": "commands_agent_list_available_skills",
       "community": 2,
-      "norm_label": "list_available_skills()"
+      "norm_label": "list_available_skills()",
+      "id": "commands_agent_list_available_skills"
     },
     {
       "label": "activate_skill()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L440",
-      "id": "commands_agent_activate_skill",
       "community": 2,
-      "norm_label": "activate_skill()"
+      "norm_label": "activate_skill()",
+      "id": "commands_agent_activate_skill"
     },
     {
       "label": "deactivate_skill()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L466",
-      "id": "commands_agent_deactivate_skill",
       "community": 2,
-      "norm_label": "deactivate_skill()"
+      "norm_label": "deactivate_skill()",
+      "id": "commands_agent_deactivate_skill"
     },
     {
       "label": "list_active_skills()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L492",
-      "id": "commands_agent_list_active_skills",
       "community": 2,
-      "norm_label": "list_active_skills()"
+      "norm_label": "list_active_skills()",
+      "id": "commands_agent_list_active_skills"
     },
     {
       "label": "export_handoff()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L521",
-      "id": "commands_agent_export_handoff",
       "community": 2,
-      "norm_label": "export_handoff()"
+      "norm_label": "export_handoff()",
+      "id": "commands_agent_export_handoff"
     },
     {
       "label": "import_handoff()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L546",
-      "id": "commands_agent_import_handoff",
       "community": 2,
-      "norm_label": "import_handoff()"
+      "norm_label": "import_handoff()",
+      "id": "commands_agent_import_handoff"
     },
     {
       "label": "save_handoff_bundle()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L575",
-      "id": "commands_agent_save_handoff_bundle",
       "community": 2,
-      "norm_label": "save_handoff_bundle()"
+      "norm_label": "save_handoff_bundle()",
+      "id": "commands_agent_save_handoff_bundle"
     },
     {
       "label": "load_handoff_bundle()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/agent.rs",
       "source_location": "L608",
-      "id": "commands_agent_load_handoff_bundle",
       "community": 2,
-      "norm_label": "load_handoff_bundle()"
+      "norm_label": "load_handoff_bundle()",
+      "id": "commands_agent_load_handoff_bundle"
     },
     {
       "label": "mod.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/mod.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_commands_mod_rs",
       "community": 53,
-      "norm_label": "mod.rs"
+      "norm_label": "mod.rs",
+      "id": "src_tauri_src_commands_mod_rs"
     },
     {
       "label": "oauth.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_commands_oauth_rs",
       "community": 2,
-      "norm_label": "oauth.rs"
+      "norm_label": "oauth.rs",
+      "id": "src_tauri_src_commands_oauth_rs"
     },
     {
       "label": "DeviceCodeStartResponse",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L14",
-      "id": "commands_oauth_devicecodestartresponse",
       "community": 2,
-      "norm_label": "devicecodestartresponse"
+      "norm_label": "devicecodestartresponse",
+      "id": "commands_oauth_devicecodestartresponse"
     },
     {
       "label": "ProviderAuthStatusResponse",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L24",
-      "id": "commands_oauth_providerauthstatusresponse",
       "community": 2,
-      "norm_label": "providerauthstatusresponse"
+      "norm_label": "providerauthstatusresponse",
+      "id": "commands_oauth_providerauthstatusresponse"
     },
     {
       "label": "start_provider_oauth()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L34",
-      "id": "commands_oauth_start_provider_oauth",
       "community": 2,
-      "norm_label": "start_provider_oauth()"
+      "norm_label": "start_provider_oauth()",
+      "id": "commands_oauth_start_provider_oauth"
     },
     {
       "label": "poll_provider_oauth()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L57",
-      "id": "commands_oauth_poll_provider_oauth",
       "community": 2,
-      "norm_label": "poll_provider_oauth()"
+      "norm_label": "poll_provider_oauth()",
+      "id": "commands_oauth_poll_provider_oauth"
     },
     {
       "label": "disconnect_provider_oauth()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L95",
-      "id": "commands_oauth_disconnect_provider_oauth",
       "community": 2,
-      "norm_label": "disconnect_provider_oauth()"
+      "norm_label": "disconnect_provider_oauth()",
+      "id": "commands_oauth_disconnect_provider_oauth"
     },
     {
       "label": "get_provider_auth_status()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L116",
-      "id": "commands_oauth_get_provider_auth_status",
       "community": 2,
-      "norm_label": "get_provider_auth_status()"
+      "norm_label": "get_provider_auth_status()",
+      "id": "commands_oauth_get_provider_auth_status"
     },
     {
       "label": "auth_status_response()",
       "file_type": "code",
       "source_file": "src-tauri/src/commands/oauth.rs",
       "source_location": "L157",
-      "id": "commands_oauth_auth_status_response",
       "community": 2,
-      "norm_label": "auth_status_response()"
+      "norm_label": "auth_status_response()",
+      "id": "commands_oauth_auth_status_response"
     },
     {
       "label": "credential_store.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_credential_store_rs",
       "community": 20,
-      "norm_label": "credential_store.rs"
+      "norm_label": "credential_store.rs",
+      "id": "src_tauri_src_credential_store_rs"
     },
     {
       "label": "SqliteCredentialStore",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L14",
-      "id": "src_credential_store_sqlitecredentialstore",
       "community": 20,
-      "norm_label": "sqlitecredentialstore"
+      "norm_label": "sqlitecredentialstore",
+      "id": "src_credential_store_sqlitecredentialstore"
     },
     {
       "label": ".new()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L19",
-      "id": "src_credential_store_sqlitecredentialstore_new",
       "community": 20,
-      "norm_label": ".new()"
+      "norm_label": ".new()",
+      "id": "src_credential_store_sqlitecredentialstore_new"
     },
     {
       "label": ".with_conn()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L23",
-      "id": "src_credential_store_sqlitecredentialstore_with_conn",
       "community": 20,
-      "norm_label": ".with_conn()"
+      "norm_label": ".with_conn()",
+      "id": "src_credential_store_sqlitecredentialstore_with_conn"
     },
     {
       "label": ".get()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L34",
-      "id": "src_credential_store_sqlitecredentialstore_get",
       "community": 20,
-      "norm_label": ".get()"
+      "norm_label": ".get()",
+      "id": "src_credential_store_sqlitecredentialstore_get"
     },
     {
       "label": ".set()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L75",
-      "id": "src_credential_store_sqlitecredentialstore_set",
       "community": 20,
-      "norm_label": ".set()"
+      "norm_label": ".set()",
+      "id": "src_credential_store_sqlitecredentialstore_set"
     },
     {
       "label": ".remove()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L125",
-      "id": "src_credential_store_sqlitecredentialstore_remove",
       "community": 20,
-      "norm_label": ".remove()"
+      "norm_label": ".remove()",
+      "id": "src_credential_store_sqlitecredentialstore_remove"
     },
     {
       "label": ".list_slugs()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L134",
-      "id": "src_credential_store_sqlitecredentialstore_list_slugs",
       "community": 20,
-      "norm_label": ".list_slugs()"
+      "norm_label": ".list_slugs()",
+      "id": "src_credential_store_sqlitecredentialstore_list_slugs"
     },
     {
       "label": "temp_db()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L159",
-      "id": "src_credential_store_temp_db",
       "community": 20,
-      "norm_label": "temp_db()"
+      "norm_label": "temp_db()",
+      "id": "src_credential_store_temp_db"
     },
     {
       "label": "roundtrip_api_key()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L184",
-      "id": "src_credential_store_roundtrip_api_key",
       "community": 20,
-      "norm_label": "roundtrip_api_key()"
+      "norm_label": "roundtrip_api_key()",
+      "id": "src_credential_store_roundtrip_api_key"
     },
     {
       "label": "roundtrip_oauth_bearer()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L194",
-      "id": "src_credential_store_roundtrip_oauth_bearer",
       "community": 20,
-      "norm_label": "roundtrip_oauth_bearer()"
+      "norm_label": "roundtrip_oauth_bearer()",
+      "id": "src_credential_store_roundtrip_oauth_bearer"
     },
     {
       "label": "remove_credential()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L211",
-      "id": "src_credential_store_remove_credential",
       "community": 20,
-      "norm_label": "remove_credential()"
+      "norm_label": "remove_credential()",
+      "id": "src_credential_store_remove_credential"
     },
     {
       "label": "list_slugs()",
       "file_type": "code",
       "source_file": "src-tauri/src/credential_store.rs",
       "source_location": "L223",
-      "id": "src_credential_store_list_slugs",
       "community": 20,
-      "norm_label": "list_slugs()"
+      "norm_label": "list_slugs()",
+      "id": "src_credential_store_list_slugs"
     },
     {
       "label": "lib.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_lib_rs",
       "community": 24,
-      "norm_label": "lib.rs"
+      "norm_label": "lib.rs",
+      "id": "src_tauri_src_lib_rs"
     },
     {
       "label": "run()",
       "file_type": "code",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L11",
-      "id": "src_lib_run",
       "community": 24,
-      "norm_label": "run()"
+      "norm_label": "run()",
+      "id": "src_lib_run"
     },
     {
       "label": "provider_box.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/provider_box.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_provider_box_rs",
       "community": 2,
-      "norm_label": "provider_box.rs"
+      "norm_label": "provider_box.rs",
+      "id": "src_tauri_src_provider_box_rs"
     },
     {
       "label": "ProviderBox",
       "file_type": "code",
       "source_file": "src-tauri/src/provider_box.rs",
       "source_location": "L8",
-      "id": "src_provider_box_providerbox",
       "community": 2,
-      "norm_label": "providerbox"
+      "norm_label": "providerbox",
+      "id": "src_provider_box_providerbox"
     },
     {
       "label": ".infer()",
       "file_type": "code",
       "source_file": "src-tauri/src/provider_box.rs",
       "source_location": "L14",
-      "id": "src_provider_box_providerbox_infer",
       "community": 2,
-      "norm_label": ".infer()"
+      "norm_label": ".infer()",
+      "id": "src_provider_box_providerbox_infer"
     },
     {
       "label": ".infer_stream()",
       "file_type": "code",
       "source_file": "src-tauri/src/provider_box.rs",
       "source_location": "L21",
-      "id": "src_provider_box_providerbox_infer_stream",
       "community": 2,
-      "norm_label": ".infer_stream()"
+      "norm_label": ".infer_stream()",
+      "id": "src_provider_box_providerbox_infer_stream"
     },
     {
       "label": "state.rs",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L1",
-      "id": "src_tauri_src_state_rs",
       "community": 5,
-      "norm_label": "state.rs"
+      "norm_label": "state.rs",
+      "id": "src_tauri_src_state_rs"
     },
     {
       "label": "AgentRequest",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L7",
-      "id": "src_state_agentrequest",
       "community": 5,
-      "norm_label": "agentrequest"
+      "norm_label": "agentrequest",
+      "id": "src_state_agentrequest"
     },
     {
       "label": "ImageDataJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L100",
-      "id": "src_state_imagedatajson",
       "community": 5,
-      "norm_label": "imagedatajson"
+      "norm_label": "imagedatajson",
+      "id": "src_state_imagedatajson"
     },
     {
       "label": "McpErrorCategory",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L107",
-      "id": "src_state_mcperrorcategory",
       "community": 5,
-      "norm_label": "mcperrorcategory"
+      "norm_label": "mcperrorcategory",
+      "id": "src_state_mcperrorcategory"
     },
     {
       "label": "McpErrorStage",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L118",
-      "id": "src_state_mcperrorstage",
       "community": 5,
-      "norm_label": "mcperrorstage"
+      "norm_label": "mcperrorstage",
+      "id": "src_state_mcperrorstage"
     },
     {
       "label": "McpServerStatusJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L127",
-      "id": "src_state_mcpserverstatusjson",
       "community": 5,
-      "norm_label": "mcpserverstatusjson"
+      "norm_label": "mcpserverstatusjson",
+      "id": "src_state_mcpserverstatusjson"
     },
     {
       "label": "categorize_error()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L141",
-      "id": "src_state_categorize_error",
       "community": 5,
-      "norm_label": "categorize_error()"
+      "norm_label": "categorize_error()",
+      "id": "src_state_categorize_error"
     },
     {
       "label": "mcp_health_label()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L223",
-      "id": "src_state_mcp_health_label",
       "community": 5,
-      "norm_label": "mcp_health_label()"
+      "norm_label": "mcp_health_label()",
+      "id": "src_state_mcp_health_label"
     },
     {
       "label": "McpToolInfoJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L235",
-      "id": "src_state_mcptoolinfojson",
       "community": 5,
-      "norm_label": "mcptoolinfojson"
+      "norm_label": "mcptoolinfojson",
+      "id": "src_state_mcptoolinfojson"
     },
     {
       "label": "SkillMetadataJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L244",
-      "id": "src_state_skillmetadatajson",
       "community": 5,
-      "norm_label": "skillmetadatajson"
+      "norm_label": "skillmetadatajson",
+      "id": "src_state_skillmetadatajson"
     },
     {
       "label": "SkillDiagnosticJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L259",
-      "id": "src_state_skilldiagnosticjson",
       "community": 5,
-      "norm_label": "skilldiagnosticjson"
+      "norm_label": "skilldiagnosticjson",
+      "id": "src_state_skilldiagnosticjson"
     },
     {
       "label": "McpServerConfigJson",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L268",
-      "id": "src_state_mcpserverconfigjson",
       "community": 5,
-      "norm_label": "mcpserverconfigjson"
+      "norm_label": "mcpserverconfigjson",
+      "id": "src_state_mcpserverconfigjson"
     },
     {
       "label": "AgentParams",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L285",
-      "id": "src_state_agentparams",
       "community": 5,
-      "norm_label": "agentparams"
+      "norm_label": "agentparams",
+      "id": "src_state_agentparams"
     },
     {
       "label": "AgentHandle",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L295",
-      "id": "src_state_agenthandle",
       "community": 5,
-      "norm_label": "agenthandle"
+      "norm_label": "agenthandle",
+      "id": "src_state_agenthandle"
     },
     {
       "label": "AppState",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L304",
-      "id": "src_state_appstate",
       "community": 5,
-      "norm_label": "appstate"
+      "norm_label": "appstate",
+      "id": "src_state_appstate"
     },
     {
       "label": ".new()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L311",
-      "id": "src_state_appstate_new",
       "community": 5,
-      "norm_label": ".new()"
+      "norm_label": ".new()",
+      "id": "src_state_appstate_new"
     },
     {
       "label": ".with_credential_store()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L319",
-      "id": "src_state_appstate_with_credential_store",
       "community": 5,
-      "norm_label": ".with_credential_store()"
+      "norm_label": ".with_credential_store()",
+      "id": "src_state_appstate_with_credential_store"
     },
     {
       "label": "spawn_agent_worker()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L337",
-      "id": "src_state_spawn_agent_worker",
       "community": 5,
-      "norm_label": "spawn_agent_worker()"
+      "norm_label": "spawn_agent_worker()",
+      "id": "src_state_spawn_agent_worker"
     },
     {
       "label": "handle_prompt_stream()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L628",
-      "id": "src_state_handle_prompt_stream",
       "community": 5,
-      "norm_label": "handle_prompt_stream()"
+      "norm_label": "handle_prompt_stream()",
+      "id": "src_state_handle_prompt_stream"
     },
     {
       "label": "ApprovalDecision",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L775",
-      "id": "src_state_approvaldecision",
       "community": 5,
-      "norm_label": "approvaldecision"
+      "norm_label": "approvaldecision",
+      "id": "src_state_approvaldecision"
     },
     {
       "label": "wait_for_approval()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L782",
-      "id": "src_state_wait_for_approval",
       "community": 5,
-      "norm_label": "wait_for_approval()"
+      "norm_label": "wait_for_approval()",
+      "id": "src_state_wait_for_approval"
     },
     {
       "label": "handle_active_request()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L813",
-      "id": "src_state_handle_active_request",
       "community": 5,
-      "norm_label": "handle_active_request()"
+      "norm_label": "handle_active_request()",
+      "id": "src_state_handle_active_request"
     },
     {
       "label": "build_mcp_config()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L932",
-      "id": "src_state_build_mcp_config",
       "community": 5,
-      "norm_label": "build_mcp_config()"
+      "norm_label": "build_mcp_config()",
+      "id": "src_state_build_mcp_config"
     },
     {
       "label": "emit_token_count()",
       "file_type": "code",
       "source_file": "src-tauri/src/state.rs",
       "source_location": "L996",
-      "id": "src_state_emit_token_count",
       "community": 5,
-      "norm_label": "emit_token_count()"
+      "norm_label": "emit_token_count()",
+      "id": "src_state_emit_token_count"
     },
     {
       "label": "ModelSwitcher.tsx",
       "file_type": "code",
       "source_file": "src/components/chat/ModelSwitcher.tsx",
       "source_location": "L1",
-      "id": "src_components_chat_modelswitcher_tsx",
       "community": 0,
-      "norm_label": "modelswitcher.tsx"
+      "norm_label": "modelswitcher.tsx",
+      "id": "src_components_chat_modelswitcher_tsx"
     },
     {
       "label": "ModelSwitcher()",
       "file_type": "code",
       "source_file": "src/components/chat/ModelSwitcher.tsx",
       "source_location": "L8",
-      "id": "chat_modelswitcher_modelswitcher",
       "community": 0,
-      "norm_label": "modelswitcher()"
+      "norm_label": "modelswitcher()",
+      "id": "chat_modelswitcher_modelswitcher"
     },
     {
       "label": "AppShell.tsx",
       "file_type": "code",
       "source_file": "src/components/layout/AppShell.tsx",
       "source_location": "L1",
-      "id": "src_components_layout_appshell_tsx",
       "community": 0,
-      "norm_label": "appshell.tsx"
+      "norm_label": "appshell.tsx",
+      "id": "src_components_layout_appshell_tsx"
     },
     {
       "label": "AppShell()",
       "file_type": "code",
       "source_file": "src/components/layout/AppShell.tsx",
       "source_location": "L13",
-      "id": "layout_appshell_appshell",
       "community": 0,
-      "norm_label": "appshell()"
+      "norm_label": "appshell()",
+      "id": "layout_appshell_appshell"
     },
     {
       "label": "LoadingScreen()",
       "file_type": "code",
       "source_file": "src/components/layout/AppShell.tsx",
       "source_location": "L83",
-      "id": "layout_appshell_loadingscreen",
       "community": 0,
-      "norm_label": "loadingscreen()"
+      "norm_label": "loadingscreen()",
+      "id": "layout_appshell_loadingscreen"
     },
     {
       "label": "TabBar.tsx",
       "file_type": "code",
       "source_file": "src/components/layout/TabBar.tsx",
       "source_location": "L1",
-      "id": "src_components_layout_tabbar_tsx",
       "community": 0,
-      "norm_label": "tabbar.tsx"
+      "norm_label": "tabbar.tsx",
+      "id": "src_components_layout_tabbar_tsx"
     },
     {
       "label": "TabBar()",
       "file_type": "code",
       "source_file": "src/components/layout/TabBar.tsx",
       "source_location": "L8",
-      "id": "layout_tabbar_tabbar",
       "community": 0,
-      "norm_label": "tabbar()"
+      "norm_label": "tabbar()",
+      "id": "layout_tabbar_tabbar"
     },
     {
       "label": "ProviderSettings.tsx",
       "file_type": "code",
       "source_file": "src/components/settings/ProviderSettings.tsx",
       "source_location": "L1",
-      "id": "src_components_settings_providersettings_tsx",
       "community": 1,
-      "norm_label": "providersettings.tsx"
+      "norm_label": "providersettings.tsx",
+      "id": "src_components_settings_providersettings_tsx"
     },
     {
       "label": "formatContext()",
       "file_type": "code",
       "source_file": "src/components/settings/ProviderSettings.tsx",
       "source_location": "L19",
-      "id": "settings_providersettings_formatcontext",
       "community": 1,
-      "norm_label": "formatcontext()"
+      "norm_label": "formatcontext()",
+      "id": "settings_providersettings_formatcontext"
     },
     {
       "label": "ProviderSettings()",
       "file_type": "code",
       "source_file": "src/components/settings/ProviderSettings.tsx",
       "source_location": "L21",
-      "id": "settings_providersettings_providersettings",
       "community": 11,
-      "norm_label": "providersettings()"
+      "norm_label": "providersettings()",
+      "id": "settings_providersettings_providersettings"
     },
     {
       "label": "ProviderCard()",
       "file_type": "code",
       "source_file": "src/components/settings/ProviderSettings.tsx",
       "source_location": "L245",
-      "id": "settings_providersettings_providercard",
       "community": 1,
-      "norm_label": "providercard()"
+      "norm_label": "providercard()",
+      "id": "settings_providersettings_providercard"
     },
     {
       "label": "ProviderModelGroup()",
       "file_type": "code",
       "source_file": "src/components/settings/ProviderSettings.tsx",
       "source_location": "L495",
-      "id": "settings_providersettings_providermodelgroup",
       "community": 1,
-      "norm_label": "providermodelgroup()"
+      "norm_label": "providermodelgroup()",
+      "id": "settings_providersettings_providermodelgroup"
     },
     {
       "label": "SettingsContext.tsx",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L1",
-      "id": "src_context_settingscontext_tsx",
       "community": 1,
-      "norm_label": "settingscontext.tsx"
+      "norm_label": "settingscontext.tsx",
+      "id": "src_context_settingscontext_tsx"
     },
     {
       "label": "DEFAULTS",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L15",
-      "id": "context_settingscontext_defaults",
       "community": 1,
-      "norm_label": "defaults"
+      "norm_label": "defaults",
+      "id": "context_settingscontext_defaults"
     },
     {
       "label": "ProviderAuthStatus",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L28",
-      "id": "context_settingscontext_providerauthstatus",
       "community": 1,
-      "norm_label": "providerauthstatus"
+      "norm_label": "providerauthstatus",
+      "id": "context_settingscontext_providerauthstatus"
     },
     {
       "label": "SettingsContextValue",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L35",
-      "id": "context_settingscontext_settingscontextvalue",
       "community": 1,
-      "norm_label": "settingscontextvalue"
+      "norm_label": "settingscontextvalue",
+      "id": "context_settingscontext_settingscontextvalue"
     },
     {
       "label": "SettingsContext",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L64",
-      "id": "context_settingscontext_settingscontext",
       "community": 1,
-      "norm_label": "settingscontext"
+      "norm_label": "settingscontext",
+      "id": "context_settingscontext_settingscontext"
     },
     {
       "label": "DB_KEY_MAP",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L68",
-      "id": "context_settingscontext_db_key_map",
       "community": 1,
-      "norm_label": "db_key_map"
+      "norm_label": "db_key_map",
+      "id": "context_settingscontext_db_key_map"
     },
     {
       "label": "JSON_KEYS",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L82",
-      "id": "context_settingscontext_json_keys",
       "community": 1,
-      "norm_label": "json_keys"
+      "norm_label": "json_keys",
+      "id": "context_settingscontext_json_keys"
     },
     {
       "label": "persistSetting()",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L84",
-      "id": "context_settingscontext_persistsetting",
       "community": 1,
-      "norm_label": "persistsetting()"
+      "norm_label": "persistsetting()",
+      "id": "context_settingscontext_persistsetting"
     },
     {
       "label": "loadAllSettings()",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L98",
-      "id": "context_settingscontext_loadallsettings",
       "community": 1,
-      "norm_label": "loadallsettings()"
+      "norm_label": "loadallsettings()",
+      "id": "context_settingscontext_loadallsettings"
     },
     {
       "label": "SettingsProvider()",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L155",
-      "id": "context_settingscontext_settingsprovider",
       "community": 0,
-      "norm_label": "settingsprovider()"
+      "norm_label": "settingsprovider()",
+      "id": "context_settingscontext_settingsprovider"
     },
     {
       "label": "useSettings()",
       "file_type": "code",
       "source_file": "src/context/SettingsContext.tsx",
       "source_location": "L398",
-      "id": "context_settingscontext_usesettings",
       "community": 0,
-      "norm_label": "usesettings()"
+      "norm_label": "usesettings()",
+      "id": "context_settingscontext_usesettings"
     },
     {
       "label": "models.ts",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L1",
-      "id": "src_lib_models_ts",
       "community": 1,
-      "norm_label": "models.ts"
+      "norm_label": "models.ts",
+      "id": "src_lib_models_ts"
     },
     {
       "label": "AuthCapability",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L3",
-      "id": "lib_models_authcapability",
       "community": 1,
-      "norm_label": "authcapability"
+      "norm_label": "authcapability",
+      "id": "lib_models_authcapability"
     },
     {
       "label": "ProviderMetadata",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L5",
-      "id": "lib_models_providermetadata",
       "community": 1,
-      "norm_label": "providermetadata"
+      "norm_label": "providermetadata",
+      "id": "lib_models_providermetadata"
     },
     {
       "label": "PROVIDER_METADATA",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L12",
-      "id": "lib_models_provider_metadata",
       "community": 1,
-      "norm_label": "provider_metadata"
+      "norm_label": "provider_metadata",
+      "id": "lib_models_provider_metadata"
     },
     {
       "label": "DEFAULT_PROVIDERS",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L27",
-      "id": "lib_models_default_providers",
       "community": 1,
-      "norm_label": "default_providers"
+      "norm_label": "default_providers",
+      "id": "lib_models_default_providers"
     },
     {
       "label": "KNOWN_MODELS",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L42",
-      "id": "lib_models_known_models",
       "community": 1,
-      "norm_label": "known_models"
+      "norm_label": "known_models",
+      "id": "lib_models_known_models"
     },
     {
       "label": "formatTokenCount()",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L103",
-      "id": "lib_models_formattokencount",
       "community": 1,
-      "norm_label": "formattokencount()"
+      "norm_label": "formattokencount()",
+      "id": "lib_models_formattokencount"
     },
     {
       "label": "getProviderForModel()",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L113",
-      "id": "lib_models_getproviderformodel",
       "community": 1,
-      "norm_label": "getproviderformodel()"
+      "norm_label": "getproviderformodel()",
+      "id": "lib_models_getproviderformodel"
     },
     {
       "label": "parseModelSlug()",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L118",
-      "id": "lib_models_parsemodelslug",
       "community": 1,
-      "norm_label": "parsemodelslug()"
+      "norm_label": "parsemodelslug()",
+      "id": "lib_models_parsemodelslug"
     },
     {
       "label": "makeModelSlug()",
       "file_type": "code",
       "source_file": "src/lib/models.ts",
       "source_location": "L136",
-      "id": "lib_models_makemodelslug",
       "community": 1,
-      "norm_label": "makemodelslug()"
+      "norm_label": "makemodelslug()",
+      "id": "lib_models_makemodelslug"
     },
     {
       "label": "commands.ts",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L1",
-      "id": "src_lib_tauri_commands_ts",
       "community": 3,
-      "norm_label": "commands.ts"
+      "norm_label": "commands.ts",
+      "id": "src_lib_tauri_commands_ts"
     },
     {
       "label": "createAgent()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L4",
-      "id": "tauri_commands_createagent",
       "community": 3,
-      "norm_label": "createagent()"
+      "norm_label": "createagent()",
+      "id": "tauri_commands_createagent"
     },
     {
       "label": "disconnectAgent()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L18",
-      "id": "tauri_commands_disconnectagent",
       "community": 3,
-      "norm_label": "disconnectagent()"
+      "norm_label": "disconnectagent()",
+      "id": "tauri_commands_disconnectagent"
     },
     {
       "label": "listAgents()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L22",
-      "id": "tauri_commands_listagents",
       "community": 3,
-      "norm_label": "listagents()"
+      "norm_label": "listagents()",
+      "id": "tauri_commands_listagents"
     },
     {
       "label": "sendMessage()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L26",
-      "id": "tauri_commands_sendmessage",
       "community": 3,
-      "norm_label": "sendmessage()"
+      "norm_label": "sendmessage()",
+      "id": "tauri_commands_sendmessage"
     },
     {
       "label": "sendMessageWithImages()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L33",
-      "id": "tauri_commands_sendmessagewithimages",
       "community": 3,
-      "norm_label": "sendmessagewithimages()"
+      "norm_label": "sendmessagewithimages()",
+      "id": "tauri_commands_sendmessagewithimages"
     },
     {
       "label": "compactSession()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L41",
-      "id": "tauri_commands_compactsession",
       "community": 3,
-      "norm_label": "compactsession()"
+      "norm_label": "compactsession()",
+      "id": "tauri_commands_compactsession"
     },
     {
       "label": "respondToApproval()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L45",
-      "id": "tauri_commands_respondtoapproval",
       "community": 15,
-      "norm_label": "respondtoapproval()"
+      "norm_label": "respondtoapproval()",
+      "id": "tauri_commands_respondtoapproval"
     },
     {
       "label": "cancelActivePrompt()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L53",
-      "id": "tauri_commands_cancelactiveprompt",
       "community": 3,
-      "norm_label": "cancelactiveprompt()"
+      "norm_label": "cancelactiveprompt()",
+      "id": "tauri_commands_cancelactiveprompt"
     },
     {
       "label": "registerMcpServer()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L57",
-      "id": "tauri_commands_registermcpserver",
       "community": 3,
-      "norm_label": "registermcpserver()"
+      "norm_label": "registermcpserver()",
+      "id": "tauri_commands_registermcpserver"
     },
     {
       "label": "getMcpStatus()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L64",
-      "id": "tauri_commands_getmcpstatus",
       "community": 1,
-      "norm_label": "getmcpstatus()"
+      "norm_label": "getmcpstatus()",
+      "id": "tauri_commands_getmcpstatus"
     },
     {
       "label": "setMcpServerEnabled()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L70",
-      "id": "tauri_commands_setmcpserverenabled",
       "community": 1,
-      "norm_label": "setmcpserverenabled()"
+      "norm_label": "setmcpserverenabled()",
+      "id": "tauri_commands_setmcpserverenabled"
     },
     {
       "label": "reconnectMcpServer()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L78",
-      "id": "tauri_commands_reconnectmcpserver",
       "community": 3,
-      "norm_label": "reconnectmcpserver()"
+      "norm_label": "reconnectmcpserver()",
+      "id": "tauri_commands_reconnectmcpserver"
     },
     {
       "label": "updateModelRegistry()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L85",
-      "id": "tauri_commands_updatemodelregistry",
       "community": 1,
-      "norm_label": "updatemodelregistry()"
+      "norm_label": "updatemodelregistry()",
+      "id": "tauri_commands_updatemodelregistry"
     },
     {
       "label": "startSnip()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L89",
-      "id": "tauri_commands_startsnip",
       "community": 3,
-      "norm_label": "startsnip()"
+      "norm_label": "startsnip()",
+      "id": "tauri_commands_startsnip"
     },
     {
       "label": "refreshSkillCatalog()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L95",
-      "id": "tauri_commands_refreshskillcatalog",
       "community": 3,
-      "norm_label": "refreshskillcatalog()"
+      "norm_label": "refreshskillcatalog()",
+      "id": "tauri_commands_refreshskillcatalog"
     },
     {
       "label": "listAvailableSkills()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L101",
-      "id": "tauri_commands_listavailableskills",
       "community": 3,
-      "norm_label": "listavailableskills()"
+      "norm_label": "listavailableskills()",
+      "id": "tauri_commands_listavailableskills"
     },
     {
       "label": "activateSkill()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L107",
-      "id": "tauri_commands_activateskill",
       "community": 3,
-      "norm_label": "activateskill()"
+      "norm_label": "activateskill()",
+      "id": "tauri_commands_activateskill"
     },
     {
       "label": "deactivateSkill()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L111",
-      "id": "tauri_commands_deactivateskill",
       "community": 3,
-      "norm_label": "deactivateskill()"
+      "norm_label": "deactivateskill()",
+      "id": "tauri_commands_deactivateskill"
     },
     {
       "label": "listActiveSkills()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L115",
-      "id": "tauri_commands_listactiveskills",
       "community": 3,
-      "norm_label": "listactiveskills()"
+      "norm_label": "listactiveskills()",
+      "id": "tauri_commands_listactiveskills"
     },
     {
       "label": "exportHandoff()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L121",
-      "id": "tauri_commands_exporthandoff",
       "community": 3,
-      "norm_label": "exporthandoff()"
+      "norm_label": "exporthandoff()",
+      "id": "tauri_commands_exporthandoff"
     },
     {
       "label": "importHandoff()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L125",
-      "id": "tauri_commands_importhandoff",
       "community": 3,
-      "norm_label": "importhandoff()"
+      "norm_label": "importhandoff()",
+      "id": "tauri_commands_importhandoff"
     },
     {
       "label": "saveHandoffBundle()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L129",
-      "id": "tauri_commands_savehandoffbundle",
       "community": 3,
-      "norm_label": "savehandoffbundle()"
+      "norm_label": "savehandoffbundle()",
+      "id": "tauri_commands_savehandoffbundle"
     },
     {
       "label": "loadHandoffBundle()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L133",
-      "id": "tauri_commands_loadhandoffbundle",
       "community": 3,
-      "norm_label": "loadhandoffbundle()"
+      "norm_label": "loadhandoffbundle()",
+      "id": "tauri_commands_loadhandoffbundle"
     },
     {
       "label": "DeviceCodeStartResponse",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L139",
-      "id": "tauri_commands_devicecodestartresponse",
       "community": 3,
-      "norm_label": "devicecodestartresponse"
+      "norm_label": "devicecodestartresponse",
+      "id": "tauri_commands_devicecodestartresponse"
     },
     {
       "label": "ProviderAuthStatusResponse",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L147",
-      "id": "tauri_commands_providerauthstatusresponse",
       "community": 3,
-      "norm_label": "providerauthstatusresponse"
+      "norm_label": "providerauthstatusresponse",
+      "id": "tauri_commands_providerauthstatusresponse"
     },
     {
       "label": "startProviderOAuth()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L154",
-      "id": "tauri_commands_startprovideroauth",
       "community": 1,
-      "norm_label": "startprovideroauth()"
+      "norm_label": "startprovideroauth()",
+      "id": "tauri_commands_startprovideroauth"
     },
     {
       "label": "pollProviderOAuth()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L160",
-      "id": "tauri_commands_pollprovideroauth",
       "community": 1,
-      "norm_label": "pollprovideroauth()"
+      "norm_label": "pollprovideroauth()",
+      "id": "tauri_commands_pollprovideroauth"
     },
     {
       "label": "disconnectProviderOAuth()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L167",
-      "id": "tauri_commands_disconnectprovideroauth",
       "community": 1,
-      "norm_label": "disconnectprovideroauth()"
+      "norm_label": "disconnectprovideroauth()",
+      "id": "tauri_commands_disconnectprovideroauth"
     },
     {
       "label": "getProviderAuthStatus()",
       "file_type": "code",
       "source_file": "src/lib/tauri/commands.ts",
       "source_location": "L173",
-      "id": "tauri_commands_getproviderauthstatus",
       "community": 1,
-      "norm_label": "getproviderauthstatus()"
+      "norm_label": "getproviderauthstatus()",
+      "id": "tauri_commands_getproviderauthstatus"
     },
     {
       "label": "eslint.config.js",
@@ -18701,5 +18701,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fdc74e0d8861446503247267327f37b93dff8f76"
+  "built_at_commit": "7d417a889a99e0f229e56689fe1a43c52e523cf9"
 }
