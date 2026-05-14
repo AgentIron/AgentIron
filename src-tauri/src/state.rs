@@ -297,14 +297,16 @@ pub struct AgentHandle {
     pub name: String,
 }
 
-use iron_core::provider_credential::resolver::CredentialResolver;
 use crate::provider_box::ProviderBox;
+use iron_core::provider_credential::resolver::CredentialResolver;
 
 /// Managed application state held by Tauri.
 pub struct AppState {
     pub agents: Arc<RwLock<HashMap<String, AgentHandle>>>,
-    pub credential_store: Option<std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>>,
+    pub credential_store:
+        Option<std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>>,
     pub credential_resolver: Option<Arc<CredentialResolver>>,
+    pub oauth_clients: Arc<RwLock<HashMap<String, reqwest::Client>>>,
 }
 
 impl AppState {
@@ -313,6 +315,7 @@ impl AppState {
             agents: Arc::new(RwLock::new(HashMap::new())),
             credential_store: None,
             credential_resolver: None,
+            oauth_clients: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 

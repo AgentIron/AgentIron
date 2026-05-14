@@ -270,6 +270,11 @@ const ProviderCard: Component<{
     return "none";
   };
 
+  const authorizationLinkIncludesCode = () => {
+    const data = deviceCodeData();
+    return data ? data.verificationUri.includes(`user_code=${encodeURIComponent(data.userCode)}`) : false;
+  };
+
   const handleConnect = async () => {
     setConnecting(true);
     setConnectError("");
@@ -459,7 +464,9 @@ const ProviderCard: Component<{
               <p class="text-sm text-text-primary">Connect via device code</p>
               <div class="text-xs text-text-secondary space-y-1">
                 <p>Visit: <a href={deviceCodeData()!.verificationUri} target="_blank" class="text-accent underline">{deviceCodeData()!.verificationUri}</a></p>
-                <p>Code: <span class="font-mono font-bold text-text-primary">{deviceCodeData()!.userCode}</span></p>
+                <Show when={!authorizationLinkIncludesCode()}>
+                  <p>Code: <span class="font-mono font-bold text-text-primary">{deviceCodeData()!.userCode}</span></p>
+                </Show>
               </div>
               <p class="text-xs text-text-tertiary">Waiting for authorization...</p>
               <p class="text-xs text-text-tertiary">

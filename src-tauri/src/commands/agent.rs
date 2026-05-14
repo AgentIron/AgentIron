@@ -1,8 +1,8 @@
+use crate::provider_box::ProviderBox;
 use crate::state::{
     spawn_agent_worker, AgentHandle, AgentParams, AgentRequest, AppState, McpServerConfigJson,
     McpServerStatusJson,
 };
-use crate::provider_box::ProviderBox;
 use iron_core::provider_credential::domain::{ProviderAuthError, ProviderPromptContext};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -105,8 +105,8 @@ async fn build_provider(
 
         "kimi-code" => iron_providers::ProviderProfile::new(
             "kimi-code",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.moonshot.ai/v1",
+            iron_providers::ApiFamily::AnthropicMessages,
+            "https://api.kimi.com/coding",
         ),
 
         "openrouter" => iron_providers::ProviderProfile::new(

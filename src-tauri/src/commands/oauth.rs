@@ -3,7 +3,7 @@ use tauri::State;
 
 use crate::state::AppState;
 use iron_core::provider_credential::{
-    domain::{ProviderAuthStatus, ProviderSlug, StoredCredential},
+    domain::{ProviderAuthError, ProviderAuthStatus, ProviderSlug, StoredCredential},
     oauth::{poll_token_exchange, start_device_code_flow, v1_oauth_metadata},
 };
 
@@ -32,17 +32,23 @@ pub struct ProviderAuthStatusResponse {
 
 #[tauri::command]
 pub async fn start_provider_oauth(
-    _state: State<'_, AppState>,
+    state: State<'_, AppState>,
     provider_id: String,
 ) -> Result<DeviceCodeStartResponse, String> {
     let slug = ProviderSlug::new(&provider_id);
     let metadata = v1_oauth_metadata(&slug)
         .ok_or_else(|| format!("Provider '{}' does not support OAuth", provider_id))?;
 
-    let client = reqwest::Client::new();
+    let client = oauth_http_client()?;
     let result = start_device_code_flow(&metadata, &client)
         .await
-        .map_err(|e| format!("OAuth start failed: {}", e))?;
+        .map_err(|e| oauth_start_error(&provider_id, &e.to_string()))?;
+
+    state
+        .oauth_clients
+        .write()
+        .await
+        .insert(oauth_flow_key(&provider_id, &result.device_code), client);
 
     Ok(DeviceCodeStartResponse {
         device_code: result.device_code,
@@ -63,10 +69,23 @@ pub async fn poll_provider_oauth(
     let metadata = v1_oauth_metadata(&slug)
         .ok_or_else(|| format!("Provider '{}' does not support OAuth", provider_id))?;
 
-    let client = reqwest::Client::new();
-    let result = poll_token_exchange(&metadata, &device_code, &client)
-        .await
-        .map_err(|e| format!("OAuth token exchange failed: {}", e))?;
+    let flow_key = oauth_flow_key(&provider_id, &device_code);
+    let client = match state.oauth_clients.read().await.get(&flow_key).cloned() {
+        Some(client) => client,
+        None => oauth_http_client()?,
+    };
+    let result = match poll_token_exchange(&metadata, &device_code, &client).await {
+        Ok(result) => {
+            state.oauth_clients.write().await.remove(&flow_key);
+            result
+        }
+        Err(error) => {
+            if !is_retryable_oauth_poll_error(&error) {
+                state.oauth_clients.write().await.remove(&flow_key);
+            }
+            return Err(format!("OAuth token exchange failed: {}", error));
+        }
+    };
 
     let token_set = result.into_token_set(None);
 
@@ -142,7 +161,10 @@ pub async fn get_provider_auth_status(
 
     // Otherwise check credential resolver / store
     if let Some(resolver) = &state.credential_resolver {
-        return Ok(auth_status_response(provider_id, resolver.status(&slug, None).await));
+        return Ok(auth_status_response(
+            provider_id,
+            resolver.status(&slug, None).await,
+        ));
     }
 
     // Fallback: no resolver configured
@@ -154,7 +176,10 @@ pub async fn get_provider_auth_status(
     })
 }
 
-fn auth_status_response(provider_id: String, status: ProviderAuthStatus) -> ProviderAuthStatusResponse {
+fn auth_status_response(
+    provider_id: String,
+    status: ProviderAuthStatus,
+) -> ProviderAuthStatusResponse {
     let (status_str, expires_at, reason) = match status {
         ProviderAuthStatus::NotConfigured => ("notConfigured", None, None),
         ProviderAuthStatus::ConfiguredApiKey => ("configuredApiKey", None, None),
@@ -179,4 +204,47 @@ fn auth_status_response(provider_id: String, status: ProviderAuthStatus) -> Prov
         expires_at,
         reason,
     }
+}
+
+fn oauth_http_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .cookie_store(true)
+        .build()
+        .map_err(|e| format!("Failed to create OAuth HTTP client: {}", e))
+}
+
+fn oauth_flow_key(provider_id: &str, device_code: &str) -> String {
+    format!("{}\n{}", provider_id, device_code)
+}
+
+fn is_retryable_oauth_poll_error(error: &ProviderAuthError) -> bool {
+    match error {
+        ProviderAuthError::RefreshFailed { reason, .. } => {
+            let lower = reason.to_lowercase();
+            lower.contains("authorization pending") || lower.contains("polling too fast")
+        }
+        _ => false,
+    }
+}
+
+fn oauth_start_error(provider_id: &str, error: &str) -> String {
+    if provider_id == "codex" && looks_like_cloudflare_challenge(error) {
+        return "OAuth start failed: Codex device-code OAuth is blocked by OpenAI's auth.openai.com Cloudflare challenge (403). This requires upstream/provider rescope to a supported Codex login flow; no credentials were stored.".to_string();
+    }
+
+    let message = format!("OAuth start failed: {}", error);
+    if message.chars().count() > 800 {
+        format!("{}...", message.chars().take(800).collect::<String>())
+    } else {
+        message
+    }
+}
+
+fn looks_like_cloudflare_challenge(error: &str) -> bool {
+    let lower = error.to_lowercase();
+    lower.contains("403 forbidden")
+        && (lower.contains("cloudflare")
+            || lower.contains("challenges.cloudflare.com")
+            || lower.contains("cf_chl")
+            || lower.contains("just a moment"))
 }

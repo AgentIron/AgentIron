@@ -17,7 +17,16 @@ pub struct SqliteCredentialStore {
 
 impl SqliteCredentialStore {
     pub fn new(db_path: PathBuf) -> Self {
-        Self { db_path }
+        let store = Self { db_path };
+        store.ensure_schema();
+        store
+    }
+
+    fn ensure_schema(&self) {
+        self.with_conn(|conn| {
+            conn.execute_batch(include_str!("../migrations/002_provider_credentials.sql"))
+                .expect("Failed to initialize provider credential table");
+        });
     }
 
     fn with_conn<F, T>(&self, f: F) -> T
@@ -127,15 +136,14 @@ impl ProviderCredentialStore for SqliteCredentialStore {
             conn.execute(
                 "DELETE FROM provider_credentials WHERE provider_slug = ?1",
                 [slug.as_str()],
-            ).expect("DELETE failed");
+            )
+            .expect("DELETE failed");
         });
     }
 
     async fn list_slugs(&self) -> Vec<ProviderSlug> {
         self.with_conn(|conn| {
-            let mut stmt = match conn.prepare(
-                "SELECT provider_slug FROM provider_credentials",
-            ) {
+            let mut stmt = match conn.prepare("SELECT provider_slug FROM provider_credentials") {
                 Ok(s) => s,
                 Err(_) => return Vec::new(),
             };
@@ -154,29 +162,11 @@ impl ProviderCredentialStore for SqliteCredentialStore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     fn temp_db() -> (SqliteCredentialStore, tempfile::TempDir) {
         let temp_dir = tempfile::tempdir().unwrap();
         let db_path = temp_dir.path().join("test.db");
         let store = SqliteCredentialStore::new(db_path);
-        // Create table manually for tests
-        store.with_conn(|conn| {
-            conn.execute(
-                "CREATE TABLE provider_credentials (
-                    provider_slug TEXT PRIMARY KEY,
-                    credential_mode TEXT NOT NULL,
-                    api_key TEXT,
-                    access_token TEXT,
-                    refresh_token TEXT,
-                    expires_at INTEGER,
-                    id_token TEXT,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )",
-                [],
-            )
-            .unwrap();
-        });
         (store, temp_dir)
     }
 

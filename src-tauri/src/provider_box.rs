@@ -1,5 +1,5 @@
-use iron_providers::{Provider, InferenceRequest, ProviderEvent, ProviderResult};
 use futures::stream::BoxStream;
+use iron_providers::{InferenceRequest, Provider, ProviderEvent, ProviderResult};
 
 /// Wrapper that implements `Provider` for `Box<dyn Provider>`.
 ///
