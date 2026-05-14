@@ -47,9 +47,13 @@ pub fn run() {
     builder
         .setup(|app| {
             // Register managed state
-            let app_data_dir = app.path().app_data_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
+                .unwrap_or_else(|_| std::path::PathBuf::from("."));
             let db_path = app_data_dir.join("agentiron.db");
-            let credential_store = std::sync::Arc::new(credential_store::SqliteCredentialStore::new(db_path));
+            let credential_store =
+                std::sync::Arc::new(credential_store::SqliteCredentialStore::new(db_path));
             app.manage(state::AppState::new().with_credential_store(credential_store));
             app.manage(commands::snip::SnipState::new());
 
