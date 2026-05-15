@@ -1,7 +1,8 @@
 import { createSignal, For, Show, type Component } from "solid-js";
-import { TbOutlineRefresh, TbOutlineFolderPlus, TbOutlineX, TbOutlineCheck, TbOutlineAlertCircle } from "solid-icons/tb";
+import { TbOutlineRefresh, TbOutlineFolderPlus, TbOutlineX, TbOutlineCheck } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
 import { useAgent } from "@context/AgentContext";
+import { useNotification } from "@context/NotificationContext";
 import {
   refreshSkillCatalog,
   listAvailableSkills,
@@ -23,18 +24,13 @@ interface SkillItem {
   active: boolean;
 }
 
-interface Diagnostic {
-  level: string;
-  message: string;
-  skillName?: string;
-}
-
 export const SkillsSettings: Component = () => {
   const { settings, updateSkillSettings, addSkillDir, removeSkillDir } = useSettings();
   const { state: agentState } = useAgent();
+  const { notify } = useNotification();
 
   const [skills, setSkills] = createSignal<SkillItem[]>([]);
-  const [diagnostics, setDiagnostics] = createSignal<Diagnostic[]>([]);
+  const [lastRefreshSummary, setLastRefreshSummary] = createSignal<{ warnings: number; errors: number } | null>(null);
   const [loading, setLoading] = createSignal(false);
   const [newDir, setNewDir] = createSignal("");
 
@@ -50,7 +46,28 @@ export const SkillsSettings: Component = () => {
         listAvailableSkills(tid),
         listActiveSkills(tid),
       ]);
-      setDiagnostics(diag);
+      const errors = diag.filter((d) => d.level === "Error").length;
+      const warnings = diag.filter((d) => d.level === "Warning").length;
+      setLastRefreshSummary({ warnings, errors });
+
+      if (errors > 0) {
+        notify(
+          "error",
+          `Skill refresh completed with ${errors} error${errors === 1 ? "" : "s"}`,
+          {
+            message:
+              warnings > 0
+                ? `and ${warnings} warning${warnings === 1 ? "" : "s"}`
+                : undefined,
+          },
+        );
+      } else if (warnings > 0) {
+        notify(
+          "warning",
+          `Skill refresh completed with ${warnings} warning${warnings === 1 ? "" : "s"}`,
+        );
+      }
+
       setSkills(
         available.map((s) => ({
           ...s,
@@ -59,6 +76,7 @@ export const SkillsSettings: Component = () => {
       );
     } catch (err) {
       console.error("Failed to load skills:", err);
+      notify("error", "Failed to refresh skills", { message: String(err) });
     } finally {
       setLoading(false);
     }
@@ -167,24 +185,20 @@ export const SkillsSettings: Component = () => {
           <p class="text-sm text-text-tertiary">Open a chat tab to view and manage skills.</p>
         </Show>
 
-        <Show when={diagnostics().length > 0}>
-          <div class="space-y-1">
-            <For each={diagnostics()}>
-              {(d) => (
-                <div class={`flex items-start gap-1.5 rounded-md px-3 py-1.5 text-xs ${
-                  d.level === "Error" ? "bg-error/10 text-error" :
-                  d.level === "Warning" ? "bg-warning/10 text-warning" :
-                  "bg-bg-elevated text-text-tertiary"
-                }`}>
-                  <TbOutlineAlertCircle size={13} class="mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span class="font-medium">{d.level}:</span>{" "}
-                    {d.message}
-                    {d.skillName && <span class="text-text-tertiary"> ({d.skillName})</span>}
-                  </div>
-                </div>
-              )}
-            </For>
+        <Show when={lastRefreshSummary()}>
+          <div
+            class={`text-xs rounded-md px-3 py-1.5 ${
+              (lastRefreshSummary()?.errors ?? 0) > 0
+                ? "bg-error/10 text-error"
+                : (lastRefreshSummary()?.warnings ?? 0) > 0
+                  ? "bg-warning/10 text-warning"
+                  : "bg-success/10 text-success"
+            }`}
+          >
+            <span class="font-medium">Refresh completed{" "}</span>
+            {(lastRefreshSummary()!.errors > 0 || lastRefreshSummary()!.warnings > 0)
+              ? `with ${lastRefreshSummary()!.errors > 0 ? `${lastRefreshSummary()!.errors} error${lastRefreshSummary()!.errors === 1 ? "" : "s"}` : ""}${lastRefreshSummary()!.errors > 0 && lastRefreshSummary()!.warnings > 0 ? " and " : ""}${lastRefreshSummary()!.warnings > 0 ? `${lastRefreshSummary()!.warnings} warning${lastRefreshSummary()!.warnings === 1 ? "" : "s"}` : ""}`
+              : "successfully"}
           </div>
         </Show>
 
