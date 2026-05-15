@@ -94,6 +94,9 @@ export const SkillsSettings: Component = () => {
       await loadSkills();
     } catch (err) {
       console.error("Failed to toggle skill:", err);
+      notify("error", currentlyActive ? "Failed to deactivate skill" : "Failed to activate skill", {
+        message: String(err),
+      });
     }
   };
 

@@ -7,6 +7,7 @@ import {
 } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
 import { useAgent } from "@context/AgentContext";
+import { useNotification } from "@context/NotificationContext";
 import { reconnectMcpServer, registerMcpServer } from "@lib/tauri/commands";
 import type { McpServerConfig } from "@/types/settings";
 
@@ -40,6 +41,7 @@ function slugify(name: string): string {
 export const McpSettings: Component = () => {
   const { settings, addMcpServer, updateMcpServer, removeMcpServer } = useSettings();
   const { state: agentState } = useAgent();
+  const { notify } = useNotification();
 
   // Form state
   const [formOpen, setFormOpen] = createSignal(false);
@@ -135,9 +137,12 @@ export const McpSettings: Component = () => {
       for (const conn of agentState.connections) {
         registerMcpServer(conn.id, updatedServer)
           .then(() => reconnectMcpServer(conn.id, id))
-          .catch((e) =>
-            console.error(`Failed to update MCP server on tab ${conn.id}:`, e),
-          );
+          .catch((e) => {
+            console.error(`Failed to update MCP server on tab ${conn.id}:`, e);
+            notify("error", "Failed to update MCP server on tab", {
+              message: `${conn.id}: ${String(e)}`,
+            });
+          });
       }
     } else {
       // Create new
@@ -155,9 +160,12 @@ export const McpSettings: Component = () => {
 
       // Hot-register on all active agent tabs
       for (const conn of agentState.connections) {
-        registerMcpServer(conn.id, fullServer).catch((e) =>
-          console.error(`Failed to register MCP server on tab ${conn.id}:`, e),
-        );
+        registerMcpServer(conn.id, fullServer).catch((e) => {
+          console.error(`Failed to register MCP server on tab ${conn.id}:`, e);
+          notify("error", "Failed to register MCP server on tab", {
+            message: `${conn.id}: ${String(e)}`,
+          });
+        });
       }
     }
 

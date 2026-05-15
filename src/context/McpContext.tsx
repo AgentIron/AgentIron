@@ -11,6 +11,7 @@ import { getMcpStatus, setMcpServerEnabled, reconnectMcpServer } from "@lib/taur
 import { useAgent } from "@context/AgentContext";
 import { useUI } from "@context/UIContext";
 import { useSettings } from "@context/SettingsContext";
+import { useNotification } from "@context/NotificationContext";
 import type { McpServerStatus } from "@/types/settings";
 
 interface McpState {
@@ -33,6 +34,7 @@ export const McpProvider: Component<{ children: JSX.Element }> = (props) => {
   const { state: agentState } = useAgent();
   const { mcpPaneOpen } = useUI();
   const { updateMcpServer } = useSettings();
+  const { notify } = useNotification();
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -97,6 +99,9 @@ export const McpProvider: Component<{ children: JSX.Element }> = (props) => {
         updateMcpServer(serverId, { enabledByDefault: enabled });
       } catch (e) {
         console.error("Failed to toggle MCP server:", e);
+        notify("error", enabled ? "Failed to enable MCP server" : "Failed to disable MCP server", {
+          message: String(e),
+        });
         throw e;
       } finally {
         await refresh();
@@ -110,6 +115,7 @@ export const McpProvider: Component<{ children: JSX.Element }> = (props) => {
         }
       } catch (e) {
         console.error("Failed to reconnect MCP server:", e);
+        notify("error", "Failed to reconnect MCP server", { message: String(e) });
         throw e;
       } finally {
         await refresh();

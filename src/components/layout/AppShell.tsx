@@ -8,12 +8,14 @@ import { SettingsPanel } from "@components/settings/SettingsPanel";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
 import { useUI } from "@context/UIContext";
+import { useNotification } from "@context/NotificationContext";
 import { parseModelSlug } from "@lib/models";
 
 export const AppShell: Component = () => {
   const { state: agentState, createAgentForTab } = useAgent();
   const { loaded, authStatusesLoaded, hasConfiguredProvider, isProviderConfigured, apiKeyForProvider, settings, allModels } = useSettings();
   const { currentView } = useUI();
+  const { notify } = useNotification();
 
   // Auto-create a tab on first load when a provider is configured
   let autoCreated = false;
@@ -38,7 +40,10 @@ export const AppShell: Component = () => {
         undefined,
         providerId,
         enabledMcp,
-      ).catch((err) => console.error("Failed to auto-create tab:", err));
+      ).catch((err) => {
+        console.error("Failed to auto-create tab:", err);
+        notify("error", "Failed to start agent", { message: String(err) });
+      });
     }
   });
 

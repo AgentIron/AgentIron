@@ -6,6 +6,7 @@ import { useChat } from "@context/ChatContext";
 import { useAgent } from "@context/AgentContext";
 import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt, saveHandoffBundle, loadHandoffBundle, importHandoff } from "@lib/tauri/commands";
 import { open, save } from "@tauri-apps/plugin-dialog";
+import { useNotification } from "@context/NotificationContext";
 
 interface AttachedImage {
   preview: string;  // object URL for display
@@ -26,6 +27,7 @@ export const MessageInput: Component = () => {
     isStreaming,
   } = useChat();
   const { state: agentState } = useAgent();
+  const { notify } = useNotification();
   let textareaRef: HTMLTextAreaElement | undefined;
   let fileInputRef: HTMLInputElement | undefined;
 
@@ -56,6 +58,7 @@ export const MessageInput: Component = () => {
       await startSnip();
     } catch (err) {
       console.error("Failed to start snip:", err);
+      notify("error", "Failed to start screenshot snip", { message: String(err) });
     }
   };
 
@@ -265,6 +268,7 @@ export const MessageInput: Component = () => {
       setStreaming(tid, false);
     } catch (err) {
       console.error("Failed to cancel prompt:", err);
+      notify("error", "Failed to cancel prompt", { message: String(err) });
     }
   };
 

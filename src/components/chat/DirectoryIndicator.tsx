@@ -3,11 +3,13 @@ import { TbOutlineFolder } from "solid-icons/tb";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
+import { useNotification } from "@context/NotificationContext";
 import { parseModelSlug } from "@lib/models";
 
 export const DirectoryIndicator: Component = () => {
   const { activeConnection, changeWorkingDirectory } = useAgent();
   const { apiKeyForProvider, settings } = useSettings();
+  const { notify } = useNotification();
 
   const displayPath = () => {
     const conn = activeConnection();
@@ -46,6 +48,7 @@ export const DirectoryIndicator: Component = () => {
       );
     } catch (err) {
       console.error("Failed to change directory:", err);
+      notify("error", "Failed to change working directory", { message: String(err) });
     }
   };
 
