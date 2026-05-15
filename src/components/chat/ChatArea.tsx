@@ -1,4 +1,4 @@
-import { For, Show, createEffect, type Component } from "solid-js";
+import { For, Index, Show, createEffect, createSignal, onCleanup, type Component } from "solid-js";
 import { Transition } from "solid-transition-group";
 import { TbOutlineServer } from "solid-icons/tb";
 import { useChat } from "@context/ChatContext";
@@ -16,6 +16,9 @@ import { ToolActivityLine } from "./ToolActivityLine";
 import { ToolActivitySummary } from "./ToolActivitySummary";
 import { groupEntries } from "./groupEntries";
 import { McpPanel } from "@components/mcp/McpPanel";
+import type { ChatEntry } from "@/types/message";
+
+const BOTTOM_SCROLL_THRESHOLD = 48;
 
 export const ChatArea: Component = () => {
   const { state: chatState, isStreaming } = useChat();
@@ -23,33 +26,74 @@ export const ChatArea: Component = () => {
   const { mcpPaneOpen, setMcpPaneOpen } = useUI();
   const { settings } = useSettings();
   const { serverStatuses } = useMcp();
-  let messagesEndRef: HTMLDivElement | undefined;
-
   let messagesContainerRef: HTMLDivElement | undefined;
+  let scrollFrame: number | undefined;
+  const [isPinnedToBottom, setIsPinnedToBottom] = createSignal(true);
+
+  const activeTabId = () => agentState.activeTabId ?? "";
+  const entries = () => chatState.entriesByTab[activeTabId()] ?? [];
+  const grouped = () => groupEntries(entries());
+  const streaming = () => isStreaming(activeTabId());
+
+  const isNearBottom = () => {
+    if (!messagesContainerRef) return true;
+    const distanceFromBottom =
+      messagesContainerRef.scrollHeight - messagesContainerRef.scrollTop - messagesContainerRef.clientHeight;
+    return distanceFromBottom <= BOTTOM_SCROLL_THRESHOLD;
+  };
+
+  const handleMessagesScroll = () => {
+    setIsPinnedToBottom(isNearBottom());
+  };
+
+  const scrollToBottom = () => {
+    if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
+    scrollFrame = requestAnimationFrame(() => {
+      const container = messagesContainerRef;
+      if (!container) {
+        scrollFrame = undefined;
+        return;
+      }
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "auto",
+      });
+      scrollFrame = undefined;
+    });
+  };
+
+  onCleanup(() => {
+    if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
+  });
 
   createEffect(() => {
-    const tabId = agentState.activeTabId;
+    const tabId = activeTabId();
     if (!tabId) return;
-    const entries = chatState.entriesByTab[tabId];
-    if (entries?.length) {
-      messagesEndRef?.scrollIntoView({ behavior: "smooth" });
+    const currentEntries = chatState.entriesByTab[tabId] ?? [];
+    const lastAssistantLength = getLastAssistantContentLength(currentEntries);
+    const toolActivityKey = getToolActivityKey(currentEntries);
+    const scrollTrigger = `${currentEntries.length}:${lastAssistantLength}:${toolActivityKey}:${isStreaming(tabId)}`;
+
+    void scrollTrigger;
+
+    if (currentEntries.length && isPinnedToBottom()) {
+      scrollToBottom();
     }
   });
 
   // Fade content on tab switch
   createEffect(() => {
-    agentState.activeTabId; // track
+    activeTabId(); // track
+    setIsPinnedToBottom(true);
     if (messagesContainerRef) {
       messagesContainerRef.classList.remove("animate-content-fade");
       requestAnimationFrame(() => {
         messagesContainerRef?.classList.add("animate-content-fade");
+        scrollToBottom();
       });
     }
   });
 
-  const activeTabId = () => agentState.activeTabId ?? "";
-  const entries = () => chatState.entriesByTab[activeTabId()] ?? [];
-  const grouped = () => groupEntries(entries());
   const hasMcpServers = () => settings.mcpServers.length > 0;
   const connectedCount = () => serverStatuses().filter((s) => s.health === "Connected").length;
   const hasError = () => serverStatuses().some((s) => s.health === "Error");
@@ -59,8 +103,6 @@ export const ChatArea: Component = () => {
     if (connectedCount() > 0) return "text-success hover:bg-bg-hover";
     return "text-text-secondary hover:text-text-primary hover:bg-bg-hover";
   };
-
-  const streaming = () => isStreaming(activeTabId());
 
   return (
     <div class="flex flex-1 min-h-0">
@@ -89,59 +131,72 @@ export const ChatArea: Component = () => {
             </Show>
           </div>
         </div>
-        <div ref={messagesContainerRef} class="flex-1 overflow-auto px-6 py-4">
-          <For each={grouped()}>
+        <div
+          ref={messagesContainerRef}
+          class="flex-1 overflow-auto px-6 py-4"
+          onScroll={handleMessagesScroll}
+        >
+          <Index each={grouped()}>
             {(group) => {
-              if (group.kind === "message") {
-                const entry = group.entry;
-                if (!entry.message) return null;
+              const messageEntry = () => {
+                const currentGroup = group();
+                return currentGroup.kind === "message" ? currentGroup.entry : undefined;
+              };
+              const toolGroupEntries = () => {
+                const currentGroup = group();
+                return currentGroup.kind === "tool_group" ? currentGroup.entries : undefined;
+              };
 
-                const isLastAssistant = () =>
-                  entry.message!.role === "assistant" &&
-                  isLastAssistantInList(entries(), entry.id);
+              return (
+                <Show
+                  when={messageEntry()}
+                  keyed
+                  fallback={
+                    <Show when={toolGroupEntries()} keyed>
+                      {(toolEntries) => (
+                        <Show
+                          when={!streaming()}
+                          fallback={
+                            <div class="mb-2">
+                              <For each={toolEntries.filter((e) => e.type === "tool_event")}>
+                                {(entry) => <ToolActivityLine event={entry.toolEvent!} />}
+                              </For>
+                            </div>
+                          }
+                        >
+                          <ToolActivitySummary entries={toolEntries} />
+                        </Show>
+                      )}
+                    </Show>
+                  }
+                >
+                  {(entry) => {
+                    if (!entry.message) return null;
 
-                const isStreamingMsg = () => isLastAssistant() && streaming();
+                    const isLastAssistant = () =>
+                      entry.message!.role === "assistant" &&
+                      isLastAssistantInList(entries(), entry.id);
 
-                // Skip empty assistant messages that aren't streaming
-                if (entry.message.role === "assistant" && !entry.message.content && !isStreamingMsg()) {
-                  return null;
-                }
+                    const isStreamingMsg = () => isLastAssistant() && streaming();
 
-                return (
-                  <MessageBubble
-                    role={entry.message.role as "user" | "assistant" | "system"}
-                    content={entry.message.content}
-                    createdAt={entry.message.createdAt}
-                    isStreaming={isStreamingMsg()}
-                  />
-                );
-              }
-
-              if (group.kind === "tool_group") {
-                // During streaming: show compact activity lines
-                // After streaming: show collapsed summary
-                return (
-                  <Show
-                    when={!streaming()}
-                    fallback={
-                      <div class="mb-2">
-                        <For each={group.entries.filter((e) => e.type === "tool_event")}>
-                          {(entry) => (
-                            <ToolActivityLine event={entry.toolEvent!} />
-                          )}
-                        </For>
-                      </div>
+                    // Skip empty assistant messages that aren't streaming
+                    if (entry.message.role === "assistant" && !entry.message.content && !isStreamingMsg()) {
+                      return null;
                     }
-                  >
-                    <ToolActivitySummary entries={group.entries} />
-                  </Show>
-                );
-              }
 
-              return null;
+                    return (
+                      <MessageBubble
+                        role={entry.message.role}
+                        content={entry.message.content}
+                        createdAt={entry.message.createdAt}
+                        isStreaming={isStreamingMsg()}
+                      />
+                    );
+                  }}
+                </Show>
+              );
             }}
-          </For>
-          <div ref={messagesEndRef} />
+          </Index>
         </div>
         <ApprovalBar />
         <div class="px-6 pb-4 pt-2">
@@ -160,11 +215,27 @@ export const ChatArea: Component = () => {
 };
 
 /** Check if entry with given id is the last assistant message in the list */
-function isLastAssistantInList(entries: any[], entryId: string): boolean {
+function isLastAssistantInList(entries: ChatEntry[], entryId: string): boolean {
   for (let i = entries.length - 1; i >= 0; i--) {
     if (entries[i].type === "message" && entries[i].message?.role === "assistant") {
       return entries[i].id === entryId;
     }
   }
   return false;
+}
+
+function getLastAssistantContentLength(entries: ChatEntry[]): number {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].type === "message" && entries[i].message?.role === "assistant") {
+      return entries[i].message?.content.length ?? 0;
+    }
+  }
+  return 0;
+}
+
+function getToolActivityKey(entries: ChatEntry[]): string {
+  return entries
+    .filter((entry) => entry.type === "tool_event")
+    .map((entry) => `${entry.id}:${entry.toolEvent?.type ?? ""}:${entry.toolEvent?.status ?? ""}`)
+    .join("|");
 }
