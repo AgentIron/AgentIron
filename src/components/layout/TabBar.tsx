@@ -2,6 +2,7 @@ import { For, createSignal, type Component } from "solid-js";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
 import { useUI } from "@context/UIContext";
+import { useNotification } from "@context/NotificationContext";
 import { parseModelSlug } from "@lib/models";
 import { Tab } from "./Tab";
 
@@ -9,6 +10,7 @@ export const TabBar: Component = () => {
   const { state, setActiveTab, createAgentForTab, renameConnection } = useAgent();
   const { apiKeyForProvider, isProviderConfigured, settings, allModels } = useSettings();
   const { setCurrentView } = useUI();
+  const { notify } = useNotification();
   const [creating, setCreating] = createSignal(false);
   const defaultProviderId = () => parseModelSlug(settings.defaultModel, allModels()).providerId;
   const canCreateTab = () => isProviderConfigured(defaultProviderId()) && !creating();
@@ -25,7 +27,7 @@ export const TabBar: Component = () => {
       setCurrentView("chat");
     } catch (err) {
       console.error("Failed to create agent:", err);
-      alert(`Failed to create agent: ${err}`);
+      notify("error", "Failed to create agent", { message: String(err) });
     } finally {
       setCreating(false);
     }
