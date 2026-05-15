@@ -12,6 +12,7 @@ import {
   TbOutlineUnlink,
 } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
+import { useNotification, notifyError } from "@context/NotificationContext";
 import { DEFAULT_PROVIDERS, PROVIDER_METADATA, formatTokenCount, parseModelSlug, makeModelSlug } from "@lib/models";
 import { startProviderOAuth, pollProviderOAuth, disconnectProviderOAuth } from "@lib/tauri/commands";
 import type { ProviderConfig, ModelInfo } from "@/types/settings";
@@ -33,6 +34,7 @@ export const ProviderSettings: Component = () => {
     registryLastUpdated,
     isProviderConfigured,
   } = useSettings();
+  const notify = useNotification();
   const [updating, setUpdating] = createSignal(false);
   const [showAddMenu, setShowAddMenu] = createSignal(false);
 
@@ -144,7 +146,7 @@ export const ProviderSettings: Component = () => {
                   await updateModelRegistry();
                 } catch (e) {
                   console.error("Failed to update model registry:", e);
-                  alert(`Failed to update: ${e}`);
+                  notifyError(notify, "Failed to update models", { message: String(e) });
                 } finally {
                   setUpdating(false);
                 }

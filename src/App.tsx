@@ -5,19 +5,24 @@ import { ChatProvider } from "@context/ChatContext";
 import { UIProvider } from "@context/UIContext";
 import { SettingsProvider } from "@context/SettingsContext";
 import { McpProvider } from "@context/McpContext";
+import { NotificationProvider } from "@context/NotificationContext";
+import { NotificationStack } from "@components/NotificationStack";
 import "./index.css";
 
 const App: Component = () => {
   return (
     <SettingsProvider>
       <UIProvider>
-        <AgentProvider>
-          <McpProvider>
-            <ChatProvider>
-              <AppShell />
-            </ChatProvider>
-          </McpProvider>
-        </AgentProvider>
+        <NotificationProvider>
+          <AgentProvider>
+            <McpProvider>
+              <ChatProvider>
+                <AppShell />
+                <NotificationStack />
+              </ChatProvider>
+            </McpProvider>
+          </AgentProvider>
+        </NotificationProvider>
       </UIProvider>
     </SettingsProvider>
   );
