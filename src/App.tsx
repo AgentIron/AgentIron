@@ -18,10 +18,10 @@ const App: Component = () => {
             <McpProvider>
               <ChatProvider>
                 <AppShell />
-                <NotificationStack />
               </ChatProvider>
             </McpProvider>
           </AgentProvider>
+          <NotificationStack />
         </NotificationProvider>
       </UIProvider>
     </SettingsProvider>

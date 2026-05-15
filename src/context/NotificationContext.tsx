@@ -36,7 +36,7 @@ export const NotificationProvider: Component<{ children: JSX.Element }> = (
 ) => {
   const [notifications, setNotifications] = createSignal<Notification[]>([]);
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
-  const recentKeys = new Map<string, number>();
+  const recentKeys = new Set<string>();
 
   const scheduleDismiss = (id: string, severity: NotificationSeverity) => {
     const ms = AUTO_DISMISS_MS[severity];
@@ -66,12 +66,9 @@ export const NotificationProvider: Component<{ children: JSX.Element }> = (
     opts?: { message?: string; action?: Notification["action"] },
   ) => {
     const key = dedupeKey(severity, title, opts?.message);
-    const now = Date.now();
-    const lastTime = recentKeys.get(key);
-    if (lastTime !== undefined && now - lastTime < 1000) {
-      return;
-    }
-    recentKeys.set(key, now);
+    if (recentKeys.has(key)) return;
+    recentKeys.add(key);
+    setTimeout(() => recentKeys.delete(key), 1000);
 
     const notification: Notification = {
       id: crypto.randomUUID(),
@@ -79,7 +76,7 @@ export const NotificationProvider: Component<{ children: JSX.Element }> = (
       title,
       message: opts?.message,
       action: opts?.action,
-      createdAt: now,
+      createdAt: Date.now(),
     };
 
     setNotifications((prev) => {
@@ -93,6 +90,7 @@ export const NotificationProvider: Component<{ children: JSX.Element }> = (
   onCleanup(() => {
     for (const timer of timers.values()) clearTimeout(timer);
     timers.clear();
+    recentKeys.clear();
   });
 
   const value: NotificationContextValue = {
@@ -116,27 +114,3 @@ export const useNotification = () => {
     );
   return ctx;
 };
-
-export const notifyInfo = (
-  ctx: NotificationContextValue,
-  title: string,
-  opts?: { message?: string; action?: Notification["action"] },
-) => ctx.notify("info", title, opts);
-
-export const notifySuccess = (
-  ctx: NotificationContextValue,
-  title: string,
-  opts?: { message?: string; action?: Notification["action"] },
-) => ctx.notify("success", title, opts);
-
-export const notifyWarning = (
-  ctx: NotificationContextValue,
-  title: string,
-  opts?: { message?: string; action?: Notification["action"] },
-) => ctx.notify("warning", title, opts);
-
-export const notifyError = (
-  ctx: NotificationContextValue,
-  title: string,
-  opts?: { message?: string; action?: Notification["action"] },
-) => ctx.notify("error", title, opts);

@@ -28,7 +28,6 @@ export const NotificationToast: Component<{
   return (
     <div
       class={`flex gap-2.5 rounded-lg border border-border-default border-l-[3px] ${s().border} bg-surface-light p-3 shadow-xl min-w-[280px] max-w-[400px]`}
-      role="alert"
     >
       <Dynamic component={s().icon} size={16} class={`mt-0.5 shrink-0 ${s().iconColor}`} />
       <div class="flex-1 min-w-0">
@@ -51,7 +50,10 @@ export const NotificationToast: Component<{
         </Show>
         <Show when={props.notification.action}>
           <button
-            onClick={() => props.notification.action?.onClick()}
+            onClick={() => {
+              props.notification.action?.onClick();
+              props.onDismiss(props.notification.id);
+            }}
             class="mt-2 px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors"
           >
             {props.notification.action?.label}
