@@ -1,104 +1,25 @@
-import { createSignal, For, Show, type Component } from "solid-js";
+import { createSignal, For, Show, onMount, type Component } from "solid-js";
 import { TbOutlineRefresh, TbOutlineFolderPlus, TbOutlineX, TbOutlineCheck } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
 import { useAgent } from "@context/AgentContext";
-import { useNotification } from "@context/NotificationContext";
-import {
-  refreshSkillCatalog,
-  listAvailableSkills,
-  activateSkill,
-  deactivateSkill,
-  listActiveSkills,
-} from "@lib/tauri/commands";
-
-interface SkillItem {
-  id: string;
-  displayName: string;
-  description: string;
-  origin: string;
-  autoActivate: boolean;
-  tags: string[];
-  requiresTools: string[];
-  requiresCapabilities: string[];
-  requiresTrust: boolean;
-  active: boolean;
-}
+import { useSkillCatalog } from "@context/SkillCatalogContext";
 
 export const SkillsSettings: Component = () => {
   const { settings, updateSkillSettings, addSkillDir, removeSkillDir } = useSettings();
   const { state: agentState } = useAgent();
-  const { notify } = useNotification();
+  const { getCatalog, loadSkills, toggleSkill } = useSkillCatalog();
 
-  const [skills, setSkills] = createSignal<SkillItem[]>([]);
-  const [lastRefreshSummary, setLastRefreshSummary] = createSignal<{ warnings: number; errors: number } | null>(null);
-  const [loading, setLoading] = createSignal(false);
   const [newDir, setNewDir] = createSignal("");
 
   const activeTabId = () => agentState.activeTabId;
+  const catalog = () => getCatalog(activeTabId() ?? "");
 
-  const loadSkills = async () => {
+  onMount(() => {
     const tid = activeTabId();
-    if (!tid) return;
-    setLoading(true);
-    try {
-      const [diag, available, active] = await Promise.all([
-        refreshSkillCatalog(tid),
-        listAvailableSkills(tid),
-        listActiveSkills(tid),
-      ]);
-      const errors = diag.filter((d) => d.level === "Error").length;
-      const warnings = diag.filter((d) => d.level === "Warning").length;
-      setLastRefreshSummary({ warnings, errors });
-
-      if (errors > 0) {
-        notify(
-          "error",
-          `Skill refresh completed with ${errors} error${errors === 1 ? "" : "s"}`,
-          {
-            message:
-              warnings > 0
-                ? `and ${warnings} warning${warnings === 1 ? "" : "s"}`
-                : undefined,
-          },
-        );
-      } else if (warnings > 0) {
-        notify(
-          "warning",
-          `Skill refresh completed with ${warnings} warning${warnings === 1 ? "" : "s"}`,
-        );
-      }
-
-      setSkills(
-        available.map((s) => ({
-          ...s,
-          active: active.includes(s.id),
-        })),
-      );
-    } catch (err) {
-      console.error("Failed to load skills:", err);
-      notify("error", "Failed to refresh skills", { message: String(err) });
-    } finally {
-      setLoading(false);
+    if (tid) {
+      loadSkills(tid);
     }
-  };
-
-  const toggleSkill = async (name: string, currentlyActive: boolean) => {
-    const tid = activeTabId();
-    if (!tid) return;
-    try {
-      if (currentlyActive) {
-        await deactivateSkill(tid, name);
-      } else {
-        await activateSkill(tid, name);
-      }
-      await loadSkills();
-    } catch (err) {
-      console.error("Failed to toggle skill:", err);
-      notify("error", currentlyActive ? "Failed to deactivate skill" : "Failed to activate skill", {
-        message: String(err),
-      });
-    }
-  };
+  });
 
   const handleAddDir = () => {
     const dir = newDir().trim();
@@ -175,11 +96,14 @@ export const SkillsSettings: Component = () => {
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-medium text-text-secondary uppercase tracking-wide">Skill Catalog</h3>
           <button
-            onClick={loadSkills}
-            disabled={loading() || !activeTabId()}
+            onClick={() => {
+              const tid = activeTabId();
+              if (tid) loadSkills(tid);
+            }}
+            disabled={catalog().loading || !activeTabId()}
             class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg-elevated border border-border-subtle text-xs text-text-primary hover:bg-bg-hover transition-colors disabled:opacity-50"
           >
-            <TbOutlineRefresh size={13} class={loading() ? "animate-spin" : ""} />
+            <TbOutlineRefresh size={13} class={catalog().loading ? "animate-spin" : ""} />
             Refresh
           </button>
         </div>
@@ -188,29 +112,33 @@ export const SkillsSettings: Component = () => {
           <p class="text-sm text-text-tertiary">Open a chat tab to view and manage skills.</p>
         </Show>
 
-        <Show when={lastRefreshSummary()}>
+        <Show when={catalog().lastRefreshSummary}>
           <div
             class={`text-xs rounded-md px-3 py-1.5 ${
-              (lastRefreshSummary()?.errors ?? 0) > 0
+              (catalog().lastRefreshSummary?.errors ?? 0) > 0
                 ? "bg-error/10 text-error"
-                : (lastRefreshSummary()?.warnings ?? 0) > 0
+                : (catalog().lastRefreshSummary?.warnings ?? 0) > 0
                   ? "bg-warning/10 text-warning"
                   : "bg-success/10 text-success"
             }`}
           >
             <span class="font-medium">Refresh completed{" "}</span>
-            {(lastRefreshSummary()!.errors > 0 || lastRefreshSummary()!.warnings > 0)
-              ? `with ${lastRefreshSummary()!.errors > 0 ? `${lastRefreshSummary()!.errors} error${lastRefreshSummary()!.errors === 1 ? "" : "s"}` : ""}${lastRefreshSummary()!.errors > 0 && lastRefreshSummary()!.warnings > 0 ? " and " : ""}${lastRefreshSummary()!.warnings > 0 ? `${lastRefreshSummary()!.warnings} warning${lastRefreshSummary()!.warnings === 1 ? "" : "s"}` : ""}`
+            {(catalog().lastRefreshSummary!.errors > 0 || catalog().lastRefreshSummary!.warnings > 0)
+              ? `with ${catalog().lastRefreshSummary!.errors > 0 ? `${catalog().lastRefreshSummary!.errors} error${catalog().lastRefreshSummary!.errors === 1 ? "" : "s"}` : ""}${catalog().lastRefreshSummary!.errors > 0 && catalog().lastRefreshSummary!.warnings > 0 ? " and " : ""}${catalog().lastRefreshSummary!.warnings > 0 ? `${catalog().lastRefreshSummary!.warnings} warning${catalog().lastRefreshSummary!.warnings === 1 ? "" : "s"}` : ""}`
               : "successfully"}
           </div>
         </Show>
 
-        <Show when={skills().length === 0 && activeTabId()}>
+        <Show when={catalog().loading && catalog().skills.length === 0}>
+          <p class="text-sm text-text-tertiary">Loading skills…</p>
+        </Show>
+
+        <Show when={catalog().skills.length === 0 && !catalog().loading && catalog().loaded && activeTabId()}>
           <p class="text-sm text-text-tertiary">No skills discovered. Try refreshing the catalog.</p>
         </Show>
 
         <div class="space-y-1">
-          <For each={skills()}>
+          <For each={catalog().skills}>
             {(skill) => (
               <div class="flex items-start justify-between bg-bg-elevated rounded-md px-3 py-2">
                 <div class="flex-1 min-w-0">
@@ -233,7 +161,10 @@ export const SkillsSettings: Component = () => {
                   </Show>
                 </div>
                 <button
-                  onClick={() => toggleSkill(skill.id, skill.active)}
+                  onClick={() => {
+                    const tid = activeTabId();
+                    if (tid) toggleSkill(tid, skill.id, skill.active);
+                  }}
                   class={`flex-shrink-0 ml-2 px-2 py-1 rounded-md text-xs transition-colors ${
                     skill.active
                       ? "bg-accent text-void hover:bg-accent-hover"
