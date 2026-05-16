@@ -1,6 +1,6 @@
 {
   "name": "agentiron",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cross-platform AI agent client for iron-core",
   "type": "module",
   "scripts": {
