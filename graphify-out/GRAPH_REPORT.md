@@ -1,16 +1,16 @@
 # Graph Report - AgentIron  (2026-05-15)
 
 ## Corpus Check
-- 127 files · ~49,332 words
+- 128 files · ~49,618 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 899 nodes · 1410 edges · 70 communities (59 shown, 11 thin omitted)
+- 907 nodes · 1433 edges · 65 communities (59 shown, 6 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `75e8336c`
+- Built from commit: `75f132ef`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -73,19 +73,14 @@
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
 - [[_COMMUNITY_Community 57|Community 57]]
-- [[_COMMUNITY_Community 58|Community 58]]
-- [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
-- [[_COMMUNITY_Community 65|Community 65]]
-- [[_COMMUNITY_Community 66|Community 66]]
-- [[_COMMUNITY_Community 67|Community 67]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useSettings()` - 31 edges
-2. `useAgent()` - 25 edges
-3. `useNotification()` - 25 edges
+2. `useNotification()` - 27 edges
+3. `useAgent()` - 25 edges
 4. `useUI()` - 17 edges
 5. `AgentIron` - 12 edges
 6. `toolIcon()` - 10 edges
@@ -106,79 +101,79 @@
 - `create_agent()` --calls--> `ProviderBox`  [INFERRED]
   src-tauri/src/commands/agent.rs → src-tauri/src/provider_box.rs
 
-## Communities (70 total, 11 thin omitted)
+## Communities (65 total, 6 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (55): ApprovalBar(), ChatArea(), getLastAssistantContentLength(), getToolActivityKey(), isLastAssistantInList(), ContextIndicator(), DirectoryIndicator(), groupEntries() (+47 more)
+Nodes (58): ApprovalBar(), ChatArea(), getLastAssistantContentLength(), getToolActivityKey(), isLastAssistantInList(), DirectoryIndicator(), GroupedEntry, groupEntries() (+50 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (47): useMcp(), DB_KEY_MAP, DEFAULTS, JSON_KEYS, persistSetting(), ProviderAuthStatus, SettingsContext, SettingsContextValue (+39 more)
+Cohesion: 0.05
+Nodes (26): AgentCardProps, ButtonProps, InputProps, ModalProps, NotificationStack(), NotificationToast(), SEVERITY_STYLES, AgentProvider() (+18 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
-Nodes (39): AcpClient, GroupedEntry, AttachedImage, ChatContext, ChatContextValue, ChatState, PendingApproval, plugin_dialog (+31 more)
+Nodes (45): AcpClient, AttachedImage, AgentContext, AgentContextValue, AgentState, ChatContext, ChatContextValue, ChatState (+37 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.1
-Nodes (27): CodeBlock(), CodeBlockProps, ToolActivityLine(), ToolActivityLineProps, ToolActivitySummaryProps, ToolDetailItem(), ToolCallMessage(), ToolCallMessageProps (+19 more)
+Cohesion: 0.09
+Nodes (37): ContextIndicator(), DB_KEY_MAP, DEFAULTS, JSON_KEYS, persistSetting(), ProviderAuthStatus, SettingsContext, SettingsContextValue (+29 more)
 
 ### Community 4 - "Community 4"
+Cohesion: 0.11
+Nodes (25): CodeBlock(), CodeBlockProps, ToolActivityLineProps, ToolActivitySummaryProps, ToolDetailItem(), ToolCallMessage(), ToolCallMessageProps, renderArgsDetail() (+17 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.06
 Nodes (32): AgentIron, Auto-Updater (Future), Branch Protection, Building from Source, Built-in Tools, Chat & Agent Interaction, code:bash (# Clone the repository), code:block2 (AgentIron/) (+24 more)
 
-### Community 5 - "Community 5"
+### Community 6 - "Community 6"
 Cohesion: 0.13
 Nodes (18): capture_snip(), complete_snip(), SnipData, SnipRegion, SnipState, start_snip(), cursor, deserialize (+10 more)
 
-### Community 6 - "Community 6"
+### Community 7 - "Community 7"
 Cohesion: 0.07
 Nodes (28): ADDED Requirements, Requirement: AgentIron SHALL construct providers through the upstream provider registry, Requirement: AgentIron SHALL expose device-code OAuth provider commands, Requirement: AgentIron SHALL include Codex in provider selection, Requirement: AgentIron SHALL keep provider-specific OAuth research separate from app integration, Requirement: AgentIron SHALL load provider auth status before automatic session creation, Requirement: AgentIron SHALL refresh OAuth access tokens during provider resolution, Requirement: AgentIron SHALL store OAuth provider credentials separately from settings JSON (+20 more)
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
 Cohesion: 0.11
 Nodes (22): arc, AgentHandle, AgentParams, AgentRequest, ApprovalDecision, AppState, build_mcp_config(), emit_token_count() (+14 more)
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.09
 Nodes (22): escapeHtml(), highlightCode(), MarkdownRenderer(), MarkdownRendererProps, marked, normalizeLang(), unescapeHtml(), MessageBubbleProps (+14 more)
 
-### Community 9 - "Community 9"
+### Community 10 - "Community 10"
 Cohesion: 0.09
 Nodes (22): ADDED Requirements, Requirement: AgentIron SHALL authenticate Codex with validated OAuth credentials, Requirement: AgentIron SHALL authenticate Kimi Code with validated OAuth credentials, Requirement: OAuth validation SHALL avoid storing or exposing secrets, Requirement: Provider-specific findings SHALL be documented and linked, Requirement: Provider-specific OAuth behavior SHALL remain outside AgentIron UI logic, Scenario: Automated tests cover provider semantics, Scenario: Codex auth metadata is incorrect (+14 more)
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.09
 Nodes (21): ADDED Requirements, MODIFIED Requirements, Requirement: AgentIron SHALL build release artifacts on version tag push, Requirement: AgentIron SHALL build release packages from the release tag, Requirement: AgentIron SHALL not create automatic release-bump PRs after normal merges, Requirement: AgentIron SHALL provide a manual direct release workflow, Requirement: AgentIron SHALL publish GitHub Releases with built artifacts, Requirement: AgentIron SHALL tag the exact release commit (+13 more)
-
-### Community 11 - "Community 11"
-Cohesion: 0.16
-Nodes (11): NotificationToast(), SEVERITY_STYLES, AUTO_DISMISS_MS, NotificationContext, NotificationContextValue, notifyError(), root, Notification (+3 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.11
 Nodes (18): ADDED Requirements, Requirement: AgentIron SHALL keep selected diagnostics console-only for this change, Requirement: AgentIron SHALL notify users about visible MCP action failures, Requirement: AgentIron SHALL notify users about visible transient action failures, Requirement: AgentIron SHALL preserve inline persistent health state, Requirement: AgentIron SHALL retain developer diagnostics for migrated failures, Scenario: A migrated action failure occurs, Scenario: MCP server hot-register fails for active tabs (+10 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.22
-Nodes (14): auth_status_response(), DeviceCodeStartResponse, get_provider_auth_status(), is_retryable_oauth_poll_error(), kimi_code_uses_validated_oauth_metadata(), looks_like_cloudflare_challenge(), oauth_flow_key(), oauth_http_client() (+6 more)
-
-### Community 15 - "Community 15"
 Cohesion: 0.16
 Nodes (11): subscribeToAgentStream(), AcpPromptOptions, AcpSessionEvent, AcpTransport, core, event, Phase, SelectionRect (+3 more)
 
-### Community 16 - "Community 16"
+### Community 15 - "Community 15"
 Cohesion: 0.12
 Nodes (15): ADDED Requirements, Requirement: AgentIron SHALL build release artifacts on version tag push, Requirement: AgentIron SHALL produce Linux artifacts, Requirement: AgentIron SHALL produce signed macOS artifacts, Requirement: AgentIron SHALL produce signed Windows artifacts, Requirement: AgentIron SHALL provide installation documentation, Scenario: AppImage is executable, Scenario: Linux artifacts are produced (+7 more)
 
-### Community 17 - "Community 17"
+### Community 16 - "Community 16"
 Cohesion: 0.12
 Nodes (15): Cache provider auth status in frontend state, code:text (if provider has a non-empty API key:), Context, Decisions, Do not add an auth-mode preference for the MVP, Goals / Non-Goals, Keep API keys in existing settings for this change, Keep the existing provider-injection worker architecture (+7 more)
 
-### Community 18 - "Community 18"
+### Community 17 - "Community 17"
 Cohesion: 0.12
 Nodes (15): code:text (┌──────────────────┐), code:text (API key      -> x-api-key: <api_key>), Context, Decisions, Device-code is the OAuth interaction target for this change, Goals / Non-Goals, Keep `codex` separate from public `openai`, Migration Plan (+7 more)
+
+### Community 18 - "Community 18"
+Cohesion: 0.24
+Nodes (13): auth_status_response(), DeviceCodeStartResponse, get_provider_auth_status(), is_retryable_oauth_poll_error(), kimi_code_uses_validated_oauth_metadata(), looks_like_cloudflare_challenge(), oauth_flow_key(), oauth_http_client() (+5 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.13
@@ -209,12 +204,12 @@ Cohesion: 0.18
 Nodes (10): ADDED Requirements, Requirement: AgentIron SHALL enforce in-process transport, Requirement: AgentIron SHALL support prompt cancellation, Requirement: AgentIron SHALL surface script activity events, Scenario: Chat UI receives script activity events, Scenario: Script execution emits activity events, Scenario: User cancels after completion, Scenario: User cancels an active prompt (+2 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.22
-Nodes (7): ApiCost, ApiLimit, ApiModalities, ApiModel, ApiProvider, RegistryModel, hashmap
+Cohesion: 0.2
+Nodes (8): ApiCost, ApiLimit, ApiModalities, ApiModel, ApiProvider, RegistryModel, hashmap, serde
 
 ### Community 27 - "Community 27"
 Cohesion: 0.22
-Nodes (3): ChatMessage, oneshot, serde
+Nodes (3): ChatMessage, oneshot, state
 
 ### Community 28 - "Community 28"
 Cohesion: 0.22
@@ -329,24 +324,24 @@ Cohesion: 0.67
 Nodes (3): plugin_global_shortcut, registerQuickLaunch(), unregisterShortcut()
 
 ## Knowledge Gaps
-- **382 isolated node(s):** `AgentRequest`, `ImageDataJson`, `McpErrorCategory`, `McpErrorStage`, `McpServerStatusJson` (+377 more)
+- **387 isolated node(s):** `AgentRequest`, `ImageDataJson`, `McpErrorCategory`, `McpErrorStage`, `McpServerStatusJson` (+382 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `App()` connect `Community 0` to `Community 5`?**
+- **Why does `App()` connect `Community 1` to `Community 6`?**
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `start_snip()` connect `Community 6` to `Community 1`?**
   _High betweenness centrality (0.092) - this node is a cross-community bridge._
-- **Why does `start_snip()` connect `Community 5` to `Community 0`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
-- **Why does `create_agent()` connect `Community 46` to `Community 12`, `Community 7`?**
+- **Why does `create_agent()` connect `Community 46` to `Community 8`, `Community 12`?**
   _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `AgentRequest`, `ImageDataJson`, `McpErrorCategory` to the rest of the system?**
-  _382 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _387 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._

@@ -6,6 +6,7 @@ import { UIProvider } from "@context/UIContext";
 import { SettingsProvider } from "@context/SettingsContext";
 import { McpProvider } from "@context/McpContext";
 import { NotificationProvider } from "@context/NotificationContext";
+import { SkillCatalogProvider } from "@context/SkillCatalogContext";
 import { NotificationStack } from "@components/NotificationStack";
 import "./index.css";
 
@@ -15,11 +16,13 @@ const App: Component = () => {
       <UIProvider>
         <NotificationProvider>
           <AgentProvider>
-            <McpProvider>
-              <ChatProvider>
-                <AppShell />
-              </ChatProvider>
-            </McpProvider>
+            <SkillCatalogProvider>
+              <McpProvider>
+                <ChatProvider>
+                  <AppShell />
+                </ChatProvider>
+              </McpProvider>
+            </SkillCatalogProvider>
           </AgentProvider>
           <NotificationStack />
         </NotificationProvider>
