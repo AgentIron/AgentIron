@@ -3,11 +3,13 @@ import { Transition } from "solid-transition-group";
 import { TbOutlineChevronDown, TbOutlineCheck } from "solid-icons/tb";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
+import { useNotification } from "@context/NotificationContext";
 import { parseModelSlug } from "@lib/models";
 
 export const ModelSwitcher: Component = () => {
   const { activeConnection, changeModel } = useAgent();
   const { settings, allModels, authStatuses } = useSettings();
+  const { notify } = useNotification();
   const [open, setOpen] = createSignal(false);
   const [switching, setSwitching] = createSignal(false);
 
@@ -49,6 +51,7 @@ export const ModelSwitcher: Component = () => {
       await changeModel(conn.id, provider.apiKey ?? "", modelId, providerId);
     } catch (err) {
       console.error("Failed to switch model:", err);
+      notify("error", "Failed to switch model", { message: String(err) });
     } finally {
       setSwitching(false);
     }
