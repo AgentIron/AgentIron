@@ -21,6 +21,8 @@ export const PROVIDER_METADATA: ProviderMetadata[] = [
   { id: "kimi-code", name: "Kimi for Coding", auth: "dual" },
   { id: "codex", name: "Codex (OpenAI)", auth: "oauth" },
   { id: "requesty", name: "Requesty", auth: "api_key" },
+  { id: "ollama-cloud", name: "Ollama Cloud", auth: "api_key" },
+  { id: "local", name: "Local", auth: "api_key" },
 ];
 
 /** All known providers with their default configuration */
@@ -36,6 +38,8 @@ export const DEFAULT_PROVIDERS: ProviderConfig[] = [
   { id: "kimi-code", name: "Kimi for Coding", apiKey: "", enabled: false },
   { id: "codex", name: "Codex (OpenAI)", apiKey: "", enabled: false },
   { id: "requesty", name: "Requesty", apiKey: "", enabled: false },
+  { id: "ollama-cloud", name: "Ollama Cloud", apiKey: "", enabled: false },
+  { id: "local", name: "Local", apiKey: "", enabled: false },
 ];
 
 /** Known models per provider */

@@ -8,7 +8,7 @@ import { parseModelSlug } from "@lib/models";
 
 export const ModelSwitcher: Component = () => {
   const { activeConnection, changeModel } = useAgent();
-  const { settings, allModels, authStatuses } = useSettings();
+  const { settings, allModels, isProviderConfigured } = useSettings();
   const { notify } = useNotification();
   const [open, setOpen] = createSignal(false);
   const [switching, setSwitching] = createSignal(false);
@@ -22,11 +22,7 @@ export const ModelSwitcher: Component = () => {
 
   // Only show starred models from enabled providers that are configured
   const isProviderReady = (providerId: string) => {
-    const provider = settings.providers.find((p) => p.id === providerId);
-    if (!provider || !provider.enabled) return false;
-    if (provider.apiKey.trim().length > 0) return true;
-    const auth = authStatuses()[providerId];
-    return auth?.status === "connectedOAuth" || auth?.status === "configuredApiKey";
+    return isProviderConfigured(providerId);
   };
 
   const starredModels = () =>

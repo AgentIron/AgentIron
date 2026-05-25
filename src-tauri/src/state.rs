@@ -551,10 +551,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         app_handle,
                         response_tx,
                     } => {
-                        let result = session
-                            .checkpoint(iron_core::CompactionCheckpoint::TaskComplete)
-                            .await
-                            .map_err(|e| e.to_string());
+                        let result = session.checkpoint().await.map_err(|e| e.to_string());
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
