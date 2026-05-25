@@ -39,30 +39,28 @@ async fn build_provider(
     model: &str,
     base_url: Option<&str>,
 ) -> Result<Box<dyn iron_core::Provider>, String> {
-    // For local provider with base_url override, construct a custom profile
     if provider_id == "local" {
-        if let Some(url) = base_url {
-            let profile = iron_providers::ProviderProfile::new(
-                "local",
-                iron_providers::ApiFamily::Completions,
-                url,
-            )
-            .with_auth(iron_providers::AuthStrategy::BearerToken)
-            .with_credential_auth(
-                iron_providers::CredentialKind::NoAuth,
-                iron_providers::AuthStrategy::NoAuth,
-            );
+        let url = base_url.unwrap_or("http://localhost:11434/v1");
+        let profile = iron_providers::ProviderProfile::new(
+            "local",
+            iron_providers::ApiFamily::Completions,
+            url,
+        )
+        .with_auth(iron_providers::AuthStrategy::BearerToken)
+        .with_credential_auth(
+            iron_providers::CredentialKind::NoAuth,
+            iron_providers::AuthStrategy::NoAuth,
+        );
 
-            let runtime_config = if api_key.trim().is_empty() {
-                iron_providers::RuntimeConfig::none()
-            } else {
-                iron_providers::RuntimeConfig::new(api_key)
-            };
+        let runtime_config = if api_key.trim().is_empty() {
+            iron_providers::RuntimeConfig::none()
+        } else {
+            iron_providers::RuntimeConfig::new(api_key)
+        };
 
-            return iron_providers::ProviderConnection::from_profile(profile, runtime_config)
-                .map(|p| Box::new(p) as Box<dyn iron_core::Provider>)
-                .map_err(|e| format!("Provider error: {e}"));
-        }
+        return iron_providers::ProviderConnection::from_profile(profile, runtime_config)
+            .map(|p| Box::new(p) as Box<dyn iron_core::Provider>)
+            .map_err(|e| format!("Provider error: {e}"));
     }
 
     // Prefer credential resolver when available
