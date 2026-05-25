@@ -27,25 +27,25 @@
     "@tauri-apps/plugin-opener": "^2.5.4",
     "@tauri-apps/plugin-sql": "^2.4.0",
     "fuse.js": "^7.3.0",
-    "marked": "^18.0.3",
+    "marked": "^18.0.4",
     "prismjs": "^1.30.0",
     "solid-icons": "^1.2.0",
-    "solid-js": "^1.9.12",
+    "solid-js": "^1.9.13",
     "solid-transition-group": "^0.3.0",
     "tailwindcss": "^4.3.0",
-    "tinykeys": "^3.0.0"
+    "tinykeys": "^3.1.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.11.1",
+    "@tauri-apps/cli": "^2.11.2",
     "@types/prismjs": "^1.26.6",
-    "@typescript-eslint/eslint-plugin": "^8.59.3",
-    "@typescript-eslint/parser": "^8.59.3",
-    "eslint": "^10.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-solid": "^0.14.5",
     "prettier": "^3.8.3",
     "typescript": "~6.0.3",
-    "vite": "^8.0.12",
+    "vite": "^8.0.14",
     "vite-plugin-solid": "^2.11.12"
   }
 }

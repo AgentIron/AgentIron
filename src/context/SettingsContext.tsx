@@ -229,6 +229,7 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
   const isProviderConfigured = (providerId: string): boolean => {
     const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
     if (!provider) return false;
+    if (provider.id === "local") return true;
     if (provider.apiKey.trim().length > 0) return true;
     const auth = authStatuses()[providerId];
     if (auth && (auth.status === "connectedOAuth" || auth.status === "configuredApiKey")) {

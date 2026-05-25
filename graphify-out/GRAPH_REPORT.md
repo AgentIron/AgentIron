@@ -1,16 +1,16 @@
-# Graph Report - AgentIron  (2026-05-15)
+# Graph Report - AgentIron  (2026-05-24)
 
 ## Corpus Check
-- 128 files · ~49,618 words
+- 132 files · ~51,974 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 907 nodes · 1433 edges · 65 communities (59 shown, 6 thin omitted)
+- 946 nodes · 1469 edges · 69 communities (63 shown, 6 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `75f132ef`
+- Built from commit: `f762334f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -73,9 +73,13 @@
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
 - [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
-- [[_COMMUNITY_Community 62|Community 62]]
+- [[_COMMUNITY_Community 64|Community 64]]
+- [[_COMMUNITY_Community 65|Community 65]]
+- [[_COMMUNITY_Community 66|Community 66]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useSettings()` - 31 edges
@@ -92,96 +96,100 @@
 ## Surprising Connections (you probably didn't know these)
 - `McpSettings()` --calls--> `Transport`  [INFERRED]
   src/components/settings/McpSettings.tsx → src/types/agent.ts
+- `create_agent()` --calls--> `ProviderBox`  [INFERRED]
+  src-tauri/src/commands/agent.rs → src-tauri/src/provider_box.rs
 - `spawn_agent_worker()` --calls--> `create_agent()`  [INFERRED]
   src-tauri/src/state.rs → src-tauri/src/commands/agent.rs
 - `start_snip()` --calls--> `App()`  [INFERRED]
   src-tauri/src/commands/snip.rs → src/App.tsx
 - `main()` --calls--> `run()`  [INFERRED]
   src-tauri/src/main.rs → src-tauri/src/lib.rs
-- `create_agent()` --calls--> `ProviderBox`  [INFERRED]
-  src-tauri/src/commands/agent.rs → src-tauri/src/provider_box.rs
 
-## Communities (65 total, 6 thin omitted)
+## Communities (69 total, 6 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (58): ApprovalBar(), ChatArea(), getLastAssistantContentLength(), getToolActivityKey(), isLastAssistantInList(), DirectoryIndicator(), GroupedEntry, groupEntries() (+50 more)
+Cohesion: 0.05
+Nodes (39): AgentCardProps, ButtonProps, InputProps, ModalProps, NotificationStack(), NotificationToast(), SEVERITY_STYLES, AgentProvider() (+31 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.05
-Nodes (26): AgentCardProps, ButtonProps, InputProps, ModalProps, NotificationStack(), NotificationToast(), SEVERITY_STYLES, AgentProvider() (+18 more)
+Cohesion: 0.07
+Nodes (49): ApprovalBar(), ChatArea(), getLastAssistantContentLength(), getToolActivityKey(), isLastAssistantInList(), ContextIndicator(), DirectoryIndicator(), GroupedEntry (+41 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (45): AcpClient, AttachedImage, AgentContext, AgentContextValue, AgentState, ChatContext, ChatContextValue, ChatState (+37 more)
+Cohesion: 0.05
+Nodes (48): AcpClient, AttachedImage, ChatContext, ChatContextValue, ChatState, PendingApproval, EMPTY_ENTRY, SkillCatalogContext (+40 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.09
-Nodes (37): ContextIndicator(), DB_KEY_MAP, DEFAULTS, JSON_KEYS, persistSetting(), ProviderAuthStatus, SettingsContext, SettingsContextValue (+29 more)
+Cohesion: 0.08
+Nodes (36): DB_KEY_MAP, DEFAULTS, JSON_KEYS, persistSetting(), ProviderAuthStatus, SettingsContext, SettingsContextValue, AuthCapability (+28 more)
 
 ### Community 4 - "Community 4"
+Cohesion: 0.06
+Nodes (34): arc, capture_snip(), complete_snip(), SnipData, SnipRegion, SnipState, start_snip(), cursor (+26 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.11
 Nodes (25): CodeBlock(), CodeBlockProps, ToolActivityLineProps, ToolActivitySummaryProps, ToolDetailItem(), ToolCallMessage(), ToolCallMessageProps, renderArgsDetail() (+17 more)
 
-### Community 5 - "Community 5"
+### Community 6 - "Community 6"
 Cohesion: 0.06
 Nodes (32): AgentIron, Auto-Updater (Future), Branch Protection, Building from Source, Built-in Tools, Chat & Agent Interaction, code:bash (# Clone the repository), code:block2 (AgentIron/) (+24 more)
-
-### Community 6 - "Community 6"
-Cohesion: 0.13
-Nodes (18): capture_snip(), complete_snip(), SnipData, SnipRegion, SnipState, start_snip(), cursor, deserialize (+10 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.07
 Nodes (28): ADDED Requirements, Requirement: AgentIron SHALL construct providers through the upstream provider registry, Requirement: AgentIron SHALL expose device-code OAuth provider commands, Requirement: AgentIron SHALL include Codex in provider selection, Requirement: AgentIron SHALL keep provider-specific OAuth research separate from app integration, Requirement: AgentIron SHALL load provider auth status before automatic session creation, Requirement: AgentIron SHALL refresh OAuth access tokens during provider resolution, Requirement: AgentIron SHALL store OAuth provider credentials separately from settings JSON (+20 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.11
-Nodes (22): arc, AgentHandle, AgentParams, AgentRequest, ApprovalDecision, AppState, build_mcp_config(), emit_token_count() (+14 more)
-
-### Community 9 - "Community 9"
 Cohesion: 0.09
 Nodes (22): escapeHtml(), highlightCode(), MarkdownRenderer(), MarkdownRendererProps, marked, normalizeLang(), unescapeHtml(), MessageBubbleProps (+14 more)
 
-### Community 10 - "Community 10"
+### Community 9 - "Community 9"
 Cohesion: 0.09
 Nodes (22): ADDED Requirements, Requirement: AgentIron SHALL authenticate Codex with validated OAuth credentials, Requirement: AgentIron SHALL authenticate Kimi Code with validated OAuth credentials, Requirement: OAuth validation SHALL avoid storing or exposing secrets, Requirement: Provider-specific findings SHALL be documented and linked, Requirement: Provider-specific OAuth behavior SHALL remain outside AgentIron UI logic, Scenario: Automated tests cover provider semantics, Scenario: Codex auth metadata is incorrect (+14 more)
+
+### Community 10 - "Community 10"
+Cohesion: 0.1
+Nodes (5): AgentInfo, build_provider(), create_agent(), create_registry(), mpsc
 
 ### Community 11 - "Community 11"
 Cohesion: 0.09
 Nodes (21): ADDED Requirements, MODIFIED Requirements, Requirement: AgentIron SHALL build release artifacts on version tag push, Requirement: AgentIron SHALL build release packages from the release tag, Requirement: AgentIron SHALL not create automatic release-bump PRs after normal merges, Requirement: AgentIron SHALL provide a manual direct release workflow, Requirement: AgentIron SHALL publish GitHub Releases with built artifacts, Requirement: AgentIron SHALL tag the exact release commit (+13 more)
 
-### Community 13 - "Community 13"
+### Community 12 - "Community 12"
 Cohesion: 0.11
 Nodes (18): ADDED Requirements, Requirement: AgentIron SHALL keep selected diagnostics console-only for this change, Requirement: AgentIron SHALL notify users about visible MCP action failures, Requirement: AgentIron SHALL notify users about visible transient action failures, Requirement: AgentIron SHALL preserve inline persistent health state, Requirement: AgentIron SHALL retain developer diagnostics for migrated failures, Scenario: A migrated action failure occurs, Scenario: MCP server hot-register fails for active tabs (+10 more)
 
-### Community 14 - "Community 14"
-Cohesion: 0.16
-Nodes (11): subscribeToAgentStream(), AcpPromptOptions, AcpSessionEvent, AcpTransport, core, event, Phase, SelectionRect (+3 more)
+### Community 13 - "Community 13"
+Cohesion: 0.12
+Nodes (16): ADDED Requirements, Requirement: Local provider supports default and overrideable base URL, Requirement: Model catalog provider mapping is deterministic, Requirement: Ollama Cloud is upstream-backed, Requirement: Provider slug is passed to core configuration, Requirement: Providers use upstream profiles, Scenario: Agent starts with provider-specific configuration, Scenario: Creating an Ollama Cloud provider (+8 more)
 
-### Community 15 - "Community 15"
+### Community 14 - "Community 14"
 Cohesion: 0.12
 Nodes (15): ADDED Requirements, Requirement: AgentIron SHALL build release artifacts on version tag push, Requirement: AgentIron SHALL produce Linux artifacts, Requirement: AgentIron SHALL produce signed macOS artifacts, Requirement: AgentIron SHALL produce signed Windows artifacts, Requirement: AgentIron SHALL provide installation documentation, Scenario: AppImage is executable, Scenario: Linux artifacts are produced (+7 more)
 
-### Community 16 - "Community 16"
+### Community 15 - "Community 15"
 Cohesion: 0.12
 Nodes (15): Cache provider auth status in frontend state, code:text (if provider has a non-empty API key:), Context, Decisions, Do not add an auth-mode preference for the MVP, Goals / Non-Goals, Keep API keys in existing settings for this change, Keep the existing provider-injection worker architecture (+7 more)
 
-### Community 17 - "Community 17"
+### Community 16 - "Community 16"
 Cohesion: 0.12
 Nodes (15): code:text (┌──────────────────┐), code:text (API key      -> x-api-key: <api_key>), Context, Decisions, Device-code is the OAuth interaction target for this change, Goals / Non-Goals, Keep `codex` separate from public `openai`, Migration Plan (+7 more)
 
-### Community 18 - "Community 18"
+### Community 17 - "Community 17"
 Cohesion: 0.24
 Nodes (13): auth_status_response(), DeviceCodeStartResponse, get_provider_auth_status(), is_retryable_oauth_poll_error(), kimi_code_uses_validated_oauth_metadata(), looks_like_cloudflare_challenge(), oauth_flow_key(), oauth_http_client() (+5 more)
 
-### Community 19 - "Community 19"
+### Community 18 - "Community 18"
 Cohesion: 0.13
 Nodes (14): ADDED Requirements, Requirement: AgentIron SHALL preserve rich plugin tool results, Requirement: AgentIron SHALL render supported plugin rich views, Requirement: AgentIron SHALL support plugin auth flows, Requirement: AgentIron SHALL surface plugin auth state to the UI, Scenario: Auth prompts are requested, Scenario: Auth state changes during a session, Scenario: Plugin tool returns plain JSON only (+6 more)
 
-### Community 20 - "Community 20"
+### Community 19 - "Community 19"
 Cohesion: 0.13
 Nodes (14): ADDED Requirements, Requirement: AgentIron SHALL expose the skill catalog and diagnostics, Requirement: AgentIron SHALL make project skill trust explicit, Requirement: AgentIron SHALL support session handoff export and import, Requirement: AgentIron SHALL support session skill activation, Scenario: Discovery produced warnings, Scenario: Project skill trust is disabled, Scenario: Project skill trust is enabled (+6 more)
+
+### Community 20 - "Community 20"
+Cohesion: 0.42
+Nodes (6): list_slugs(), remove_credential(), roundtrip_api_key(), roundtrip_oauth_bearer(), SqliteCredentialStore, temp_db()
 
 ### Community 21 - "Community 21"
 Cohesion: 0.19
@@ -212,56 +220,56 @@ Cohesion: 0.22
 Nodes (3): ChatMessage, oneshot, state
 
 ### Community 28 - "Community 28"
+Cohesion: 0.31
+Nodes (5): subscribeToAgentStream(), AcpPromptOptions, AcpSessionEvent, AcpTransport, onAgentStreamChunk()
+
+### Community 29 - "Community 29"
 Cohesion: 0.22
 Nodes (8): 1. Backend Credential Storage, 2. Backend OAuth Commands, 3. Provider Construction, 4. Frontend Command Bindings And Types, 5. Frontend Auth Status State, 6. Provider Settings UX, 7. Follow-Up Tracking, 8. Verification
 
-### Community 29 - "Community 29"
+### Community 30 - "Community 30"
 Cohesion: 0.29
 Nodes (6): manager, menu, run(), configure_linux_graphics_workarounds(), main(), trayiconbuilder
 
-### Community 30 - "Community 30"
-Cohesion: 0.29
-Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
-
 ### Community 31 - "Community 31"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
 ### Community 32 - "Community 32"
 Cohesion: 0.29
-Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 33 - "Community 33"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
 ### Community 34 - "Community 34"
 Cohesion: 0.29
-Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 35 - "Community 35"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
 ### Community 36 - "Community 36"
 Cohesion: 0.29
-Nodes (6): 1. Workflow and Configuration, 2. macOS Signing Setup, 3. Windows Signing Setup, 4. Linux Build Setup, 5. Release and Documentation, 6. Verification (Manual — requires actual hardware)
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 37 - "Community 37"
 Cohesion: 0.29
-Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
+Nodes (6): 1. Workflow and Configuration, 2. macOS Signing Setup, 3. Windows Signing Setup, 4. Linux Build Setup, 5. Release and Documentation, 6. Verification (Manual — requires actual hardware)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
 ### Community 39 - "Community 39"
 Cohesion: 0.29
-Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 40 - "Community 40"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
 ### Community 41 - "Community 41"
 Cohesion: 0.29
@@ -269,11 +277,11 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 
 ### Community 42 - "Community 42"
 Cohesion: 0.29
-Nodes (6): 1. Release Workflow Simplification, 2. Release Identity and Guardrails, 3. Tagging and Build Jobs, 4. GitHub Release Publishing, 5. Cleanup and Documentation, 6. Verification
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 43 - "Community 43"
 Cohesion: 0.29
-Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+Nodes (6): 1. Release Workflow Simplification, 2. Release Identity and Guardrails, 3. Tagging and Build Jobs, 4. GitHub Release Publishing, 5. Cleanup and Documentation, 6. Verification
 
 ### Community 44 - "Community 44"
 Cohesion: 0.29
@@ -284,64 +292,76 @@ Cohesion: 0.29
 Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 46 - "Community 46"
-Cohesion: 0.33
-Nodes (3): build_provider(), create_agent(), ProviderBox
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 47 - "Community 47"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 48 - "Community 48"
+Cohesion: 0.29
+Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
+
+### Community 49 - "Community 49"
+Cohesion: 0.29
+Nodes (6): 1. Dependency Update, 2. Backend Provider Construction, 3. Local Provider Configuration, 4. Provider Catalog and UI Metadata, 5. Verification, 6. Upstream Follow-up
+
+### Community 50 - "Community 50"
 Cohesion: 0.33
 Nodes (5): 1. Provider Flow Research, 2. Upstream Metadata And Provider Corrections, 3. AgentIron Integration Adjustments, 4. End-To-End Validation, 5. Final Checks
 
-### Community 48 - "Community 48"
+### Community 51 - "Community 51"
 Cohesion: 0.6
 Nodes (4): plugin_autostart, disableAutostart(), enableAutostart(), isAutostartEnabled()
 
-### Community 49 - "Community 49"
+### Community 52 - "Community 52"
 Cohesion: 0.4
 Nodes (4): 1. Backend Auth Surface, 2. Rich Tool Event Plumbing, 3. Frontend UX, 4. Verification
 
-### Community 50 - "Community 50"
+### Community 53 - "Community 53"
 Cohesion: 0.4
 Nodes (4): 1. Settings And Types, 2. Backend Plugin Wiring, 3. Frontend Plugin Management, 4. Verification
 
-### Community 51 - "Community 51"
+### Community 54 - "Community 54"
 Cohesion: 0.4
 Nodes (4): 1. Prompt Control Plumbing, 2. Runtime Activity Events, 3. Transport Support (in-process only), 4. Verification
 
-### Community 52 - "Community 52"
+### Community 55 - "Community 55"
 Cohesion: 0.4
 Nodes (4): 1. Backend Skill Support, 2. Backend Handoff Support, 3. Frontend UX, 4. Verification
 
-### Community 53 - "Community 53"
+### Community 56 - "Community 56"
 Cohesion: 0.4
 Nodes (4): 1. Notification Migration, 2. MCP Failure Treatment, 3. Scope Guardrails, 4. Verification
 
-### Community 54 - "Community 54"
-Cohesion: 0.5
-Nodes (3): path, vite, vite_plugin_solid
-
-### Community 55 - "Community 55"
+### Community 58 - "Community 58"
 Cohesion: 0.67
 Nodes (3): plugin_global_shortcut, registerQuickLaunch(), unregisterShortcut()
 
+### Community 59 - "Community 59"
+Cohesion: 0.5
+Nodes (3): path, vite, vite_plugin_solid
+
 ## Knowledge Gaps
-- **387 isolated node(s):** `AgentRequest`, `ImageDataJson`, `McpErrorCategory`, `McpErrorStage`, `McpServerStatusJson` (+382 more)
+- **414 isolated node(s):** `AgentRequest`, `ImageDataJson`, `McpErrorCategory`, `McpErrorStage`, `McpServerStatusJson` (+409 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `App()` connect `Community 1` to `Community 6`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
-- **Why does `start_snip()` connect `Community 6` to `Community 1`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
-- **Why does `create_agent()` connect `Community 46` to `Community 8`, `Community 12`?**
-  _High betweenness centrality (0.005) - this node is a cross-community bridge._
+- **Why does `App()` connect `Community 0` to `Community 4`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **Why does `start_snip()` connect `Community 4` to `Community 0`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **Why does `create_agent()` connect `Community 10` to `Community 57`, `Community 4`?**
+  _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **What connects `AgentRequest`, `ImageDataJson`, `McpErrorCategory` to the rest of the system?**
-  _387 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _414 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
-- **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._

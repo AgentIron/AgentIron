@@ -19,14 +19,52 @@ pub struct AgentInfo {
     pub working_directory: String,
 }
 
+/// Create a provider registry with upstream builtins plus temporary local registrations.
+/// openai is registered here because upstream register_builtins does not yet include it.
+fn create_registry() -> iron_providers::ProviderRegistry {
+    let mut registry = iron_providers::ProviderRegistry::default();
+    registry.register(iron_providers::ProviderProfile::new(
+        "openai",
+        iron_providers::ApiFamily::Responses,
+        "https://api.openai.com/v1",
+    ));
+    registry
+}
+
 /// Build a provider for the given provider ID using upstream registry and credential resolution.
-/// Falls back to manual profile construction when no credential resolver is available.
 async fn build_provider(
     state: &AppState,
     provider_id: &str,
     api_key: &str,
     model: &str,
+    base_url: Option<&str>,
 ) -> Result<Box<dyn iron_core::Provider>, String> {
+    // For local provider with base_url override, construct a custom profile
+    if provider_id == "local" {
+        if let Some(url) = base_url {
+            let profile = iron_providers::ProviderProfile::new(
+                "local",
+                iron_providers::ApiFamily::Completions,
+                url,
+            )
+            .with_auth(iron_providers::AuthStrategy::BearerToken)
+            .with_credential_auth(
+                iron_providers::CredentialKind::NoAuth,
+                iron_providers::AuthStrategy::NoAuth,
+            );
+
+            let runtime_config = if api_key.trim().is_empty() {
+                iron_providers::RuntimeConfig::none()
+            } else {
+                iron_providers::RuntimeConfig::new(api_key)
+            };
+
+            return iron_providers::ProviderConnection::from_profile(profile, runtime_config)
+                .map(|p| Box::new(p) as Box<dyn iron_core::Provider>)
+                .map_err(|e| format!("Provider error: {e}"));
+        }
+    }
+
     // Prefer credential resolver when available
     if let Some(resolver) = &state.credential_resolver {
         let context = ProviderPromptContext {
@@ -47,89 +85,23 @@ async fn build_provider(
         let runtime_config =
             iron_providers::RuntimeConfig::from_credential(resolved.provider_credential);
 
-        let registry = iron_providers::ProviderRegistry::default();
+        let registry = create_registry();
         return registry
             .get(provider_id, runtime_config)
             .map_err(|e| format!("Provider registry error: {e}"));
     }
 
-    // Fallback: manual profile construction (backward compatibility)
-    let profile = match provider_id {
-        "openai" => iron_providers::ProviderProfile::new(
-            "openai",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.openai.com/v1",
-        )
-        .with_auth(iron_providers::AuthStrategy::BearerToken),
-
-        "anthropic" => iron_providers::ProviderProfile::new(
-            "anthropic",
-            iron_providers::ApiFamily::AnthropicMessages,
-            "https://api.anthropic.com",
-        )
-        .with_auth(iron_providers::AuthStrategy::ApiKeyHeader {
-            header_name: "x-api-key".into(),
-        }),
-
-        "minimax" => iron_providers::ProviderProfile::new(
-            "minimax",
-            iron_providers::ApiFamily::AnthropicMessages,
-            "https://api.minimax.io/anthropic",
-        )
-        .with_auth(iron_providers::AuthStrategy::BearerToken),
-
-        "minimax-code" => iron_providers::ProviderProfile::new(
-            "minimax-code",
-            iron_providers::ApiFamily::AnthropicMessages,
-            "https://api.minimax.io/anthropic",
-        )
-        .with_auth(iron_providers::AuthStrategy::BearerToken),
-
-        "zai" => iron_providers::ProviderProfile::new(
-            "zai",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.z.ai/api/paas/v4",
-        ),
-
-        "zai-code" => iron_providers::ProviderProfile::new(
-            "zai-code",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.z.ai/api/coding/paas/v4",
-        ),
-
-        "kimi" => iron_providers::ProviderProfile::new(
-            "kimi",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.moonshot.ai/v1",
-        ),
-
-        "kimi-code" => iron_providers::ProviderProfile::new(
-            "kimi-code",
-            iron_providers::ApiFamily::AnthropicMessages,
-            "https://api.kimi.com/coding",
-        ),
-
-        "openrouter" => iron_providers::ProviderProfile::new(
-            "openrouter",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://openrouter.ai/api/v1",
-        )
-        .with_header("HTTP-Referer", "https://github.com/AgentIron/AgentIron")
-        .with_header("X-OpenRouter-Title", "AgentIron"),
-
-        "requesty" => iron_providers::ProviderProfile::new(
-            "requesty",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
-            "https://api.requesty.ai/v1",
-        ),
-
-        other => return Err(format!("Unknown provider: {other}")),
+    // Fallback: use upstream registry directly
+    let runtime_config = if api_key.trim().is_empty() {
+        iron_providers::RuntimeConfig::none()
+    } else {
+        iron_providers::RuntimeConfig::new(api_key)
     };
 
-    let runtime_config = iron_providers::RuntimeConfig::new(api_key);
-    iron_providers::GenericProvider::from_profile(profile, runtime_config)
-        .map(|p| Box::new(p) as Box<dyn iron_core::Provider>)
-        .map_err(|e| format!("Provider error: {e}"))
+    let registry = create_registry();
+    registry
+        .get(provider_id, runtime_config)
+        .map_err(|e| format!("Provider registry error: {e}"))
 }
 
 fn credential_resolution_message(error: ProviderAuthError) -> String {
@@ -165,6 +137,7 @@ pub async fn create_agent(
     transport: Option<String>,
     trust_project_skills: Option<bool>,
     additional_skill_dirs: Option<Vec<String>>,
+    base_url: Option<String>,
 ) -> Result<AgentInfo, String> {
     let transport = transport.unwrap_or_else(|| "in-process".to_string());
     if transport != "in-process" {
@@ -175,7 +148,7 @@ pub async fn create_agent(
     }
 
     let pid = provider_id.unwrap_or_else(|| "openai".to_string());
-    let provider = build_provider(&state, &pid, &api_key, &model).await?;
+    let provider = build_provider(&state, &pid, &api_key, &model, base_url.as_deref()).await?;
 
     let mut skill_config = iron_core::config::SkillConfig::new()
         .with_trust_project_skills(trust_project_skills.unwrap_or(false));
@@ -185,6 +158,7 @@ pub async fn create_agent(
 
     let config = iron_core::Config::default()
         .with_model(model.clone())
+        .with_provider_name(&pid)
         .with_max_iterations(10)
         .with_embedded_python_enabled()
         .with_context_management(

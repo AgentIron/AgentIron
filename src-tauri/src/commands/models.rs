@@ -83,22 +83,19 @@ pub async fn update_model_registry() -> Result<Vec<RegistryModel>, String> {
         .map_err(|e| format!("Failed to parse model registry: {e}"))?;
 
     // Use iron-providers' builtin registry for models.dev → provider ID mapping.
-    // Register OpenAI manually since it's not in the default registry
-    // (iron-providers handles OpenAI via OpenAiProvider, not GenericProvider).
-    let mut registry = iron_providers::ProviderRegistry::default();
-    registry.register(iron_providers::ProviderProfile::new(
-        "openai",
-        iron_providers::ApiFamily::OpenAiChatCompletions,
-        "https://api.openai.com/v1",
-    ));
+    let registry = iron_providers::ProviderRegistry::default();
 
     let mut models = Vec::new();
 
     for (provider_key, provider) in &data {
-        // Look up by models.dev ID using the registry's metadata
-        let our_provider = match registry.resolve_by_models_dev_id(provider_key) {
-            Some(profile) => profile.slug.clone(),
-            None => continue, // Skip providers we don't support
+        // Look up by models.dev ID using the registry's metadata.
+        // Explicit deterministic mapping for known ambiguous IDs.
+        let our_provider = match provider_key.as_str() {
+            "openai" => "openai".to_string(),
+            _ => match registry.resolve_by_models_dev_id(provider_key) {
+                Some(profile) => profile.slug.clone(),
+                None => continue, // Skip providers we don't support
+            },
         };
 
         if let Some(provider_models) = &provider.models {

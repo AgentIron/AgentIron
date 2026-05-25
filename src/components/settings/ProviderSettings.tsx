@@ -340,13 +340,16 @@ const ProviderCard: Component<{
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-sm font-medium text-text-primary">{props.provider.name}</span>
-          <Show when={effectiveAuth() === "api_key"}>
+          <Show when={props.provider.id === "local"}>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">Local</span>
+          </Show>
+          <Show when={props.provider.id !== "local" && effectiveAuth() === "api_key"}>
             <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">API Key</span>
           </Show>
-          <Show when={effectiveAuth() === "oauth"}>
+          <Show when={props.provider.id !== "local" && effectiveAuth() === "oauth"}>
             <span class="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">OAuth</span>
           </Show>
-          <Show when={auth()?.status === "notConfigured" || (!auth()?.status && effectiveAuth() === "none")}>
+          <Show when={props.provider.id !== "local" && (auth()?.status === "notConfigured" || (!auth()?.status && effectiveAuth() === "none"))}>
             <span class="text-xs px-1.5 py-0.5 rounded bg-bg-elevated text-text-tertiary">Not configured</span>
           </Show>
           <Show when={auth()?.status === "refreshing"}>
@@ -392,6 +395,19 @@ const ProviderCard: Component<{
           </button>
         </div>
       </div>
+
+      {/* Base URL override for local provider */}
+      <Show when={props.provider.id === "local"}>
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Base URL (optional, defaults to http://localhost:11434/v1)..."
+            value={props.provider.baseUrl ?? ""}
+            onInput={(e) => props.onUpdate({ baseUrl: e.currentTarget.value })}
+            class="w-full rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
+          />
+        </div>
+      </Show>
 
       {/* API Key input (shown for api_key and dual providers) */}
       <Show when={meta()?.auth !== "oauth"}>

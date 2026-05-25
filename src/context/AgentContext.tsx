@@ -51,11 +51,14 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
 
     // Always include enabled MCP servers when creating/replacing an agent
     const effectiveMcp = mcpServers ?? getEnabledMcpServers();
+    const providerConfig = providerId ? settings.providers.find((p) => p.id === providerId) : undefined;
+    const baseUrl = providerConfig?.baseUrl;
     const conn = await createAgent(
       apiKey, model, tabId, workingDirectory, providerId, effectiveMcp,
       "in-process",
       settings.skills.trustProjectSkills,
       settings.skills.additionalSkillDirs,
+      baseUrl,
     );
     // Enrich connection with model/provider info
     const enriched: AgentConnection = { ...conn, model, providerId };
@@ -70,13 +73,14 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
         id: provider.id,
         enabled: provider.enabled,
         apiKey: provider.apiKey,
+        baseUrl: provider.baseUrl,
       })),
     }),
     ({ settingsLoaded, providers }) => {
       if (!settingsLoaded) return;
 
       const currentProviderCredentials = Object.fromEntries(
-        providers.map((provider) => [provider.id, `${provider.enabled}:${provider.apiKey}`]),
+        providers.map((provider) => [provider.id, `${provider.enabled}:${provider.apiKey}:${provider.baseUrl ?? ""}`]),
       );
 
       if (!previousProviderCredentials) {
@@ -105,7 +109,11 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
         const provider = providers.find((candidate) => candidate.id === connection.providerId);
         const apiKey = provider?.enabled ? provider.apiKey.trim() : "";
 
-        if (!provider || !apiKey || !connection.providerId || !connection.model) {
+        if (!provider || !provider.enabled || !connection.providerId || !connection.model) {
+          continue;
+        }
+
+        if (connection.providerId !== "local" && !apiKey) {
           continue;
         }
 
@@ -130,11 +138,14 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
     removeConnection: (id) =>
       setState("connections", (prev) => prev.filter((c) => c.id !== id)),
     createAgentForTab: async (tabId, apiKey, model, workingDirectory?, providerId?, mcpServers?) => {
+      const providerConfig = providerId ? settings.providers.find((p) => p.id === providerId) : undefined;
+      const baseUrl = providerConfig?.baseUrl;
       const conn = await createAgent(
         apiKey, model, tabId, workingDirectory, providerId, mcpServers,
         "in-process",
         settings.skills.trustProjectSkills,
         settings.skills.additionalSkillDirs,
+        baseUrl,
       );
       const enriched: AgentConnection = { ...conn, model, providerId };
       setState("connections", (prev) => [...prev, enriched]);

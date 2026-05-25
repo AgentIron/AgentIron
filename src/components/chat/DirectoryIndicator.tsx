@@ -8,7 +8,7 @@ import { parseModelSlug } from "@lib/models";
 
 export const DirectoryIndicator: Component = () => {
   const { activeConnection, changeWorkingDirectory } = useAgent();
-  const { apiKeyForProvider, settings } = useSettings();
+  const { apiKeyForProvider, isProviderConfigured, settings } = useSettings();
   const { notify } = useNotification();
 
   const displayPath = () => {
@@ -36,7 +36,7 @@ export const DirectoryIndicator: Component = () => {
     const model = conn.model ?? conn.name;
     const providerId = conn.providerId ?? parseModelSlug(settings.defaultModel).providerId;
     const apiKey = apiKeyForProvider(providerId);
-    if (!apiKey) return;
+    if (!isProviderConfigured(providerId)) return;
 
     try {
       await changeWorkingDirectory(

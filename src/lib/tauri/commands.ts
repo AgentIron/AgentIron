@@ -11,8 +11,9 @@ export async function createAgent(
   transport?: string,
   trustProjectSkills?: boolean,
   additionalSkillDirs?: string[],
+  baseUrl?: string,
 ): Promise<AgentConnection> {
-  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers, transport: transport ?? "in-process", trustProjectSkills, additionalSkillDirs });
+  return invoke("create_agent", { apiKey, model, tabId, workingDirectory, providerId, mcpServers, transport: transport ?? "in-process", trustProjectSkills, additionalSkillDirs, baseUrl });
 }
 
 export async function disconnectAgent(tabId: string): Promise<void> {
