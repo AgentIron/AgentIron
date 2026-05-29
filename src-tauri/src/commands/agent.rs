@@ -188,6 +188,7 @@ pub async fn create_agent(
             provider: ProviderBox(provider),
             working_directory: work_dir,
             mcp_servers: mcp_servers.unwrap_or_default(),
+            debug_enabled: state.debug_enabled,
         },
         request_rx,
     );

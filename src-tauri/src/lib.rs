@@ -4,6 +4,7 @@ use tauri::Manager;
 
 mod commands;
 mod credential_store;
+mod debug;
 mod provider_box;
 mod state;
 
@@ -54,7 +55,8 @@ pub fn run() {
             let db_path = app_data_dir.join("agentiron.db");
             let credential_store =
                 std::sync::Arc::new(credential_store::SqliteCredentialStore::new(db_path));
-            app.manage(state::AppState::new().with_credential_store(credential_store));
+            let debug_enabled = crate::debug::is_debug_mode();
+            app.manage(state::AppState::new(debug_enabled).with_credential_store(credential_store));
             app.manage(commands::snip::SnipState::new());
 
             // System tray (desktop only)

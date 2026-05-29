@@ -287,6 +287,7 @@ pub struct AgentParams {
     pub provider: ProviderBox,
     pub working_directory: PathBuf,
     pub mcp_servers: Vec<McpServerConfigJson>,
+    pub debug_enabled: bool,
 }
 
 unsafe impl Send for AgentParams {}
@@ -307,15 +308,17 @@ pub struct AppState {
         Option<std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>>,
     pub credential_resolver: Option<Arc<CredentialResolver>>,
     pub oauth_clients: Arc<RwLock<HashMap<String, reqwest::Client>>>,
+    pub debug_enabled: bool,
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(debug_enabled: bool) -> Self {
         Self {
             agents: Arc::new(RwLock::new(HashMap::new())),
             credential_store: None,
             credential_resolver: None,
             oauth_clients: Arc::new(RwLock::new(HashMap::new())),
+            debug_enabled,
         }
     }
 
@@ -361,6 +364,10 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
             // (MCP connections, etc.) run on actual worker threads
             let agent =
                 iron_core::IronAgent::with_tokio_handle(params.config, params.provider, bg_handle);
+
+            if params.debug_enabled {
+                agent.set_debug_sink(Some(std::sync::Arc::new(crate::debug::StdoutDebugSink)));
+            }
 
             let working_dir = params.working_directory;
             let builtin_config = {
