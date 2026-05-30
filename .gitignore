@@ -31,3 +31,6 @@ Thumbs.db
 
 # Graphify
 graphify-out/cache
+
+# Code review graph database
+.code-review-graph/
