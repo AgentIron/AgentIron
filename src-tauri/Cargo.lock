@@ -1770,7 +1770,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users 0.5.2",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2105,7 +2105,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2724,9 +2724,9 @@ dependencies = [
 
 [[package]]
 name = "get-size-derive2"
-version = "0.7.4"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2b6d1e2f75c16bfbcd0f95d84f99858a6e2f885c2287d1f5c3a96e8444a34b4"
+checksum = "c9f8ab1b98a1284961d722ce994d9a0f3018ab1917618d4113824a72b9f71bc9"
 dependencies = [
  "attribute-derive",
  "quote",
@@ -2735,15 +2735,16 @@ dependencies = [
 
 [[package]]
 name = "get-size2"
-version = "0.7.4"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49cf31a6d70300cf81461098f7797571362387ef4bf85d32ac47eaa59b3a5a1a"
+checksum = "b0cd0777a1057362cab35a779e0d79dacecb8d73e2c733eaafeb7ea917b08f03"
 dependencies = [
  "compact_str",
  "get-size-derive2",
- "hashbrown 0.16.1",
+ "hashbrown 0.17.1",
  "ordermap",
  "smallvec",
+ "thin-vec",
 ]
 
 [[package]]
@@ -3648,8 +3649,8 @@ checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
 
 [[package]]
 name = "iron-core"
-version = "0.1.19"
-source = "git+https://github.com/AgentIron/iron-core.git?tag=v0.1.19#62c70a562202e370ef17a058ab877ac7fd0ebec8"
+version = "0.1.21"
+source = "git+https://github.com/AgentIron/iron-core.git?tag=v0.1.21#3d6d962761766becb0cfa34bbc3c184cd35e3202"
 dependencies = [
  "agent-client-protocol",
  "async-trait",
@@ -3684,9 +3685,9 @@ dependencies = [
 
 [[package]]
 name = "iron-providers"
-version = "0.2.3"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71fff18fcaca3504dabcdcc638a4ad775e2f204c072229d0a0b07c8bac29f6db"
+checksum = "71336064b0e87335ef77e2b21b126804115927255e986b9bff25eb2e615e3e6c"
 dependencies = [
  "async-stream",
  "base64 0.22.1",
@@ -3799,9 +3800,9 @@ dependencies = [
 
 [[package]]
 name = "jiter"
-version = "0.13.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "020ba671987d7444d251d3ee5340be1bf4606cd6c0b53e6f4066b5a1ee376b22"
+checksum = "7866f284df68dbc242796251ed9768bde2b58ebc4d7d32cc07cc7fd993e3ed6c"
 dependencies = [
  "ahash 0.8.12",
  "bitvec",
@@ -4417,11 +4418,10 @@ dependencies = [
 
 [[package]]
 name = "monty"
-version = "0.0.17"
-source = "git+https://github.com/pydantic/monty?tag=v0.0.17#5c7cf2b62be8e4421a4828072d41ebe69328bbf2"
+version = "0.0.18"
+source = "git+https://github.com/pydantic/monty?tag=v0.0.18#45a3b2d57e6ce723fed4166fb032242ece74a663"
 dependencies = [
  "ahash 0.8.12",
- "bytemuck",
  "chrono",
  "fancy-regex 0.17.0",
  "hashbrown 0.16.1",
@@ -4429,6 +4429,7 @@ dependencies = [
  "itertools 0.14.0",
  "jiter",
  "libm",
+ "monty-macros",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -4442,6 +4443,16 @@ dependencies = [
  "smallvec",
  "speedate",
  "strum 0.27.2",
+]
+
+[[package]]
+name = "monty-macros"
+version = "0.0.18"
+source = "git+https://github.com/pydantic/monty?tag=v0.0.18#45a3b2d57e6ce723fed4166fb032242ece74a663"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -4574,7 +4585,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5876,7 +5887,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.60.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6401,7 +6412,7 @@ dependencies = [
 [[package]]
 name = "ruff_python_ast"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "aho-corasick",
  "bitflags 2.11.1",
@@ -6413,13 +6424,14 @@ dependencies = [
  "ruff_source_file",
  "ruff_text_size",
  "rustc-hash",
+ "thin-vec",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "ruff_python_parser"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "bitflags 2.11.1",
  "bstr",
@@ -6431,6 +6443,7 @@ dependencies = [
  "ruff_text_size",
  "rustc-hash",
  "static_assertions",
+ "thin-vec",
  "unicode-ident",
  "unicode-normalization",
  "unicode_names2",
@@ -6439,7 +6452,7 @@ dependencies = [
 [[package]]
 name = "ruff_python_stdlib"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "bitflags 2.11.1",
  "unicode-ident",
@@ -6448,7 +6461,7 @@ dependencies = [
 [[package]]
 name = "ruff_python_trivia"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "itertools 0.14.0",
  "ruff_source_file",
@@ -6459,7 +6472,7 @@ dependencies = [
 [[package]]
 name = "ruff_source_file"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "memchr",
  "ruff_text_size",
@@ -6468,7 +6481,7 @@ dependencies = [
 [[package]]
 name = "ruff_text_size"
 version = "0.0.0"
-source = "git+https://github.com/astral-sh/ruff.git?rev=6ded4bed1651e30b34dd04cdaa50c763036abb0d#6ded4bed1651e30b34dd04cdaa50c763036abb0d"
+source = "git+https://github.com/samuelcolvin/ruff.git?rev=6aaa91ac2b269df1414954ccd5134f0e6f5c6d30#6aaa91ac2b269df1414954ccd5134f0e6f5c6d30"
 dependencies = [
  "get-size2",
 ]
@@ -6549,7 +6562,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6618,7 +6631,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -8065,7 +8078,7 @@ dependencies = [
  "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -8086,6 +8099,12 @@ checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "thin-vec"
+version = "0.2.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0f7e269b48f0a7dd0146680fa24b50cc67fc0373f086a5b2f99bd084639b482"
 
 [[package]]
 name = "thiserror"
@@ -9698,7 +9717,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
