@@ -29,8 +29,5 @@ Thumbs.db
 *.db
 *.db-journal
 
-# Graphify
-graphify-out/cache
-
 # Code review graph database
 .code-review-graph/
