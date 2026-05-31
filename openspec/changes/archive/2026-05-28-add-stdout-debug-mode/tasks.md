@@ -21,4 +21,4 @@
 - [x] 4.1 Run `cargo check --manifest-path src-tauri/Cargo.toml`.
 - [x] 4.2 Run a dev-mode smoke check with debug enabled and confirm `iron-core` debug events print to the terminal during agent activity.
 - [x] 4.3 Run a smoke check without debug enabled and confirm debug event output is quiet.
-- [x] 4.4 Run `graphify update .` after implementation changes.
+

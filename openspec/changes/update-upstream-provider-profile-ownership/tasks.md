@@ -27,7 +27,7 @@
 - [x] 5.1 Run `cargo check --manifest-path src-tauri/Cargo.toml`.
 - [x] 5.2 Run `pnpm lint`.
 - [x] 5.3 Run `pnpm build`.
-- [x] 5.4 Run `graphify update .` after code changes are implemented.
+
 
 ## 6. Upstream Follow-up
 
