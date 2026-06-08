@@ -88,6 +88,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::agent::create_agent,
             commands::agent::disconnect_agent,
+            commands::agent::change_working_directory,
             commands::agent::list_agents,
             commands::agent::register_mcp_server,
             commands::agent::get_mcp_status,

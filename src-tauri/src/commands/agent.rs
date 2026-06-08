@@ -226,6 +226,35 @@ pub async fn disconnect_agent(
 }
 
 #[tauri::command]
+pub async fn change_working_directory(
+    state: tauri::State<'_, AppState>,
+    tab_id: String,
+    working_directory: String,
+) -> Result<bool, String> {
+    let request_tx = {
+        let agents = state.agents.read().await;
+        agents
+            .get(&tab_id)
+            .ok_or_else(|| "No agent session for this tab".to_string())?
+            .request_tx
+            .clone()
+    };
+
+    let (response_tx, response_rx) = oneshot::channel();
+    request_tx
+        .send(AgentRequest::SetWorkspaceRoots {
+            roots: vec![std::path::PathBuf::from(working_directory)],
+            response_tx,
+        })
+        .await
+        .map_err(|_| "Agent worker thread is not running".to_string())?;
+
+    response_rx
+        .await
+        .map_err(|_| "Agent worker dropped the response channel".to_string())?
+}
+
+#[tauri::command]
 pub async fn list_agents(state: tauri::State<'_, AppState>) -> Result<Vec<AgentInfo>, String> {
     let agents = state.agents.read().await;
     Ok(agents
