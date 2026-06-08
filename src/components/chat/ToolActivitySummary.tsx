@@ -5,8 +5,8 @@ import {
   TbOutlineChevronDown,
   TbOutlineChevronRight,
 } from "solid-icons/tb";
-import { toolIcon, buildToolGroupSummary, formatScriptActivityLabel, formatScriptActivitySummary, formatToolCounts } from "./toolUtils";
-import { renderArgsDetail, renderResult } from "./ToolDetailRenderers";
+import { toolIcon, buildToolGroupSummary, formatScriptActivityLabel, formatScriptActivitySummary, formatToolCounts, isCompactionTool } from "./toolUtils";
+import { renderArgsDetail, renderResult, renderCompactionResult } from "./ToolDetailRenderers";
 import type { ChatEntry } from "@/types/message";
 import type { ToolEvent } from "@/types/agent";
 
@@ -24,13 +24,18 @@ export const ToolActivitySummary: Component<ToolActivitySummaryProps> = (props) 
 
   const summary = () => buildToolGroupSummary(toolEvents());
   const countLabel = () => formatToolCounts(summary().nameCounts);
+  const hasCompaction = () => toolEvents().some((e) => isCompactionTool(e.toolName));
 
   return (
     <div class={`ml-10 mb-3 ${summary().allReadOnly ? "opacity-50" : ""}`}>
       {/* Collapsed summary line */}
       <button
         onClick={() => setExpanded(!expanded())}
-        class="flex items-center gap-2 w-full px-3 py-1.5 text-xs rounded-lg border border-border-subtle bg-bg-secondary/50 hover:bg-bg-hover transition-colors"
+        class={`flex items-center gap-2 w-full px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+          hasCompaction()
+            ? "border-accent/30 bg-accent-muted hover:bg-accent-muted/70"
+            : "border-border-subtle bg-bg-secondary/50 hover:bg-bg-hover"
+        }`}
       >
         {summary().hasErrors ? (
           <TbOutlineAlertTriangle size={13} class="text-warning flex-shrink-0" />
@@ -119,7 +124,9 @@ const ToolDetailItem: Component<{ event: ToolEvent }> = (props) => {
             <div class="pt-1 border-t border-border-subtle">
               <span class="text-xs text-text-tertiary">Result:</span>
               <div class="mt-1">
-                {renderResult(props.event.toolName, props.event.result)}
+                {(isCompactionTool(props.event.toolName) &&
+                  renderCompactionResult(props.event.result)) ||
+                  renderResult(props.event.toolName, props.event.result)}
               </div>
             </div>
           </Show>

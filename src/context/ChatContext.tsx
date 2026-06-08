@@ -20,12 +20,28 @@ interface PendingApproval {
   arguments: unknown;
 }
 
+/** Effective agent activity state shown by the status indicator. */
+export type ChatStatus =
+  | "ready"
+  | "thinking"
+  | "streaming"
+  | "compacting"
+  | "error"
+  | "waiting";
+
+/** States that must be set explicitly because they cannot be derived from the stream. */
+type StatusOverride = "compacting" | "error" | null;
+
 interface ChatState {
   entriesByTab: Record<string, ChatEntry[]>;
   streamingByTab: Record<string, boolean>;
   pendingApprovalByTab: Record<string, PendingApproval | null>;
   autoApprovedToolsByTab: Record<string, string[]>;
+  statusOverrideByTab: Record<string, StatusOverride>;
 }
+
+/** Most recent tool calls surfaced first; capped for the tool history panel. */
+const TOOL_HISTORY_LIMIT = 25;
 
 interface ChatContextValue {
   state: ChatState;
@@ -36,6 +52,9 @@ interface ChatContextValue {
   clearEntries: (tabId: string) => void;
   setStreaming: (tabId: string, streaming: boolean) => void;
   isStreaming: (tabId: string) => boolean;
+  setStatusOverride: (tabId: string, override: StatusOverride) => void;
+  getStatus: (tabId: string) => ChatStatus;
+  getToolHistory: (tabId: string) => ChatEntry[];
   getPendingApproval: (tabId: string) => PendingApproval | null;
   respondApproval: (tabId: string, callId: string, approved: boolean) => void;
   respondApproveAll: (tabId: string, callId: string, toolName: string) => void;
@@ -50,6 +69,7 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
     streamingByTab: {},
     pendingApprovalByTab: {},
     autoApprovedToolsByTab: {},
+    statusOverrideByTab: {},
   });
 
   // ── Event listeners (moved from ChatArea) ──
@@ -124,6 +144,12 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
         const { tabId } = e.payload;
         setState("streamingByTab", tabId, false);
         setState("pendingApprovalByTab", tabId, null);
+        // A clean finish clears any transient compacting state; errors are set
+        // explicitly by the caller after this event, so leave "error" intact.
+        const override = untrack(() => state.statusOverrideByTab[tabId]);
+        if (override === "compacting") {
+          setState("statusOverrideByTab", tabId, null);
+        }
       }),
     );
   });
@@ -213,6 +239,26 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
     setStreaming: (tabId, streaming) =>
       setState("streamingByTab", tabId, streaming),
     isStreaming: (tabId) => state.streamingByTab[tabId] ?? false,
+    setStatusOverride: (tabId, override) =>
+      setState("statusOverrideByTab", tabId, override),
+    getStatus: (tabId) => {
+      const override = state.statusOverrideByTab[tabId];
+      if (override) return override;
+      if (state.pendingApprovalByTab[tabId]) return "waiting";
+      if (state.streamingByTab[tabId] ?? false) {
+        // "thinking" is the gap between sending and the first stream chunk:
+        // streaming is active but the latest assistant turn is still empty.
+        return lastAssistantIsEmpty(state.entriesByTab[tabId] ?? [])
+          ? "thinking"
+          : "streaming";
+      }
+      return "ready";
+    },
+    getToolHistory: (tabId) => {
+      const entries = state.entriesByTab[tabId] ?? [];
+      const toolEntries = entries.filter((e) => e.type === "tool_event");
+      return toolEntries.slice(-TOOL_HISTORY_LIMIT).reverse();
+    },
     getPendingApproval: (tabId) => state.pendingApprovalByTab[tabId] ?? null,
     respondApproval: (tabId, callId, approved) => {
       respondToApproval(tabId, callId, approved);
@@ -237,6 +283,17 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
     <ChatContext.Provider value={value}>{props.children}</ChatContext.Provider>
   );
 };
+
+/** True when the most recent assistant message exists but has no content yet. */
+function lastAssistantIsEmpty(entries: ChatEntry[]): boolean {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const entry = entries[i];
+    if (entry.type === "message" && entry.message?.role === "assistant") {
+      return !entry.message.content;
+    }
+  }
+  return false;
+}
 
 export const useChat = () => {
   const ctx = useContext(ChatContext);

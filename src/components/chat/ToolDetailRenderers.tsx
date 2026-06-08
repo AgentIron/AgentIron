@@ -1,5 +1,8 @@
 import { For, Show, type Component, type JSX } from "solid-js";
+import { TbOutlineArchive, TbOutlineArrowNarrowRight } from "solid-icons/tb";
 import { CodeBlock } from "./CodeBlock";
+import { extractCompactionMetrics, formatCompactionDelta } from "./toolUtils";
+import { formatTokenCount } from "@lib/models";
 
 // ── Argument detail renderers ──
 
@@ -82,6 +85,41 @@ export function renderArgsDetail(toolName: string | undefined, args: unknown): J
         </pre>
       );
   }
+}
+
+// ── Compaction renderer (graceful stub) ──
+//
+// Renders a distinct token-reduction summary when iron-core supplies compaction
+// metrics in the result. Returns null when no metrics are present, so callers
+// can fall back to the generic result renderer until backend support lands.
+
+export function renderCompactionResult(result: unknown): JSX.Element {
+  const metrics = extractCompactionMetrics(result);
+  if (!metrics) return null;
+  const delta = formatCompactionDelta(metrics);
+
+  return (
+    <div class="flex flex-col gap-1.5 rounded-lg border border-accent/30 bg-accent-muted px-3 py-2">
+      <div class="flex items-center gap-2 text-xs">
+        <TbOutlineArchive size={14} class="text-accent flex-shrink-0" />
+        <span class="font-medium text-text-primary">Context compacted</span>
+      </div>
+      <Show when={metrics.tokensBefore !== undefined && metrics.tokensAfter !== undefined}>
+        <div class="flex items-center gap-2 text-xs font-mono text-text-secondary">
+          <span>{formatTokenCount(metrics.tokensBefore!)}</span>
+          <TbOutlineArrowNarrowRight size={14} class="text-text-tertiary" />
+          <span class="text-success">{formatTokenCount(metrics.tokensAfter!)}</span>
+          <span class="text-text-tertiary">tokens</span>
+        </div>
+      </Show>
+      <Show when={(metrics.tokensBefore === undefined || metrics.tokensAfter === undefined) && delta}>
+        <div class="text-xs font-mono text-text-secondary">{delta}</div>
+      </Show>
+      <Show when={metrics.method}>
+        <DetailRow label="Method" value={metrics.method} />
+      </Show>
+    </div>
+  );
 }
 
 // ── Result renderer ──

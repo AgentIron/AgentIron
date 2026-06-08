@@ -1,19 +1,16 @@
-import { For, Index, Show, createEffect, createMemo, createSignal, onCleanup, untrack, type Component } from "solid-js";
+import { For, Index, Show, Switch, Match, createEffect, createMemo, createSignal, onCleanup, untrack, type Component } from "solid-js";
 import { Transition } from "solid-transition-group";
-import { TbOutlineServer } from "solid-icons/tb";
 import { useChat } from "@context/ChatContext";
 import { useAgent } from "@context/AgentContext";
 import { useUI } from "@context/UIContext";
-import { useSettings } from "@context/SettingsContext";
-import { useMcp } from "@context/McpContext";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 import { ApprovalBar } from "./ApprovalBar";
-import { DirectoryIndicator } from "./DirectoryIndicator";
-import { ModelSwitcher } from "./ModelSwitcher";
-import { ContextIndicator } from "./ContextIndicator";
+import { StatusBar } from "./StatusBar";
 import { ToolActivityLine } from "./ToolActivityLine";
 import { ToolActivitySummary } from "./ToolActivitySummary";
+import { ToolHistoryPanel } from "./ToolHistoryPanel";
+import { ModelInfoPanel } from "./ModelInfoPanel";
 import { groupEntries } from "./groupEntries";
 import { McpPanel } from "@components/mcp/McpPanel";
 import type { ChatEntry } from "@/types/message";
@@ -23,9 +20,7 @@ const BOTTOM_SCROLL_THRESHOLD = 48;
 export const ChatArea: Component = () => {
   const { state: chatState, isStreaming } = useChat();
   const { state: agentState } = useAgent();
-  const { mcpPaneOpen, setMcpPaneOpen } = useUI();
-  const { settings } = useSettings();
-  const { serverStatuses } = useMcp();
+  const { rightPane } = useUI();
   let messagesContainerRef: HTMLDivElement | undefined;
   let scrollFrame: number | undefined;
   const [isPinnedToBottom, setIsPinnedToBottom] = createSignal(true);
@@ -112,43 +107,13 @@ export const ChatArea: Component = () => {
     }
   });
 
-  const hasMcpServers = () => settings.mcpServers.length > 0;
-  const connectedCount = () => serverStatuses().filter((s) => s.health === "Connected").length;
-  const hasError = () => serverStatuses().some((s) => s.health === "Error");
-  const mcpButtonColor = () => {
-    if (mcpPaneOpen()) return "text-accent bg-accent-muted";
-    if (hasError()) return "text-error hover:bg-bg-hover";
-    if (connectedCount() > 0) return "text-success hover:bg-bg-hover";
-    return "text-text-secondary hover:text-text-primary hover:bg-bg-hover";
-  };
-
   return (
-    <div class="flex flex-1 min-h-0">
-      {/* Main chat column */}
-      <div class="flex-1 flex flex-col min-w-0">
-        <div class="flex items-center px-4 py-1.5 border-b border-border-subtle bg-bg-secondary/50">
-          <DirectoryIndicator />
-          <div class="flex items-center gap-1 ml-auto">
-            <ContextIndicator />
-            <div class="w-px h-4 bg-border-subtle" />
-            <ModelSwitcher />
-            <Show when={hasMcpServers()}>
-              <div class="w-px h-4 bg-border-subtle" />
-              <button
-                onClick={() => setMcpPaneOpen(!mcpPaneOpen())}
-                class={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors ${mcpButtonColor()}`}
-                title="MCP Servers"
-              >
-                <TbOutlineServer size={13} />
-                <span>
-                  {connectedCount() > 0
-                    ? `${connectedCount()}/${settings.mcpServers.length}`
-                    : settings.mcpServers.length}
-                </span>
-              </button>
-            </Show>
-          </div>
-        </div>
+    <div class="relative flex flex-1 min-h-0 overflow-hidden">
+      {/* Main chat column — reserves space on the right while a panel is open */}
+      <div
+        class="flex-1 flex flex-col min-w-0 transition-[padding] duration-200"
+        classList={{ "pr-80": rightPane() !== null }}
+      >
         <div
           ref={messagesContainerRef}
           class="flex-1 overflow-auto px-6 py-4"
@@ -261,15 +226,33 @@ export const ChatArea: Component = () => {
         <ApprovalBar />
         <div class="px-6 pb-4 pt-2">
           <MessageInput />
+          <StatusBar />
         </div>
       </div>
 
-      {/* MCP right pane */}
-      <Transition name="slide-right">
-        <Show when={mcpPaneOpen()}>
-          <McpPanel />
-        </Show>
-      </Transition>
+      {/* Right side panel — overlay drawer that opens over the reserved space,
+          so switching panels never shifts the chat column. */}
+      <div class="absolute top-0 right-0 bottom-0 w-80 pointer-events-none">
+        <Transition name="slide-right">
+          <Show when={rightPane()} keyed>
+            {(pane) => (
+              <div class="absolute inset-0 pointer-events-auto">
+                <Switch>
+                  <Match when={pane === "mcp"}>
+                    <McpPanel />
+                  </Match>
+                  <Match when={pane === "tools"}>
+                    <ToolHistoryPanel />
+                  </Match>
+                  <Match when={pane === "model"}>
+                    <ModelInfoPanel />
+                  </Match>
+                </Switch>
+              </div>
+            )}
+          </Show>
+        </Transition>
+      </div>
     </div>
   );
 };

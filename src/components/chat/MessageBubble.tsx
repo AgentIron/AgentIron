@@ -34,9 +34,9 @@ export const MessageBubble: Component<MessageBubbleProps> = (props) => {
             </div>
           }
         >
-          <div class={`flex justify-end mb-4${animateClass()}`}>
+          <div class={`flex justify-end mb-5${animateClass()}`}>
             <div class="flex items-start gap-3 max-w-[80%]">
-              <div class="bg-bg-tertiary rounded-xl px-4 py-3">
+              <div class="bg-bg-tertiary rounded-xl px-4 py-2.5">
                 <p class="text-sm whitespace-pre-wrap">{props.content}</p>
               </div>
               <div class="flex-shrink-0 w-7 h-7 rounded-full bg-bg-elevated flex items-center justify-center mt-0.5">
