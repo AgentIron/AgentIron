@@ -114,8 +114,9 @@ jobs:
           version: 10
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: 1.96.0
           targets: aarch64-apple-darwin
 
       - name: Install dependencies
@@ -181,7 +182,9 @@ jobs:
           version: 10
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.96.0
 
       - name: Install dependencies
         run: pnpm install
@@ -238,7 +241,9 @@ jobs:
           version: 10
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.96.0
 
       - name: Install Linux dependencies
         run: |
