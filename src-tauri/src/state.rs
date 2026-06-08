@@ -957,7 +957,12 @@ async fn handle_active_request(
 fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerConfig> {
     let transport = match mcp.transport.as_str() {
         "stdio" => {
-            let env = mcp.env.clone().unwrap_or_default();
+            let mut env = mcp.env.clone().unwrap_or_default();
+            // Strip AppImage-specific environment variables so child processes
+            // load system libraries instead of the bundled ones.
+            env.remove("LD_LIBRARY_PATH");
+            env.remove("APPDIR");
+            env.remove("APPIMAGE");
             let command = {
                 let command = mcp.command.clone().unwrap_or_default();
 
