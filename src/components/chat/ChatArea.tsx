@@ -1,4 +1,4 @@
-import { For, Index, Show, createEffect, createSignal, onCleanup, type Component } from "solid-js";
+import { For, Index, Show, createEffect, createMemo, createSignal, onCleanup, type Component } from "solid-js";
 import { Transition } from "solid-transition-group";
 import { TbOutlineServer } from "solid-icons/tb";
 import { useChat } from "@context/ChatContext";
@@ -32,8 +32,26 @@ export const ChatArea: Component = () => {
 
   const activeTabId = () => agentState.activeTabId ?? "";
   const entries = () => chatState.entriesByTab[activeTabId()] ?? [];
-  const grouped = () => groupEntries(entries());
   const streaming = () => isStreaming(activeTabId());
+
+  // Split entries into sealed history and active response turn
+  const responseTurnStart = () => streaming() ? getResponseTurnStartIndex(entries()) : entries().length;
+  const sealedEntries = () => entries().slice(0, responseTurnStart());
+  const activeEntries = () => {
+    const start = responseTurnStart();
+    return start < entries().length ? entries().slice(start) : [];
+  };
+
+  // Structural memo: only recomputes when sealed structure changes, not content
+  const sealedFingerprint = createMemo(() =>
+    sealedHistoryFingerprint(sealedEntries()),
+  );
+  // Touch the fingerprint so the memo tracks it, but render from stable entries
+  const sealedGrouped = () => {
+    void sealedFingerprint();
+    return groupEntries(sealedEntries());
+  };
+  const activeGrouped = () => groupEntries(activeEntries());
 
   const isNearBottom = () => {
     if (!messagesContainerRef) return true;
@@ -136,7 +154,49 @@ export const ChatArea: Component = () => {
           class="flex-1 overflow-auto px-6 py-4"
           onScroll={handleMessagesScroll}
         >
-          <Index each={grouped()}>
+          {/* Sealed History */}
+          <For each={sealedGrouped()}>
+            {(group) => {
+              const messageEntry = () => {
+                const currentGroup = group;
+                return currentGroup.kind === "message" ? currentGroup.entry : undefined;
+              };
+              const toolGroupEntries = () => {
+                const currentGroup = group;
+                return currentGroup.kind === "tool_group" ? currentGroup.entries : undefined;
+              };
+
+              return (
+                <Show
+                  when={messageEntry()}
+                  keyed
+                  fallback={
+                    <Show when={toolGroupEntries()} keyed>
+                      {(toolEntries) => <ToolActivitySummary entries={toolEntries} />}
+                    </Show>
+                  }
+                >
+                  {(entry) => {
+                    if (!entry.message) return null;
+                    if (entry.message.role === "assistant" && !entry.message.content) {
+                      return null;
+                    }
+                    return (
+                      <MessageBubble
+                        role={entry.message.role}
+                        content={entry.message.content}
+                        createdAt={entry.message.createdAt}
+                        animate={false}
+                      />
+                    );
+                  }}
+                </Show>
+              );
+            }}
+          </For>
+
+          {/* Active Zone */}
+          <Index each={activeGrouped()}>
             {(group) => {
               const messageEntry = () => {
                 const currentGroup = group();
@@ -237,5 +297,27 @@ function getToolActivityKey(entries: ChatEntry[]): string {
   return entries
     .filter((entry) => entry.type === "tool_event")
     .map((entry) => `${entry.id}:${entry.toolEvent?.type ?? ""}:${entry.toolEvent?.status ?? ""}`)
+    .join("|");
+}
+
+/** Find the start index of the current response turn (latest user prompt + following assistant/tools) */
+function getResponseTurnStartIndex(entries: ChatEntry[]): number {
+  let lastUserIndex = -1;
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].type === "message" && entries[i].message?.role === "user") {
+      lastUserIndex = i;
+      break;
+    }
+  }
+  return lastUserIndex >= 0 ? lastUserIndex : entries.length;
+}
+
+/** Structural fingerprint that ignores message content mutations */
+function sealedHistoryFingerprint(entries: ChatEntry[]): string {
+  return entries
+    .map((e) => {
+      if (e.type === "message") return `${e.id}:msg:${e.message?.role ?? ""}`;
+      return `${e.id}:tool:${e.toolEvent?.type ?? ""}:${e.toolEvent?.status ?? ""}`;
+    })
     .join("|");
 }

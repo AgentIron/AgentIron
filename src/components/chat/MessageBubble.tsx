@@ -8,9 +8,11 @@ interface MessageBubbleProps {
   content: string;
   createdAt: string;
   isStreaming?: boolean;
+  animate?: boolean;
 }
 
 export const MessageBubble: Component<MessageBubbleProps> = (props) => {
+  const animateClass = () => (props.animate !== false ? " animate-message-in" : "");
   // Auto-updating timestamp
   const [tick, setTick] = createSignal(0);
   const interval = setInterval(() => setTick((t) => t + 1), 30000);
@@ -27,12 +29,12 @@ export const MessageBubble: Component<MessageBubbleProps> = (props) => {
         <Show
           when={props.role === "user"}
           fallback={
-            <div class="flex justify-center mb-3 animate-message-in">
+            <div class={`flex justify-center mb-3${animateClass()}`}>
               <span class="text-xs text-text-tertiary italic">{props.content}</span>
             </div>
           }
         >
-          <div class="flex justify-end mb-4 animate-message-in">
+          <div class={`flex justify-end mb-4${animateClass()}`}>
             <div class="flex items-start gap-3 max-w-[80%]">
               <div class="bg-bg-tertiary rounded-xl px-4 py-3">
                 <p class="text-sm whitespace-pre-wrap">{props.content}</p>
@@ -45,7 +47,7 @@ export const MessageBubble: Component<MessageBubbleProps> = (props) => {
         </Show>
       }
     >
-      <div class="flex mb-6 animate-message-in">
+      <div class={`flex mb-6${animateClass()}`}>
         <div class="flex items-start gap-3 max-w-full">
           <div class="flex-shrink-0 w-7 h-7 rounded-full bg-accent-muted flex items-center justify-center mt-0.5">
             <TbOutlineRobot size={15} class="text-accent" />
