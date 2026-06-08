@@ -66,10 +66,13 @@ const ToolHistoryRow: Component<{ event: ToolEvent }> = (props) => {
   const isResult = () => props.event.type === "tool_result";
   const isScriptActivity = () => props.event.type === "script_activity";
   const statusLabel = () =>
-    isResult() || isScriptActivity() ? props.event.status : "Running";
+    isResult() || isScriptActivity() ? (props.event.status ?? "Running") : "Running";
   const statusColor = () => {
     if (isResult() || isScriptActivity()) {
-      return props.event.status === "Completed" ? "text-success" : "text-error";
+      const status = (props.event.status ?? "").toLowerCase();
+      if (status === "completed" || status === "success") return "text-success";
+      if (status.includes("fail") || status.includes("error") || status === "cancelled") return "text-error";
+      return "text-accent";
     }
     return "text-accent";
   };

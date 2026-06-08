@@ -208,13 +208,13 @@ export const MessageInput: Component = () => {
     clearImages();
     if (textareaRef) textareaRef.style.height = "auto";
 
+    // Clear any lingering error state from a previous turn.
+    setStatusOverride(tid, null);
+
     if (content.startsWith("/") && attachedImages.length === 0) {
       const handled = await handleSlashCommand(content);
       if (handled) return;
     }
-
-    // Clear any lingering error state from a previous turn before sending.
-    setStatusOverride(tid, null);
     setStreaming(tid, true);
 
     // Add user message (with image indicator if applicable)
