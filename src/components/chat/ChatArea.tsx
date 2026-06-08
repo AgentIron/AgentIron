@@ -1,4 +1,4 @@
-import { For, Index, Show, createEffect, createMemo, createSignal, onCleanup, type Component } from "solid-js";
+import { For, Index, Show, createEffect, createMemo, createSignal, onCleanup, untrack, type Component } from "solid-js";
 import { Transition } from "solid-transition-group";
 import { TbOutlineServer } from "solid-icons/tb";
 import { useChat } from "@context/ChatContext";
@@ -47,10 +47,10 @@ export const ChatArea: Component = () => {
     sealedHistoryFingerprint(sealedEntries()),
   );
   // Touch the fingerprint so the memo tracks it, but render from stable entries
-  const sealedGrouped = () => {
+  const sealedGrouped = createMemo(() => {
     void sealedFingerprint();
-    return groupEntries(sealedEntries());
-  };
+    return untrack(() => groupEntries(sealedEntries()));
+  });
   const activeGrouped = () => groupEntries(activeEntries());
 
   const isNearBottom = () => {
