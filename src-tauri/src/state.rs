@@ -91,6 +91,11 @@ pub enum AgentRequest {
         bundle: iron_core::HandoffBundle,
         response_tx: oneshot::Sender<Result<(), String>>,
     },
+    /// Set workspace roots for the current session.
+    SetWorkspaceRoots {
+        roots: Vec<PathBuf>,
+        response_tx: oneshot::Sender<Result<bool, String>>,
+    },
     Shutdown,
 }
 
@@ -621,6 +626,12 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let result = session.import_handoff(bundle).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
+                    AgentRequest::SetWorkspaceRoots { roots, response_tx } => {
+                        let result = session
+                            .set_workspace_roots(roots)
+                            .map_err(|e| e.to_string());
+                        let _ = response_tx.send(result);
+                    }
                     AgentRequest::Shutdown => break,
                     _ => {}
                 }
@@ -930,6 +941,13 @@ async fn handle_active_request(
         }
         AgentRequest::ImportHandoff { response_tx, .. } => {
             let _ = response_tx.send(Err("Cannot import handoff while a prompt is running".into()));
+            false
+        }
+        AgentRequest::SetWorkspaceRoots { roots, response_tx } => {
+            let result = session
+                .set_workspace_roots(roots)
+                .map_err(|e| e.to_string());
+            let _ = response_tx.send(result);
             false
         }
     }

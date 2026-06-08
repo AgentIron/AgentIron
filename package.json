@@ -26,26 +26,26 @@
     "@tauri-apps/plugin-global-shortcut": "^2.3.2",
     "@tauri-apps/plugin-opener": "^2.5.4",
     "@tauri-apps/plugin-sql": "^2.4.0",
-    "fuse.js": "^7.3.0",
-    "marked": "^18.0.4",
+    "fuse.js": "^7.4.2",
+    "marked": "^18.0.5",
     "prismjs": "^1.30.0",
     "solid-icons": "^1.2.0",
     "solid-js": "^1.9.13",
     "solid-transition-group": "^0.3.0",
     "tailwindcss": "^4.3.0",
-    "tinykeys": "^3.1.0"
+    "tinykeys": "^4.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2",
     "@types/prismjs": "^1.26.6",
-    "@typescript-eslint/eslint-plugin": "^8.60.0",
-    "@typescript-eslint/parser": "^8.60.0",
+    "@typescript-eslint/eslint-plugin": "^8.61.0",
+    "@typescript-eslint/parser": "^8.61.0",
     "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-solid": "^0.14.5",
     "prettier": "^3.8.3",
     "typescript": "~6.0.3",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "vite-plugin-solid": "^2.11.12"
   }
 }

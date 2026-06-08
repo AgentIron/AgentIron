@@ -1,6 +1,6 @@
 import { createContext, createEffect, on, untrack, useContext, type Component, type JSX } from "solid-js";
 import { createStore } from "solid-js/store";
-import { createAgent, disconnectAgent } from "@lib/tauri/commands";
+import { createAgent, disconnectAgent, changeWorkingDirectory as changeWorkingDirectoryCommand } from "@lib/tauri/commands";
 import { useSettings } from "@context/SettingsContext";
 import type { AgentConnection } from "@/types/agent";
 import type { McpServerConfig } from "@/types/settings";
@@ -16,7 +16,7 @@ interface AgentContextValue {
   addConnection: (connection: AgentConnection) => void;
   removeConnection: (id: string) => void;
   createAgentForTab: (tabId: string, apiKey: string, model: string, workingDirectory?: string, providerId?: string, mcpServers?: McpServerConfig[]) => Promise<void>;
-  changeWorkingDirectory: (tabId: string, apiKey: string, model: string, newDirectory: string, providerId?: string) => Promise<void>;
+  changeWorkingDirectory: (tabId: string, newDirectory: string) => Promise<boolean>;
   changeModel: (tabId: string, apiKey: string, newModel: string, newProviderId: string) => Promise<void>;
   renameConnection: (tabId: string, newName: string) => void;
   activeConnection: () => AgentConnection | undefined;
@@ -151,8 +151,15 @@ export const AgentProvider: Component<{ children: JSX.Element }> = (props) => {
       setState("connections", (prev) => [...prev, enriched]);
       setState("activeTabId", tabId);
     },
-    changeWorkingDirectory: async (tabId, apiKey, model, newDirectory, providerId?) => {
-      await replaceAgent(tabId, apiKey, model, newDirectory, providerId);
+    changeWorkingDirectory: async (tabId, newDirectory) => {
+      const applied = await changeWorkingDirectoryCommand(tabId, newDirectory);
+      setState(
+        "connections",
+        (c) => c.id === tabId,
+        "workingDirectory",
+        newDirectory,
+      );
+      return applied;
     },
     changeModel: async (tabId, apiKey, newModel, newProviderId) => {
       const existing = getConnection(tabId);

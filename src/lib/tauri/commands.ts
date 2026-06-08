@@ -20,6 +20,13 @@ export async function disconnectAgent(tabId: string): Promise<void> {
   return invoke("disconnect_agent", { tabId });
 }
 
+export async function changeWorkingDirectory(
+  tabId: string,
+  workingDirectory: string,
+): Promise<boolean> {
+  return invoke("change_working_directory", { tabId, workingDirectory });
+}
+
 export async function listAgents(): Promise<AgentConnection[]> {
   return invoke("list_agents");
 }

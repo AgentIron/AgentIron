@@ -2,13 +2,10 @@ import { type Component } from "solid-js";
 import { TbOutlineFolder } from "solid-icons/tb";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAgent } from "@context/AgentContext";
-import { useSettings } from "@context/SettingsContext";
 import { useNotification } from "@context/NotificationContext";
-import { parseModelSlug } from "@lib/models";
 
 export const DirectoryIndicator: Component = () => {
   const { activeConnection, changeWorkingDirectory } = useAgent();
-  const { apiKeyForProvider, isProviderConfigured, settings } = useSettings();
   const { notify } = useNotification();
 
   const displayPath = () => {
@@ -33,19 +30,11 @@ export const DirectoryIndicator: Component = () => {
 
     if (!selected || selected === conn.workingDirectory) return;
 
-    const model = conn.model ?? conn.name;
-    const providerId = conn.providerId ?? parseModelSlug(settings.defaultModel).providerId;
-    const apiKey = apiKeyForProvider(providerId);
-    if (!isProviderConfigured(providerId)) return;
-
     try {
-      await changeWorkingDirectory(
-        conn.id,
-        apiKey,
-        model,
-        selected as string,
-        providerId,
-      );
+      const applied = await changeWorkingDirectory(conn.id, selected as string);
+      if (!applied) {
+        notify("info", "Working directory will change after the current response completes.");
+      }
     } catch (err) {
       console.error("Failed to change directory:", err);
       notify("error", "Failed to change working directory", { message: String(err) });

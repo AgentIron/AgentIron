@@ -91,6 +91,7 @@ impl DebugSink for StdoutDebugSink {
                     quality,
                     pressure,
                     categories,
+                    ..
                 } => println!(
                     "  context: snapshot tokens={} window={:?} quality={:?} pressure={} categories={}",
                     total_tokens,
@@ -127,6 +128,7 @@ impl DebugSink for StdoutDebugSink {
                     new_size_tokens,
                     pressure_state,
                     reduction_pct,
+                    ..
                 } => println!(
                     "  compaction: applied blocks={} old={:?} new={:?} pressure={} reduction={:?}%",
                     block_count, old_size_tokens, new_size_tokens, pressure_state, reduction_pct
