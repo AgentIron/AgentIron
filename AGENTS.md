@@ -47,4 +47,4 @@ Before creating or updating a pull request, run all CI checks locally:
 - `pnpm lint`
 - `pnpm build`
 
-Fix any failures before pushing. CI will run these same checks and blocks merging on failure.
+Fix any failures before pushing. CI will run these same checks and block merging on failure.
