@@ -8,13 +8,17 @@ export const ContextIndicator: Component = () => {
   const { state: agentState, activeConnection } = useAgent();
   const { allModels } = useSettings();
   const [activeTokens, setActiveTokens] = createSignal(0);
+  // Compact threshold (in tokens) when iron-core supplies it. Absent today —
+  // the marker stays hidden until the backend includes it in the payload.
+  const [compactThreshold, setCompactThreshold] = createSignal<number | undefined>();
 
   onMount(async () => {
-    const unlisten = await listen<{ tabId: string; activeTokens: number }>(
+    const unlisten = await listen<{ tabId: string; activeTokens: number; compactThreshold?: number }>(
       "agent-context-update",
       (e) => {
         if (e.payload.tabId === agentState.activeTabId) {
           setActiveTokens(e.payload.activeTokens);
+          setCompactThreshold(e.payload.compactThreshold);
         }
       },
     );
@@ -45,7 +49,15 @@ export const ContextIndicator: Component = () => {
     const pct = usagePercent();
     if (pct > 90) return "bg-error";
     if (pct > 70) return "bg-warning";
-    return "bg-accent";
+    return "bg-success";
+  };
+
+  // Position of the compact-threshold marker as a percentage of the bar width.
+  const thresholdPercent = () => {
+    const max = maxContext();
+    const threshold = compactThreshold();
+    if (!max || !threshold) return undefined;
+    return Math.min((threshold / max) * 100, 100);
   };
 
   return (
@@ -62,11 +74,18 @@ export const ContextIndicator: Component = () => {
         )}
       </div>
       {maxContext() && activeTokens() > 0 && (
-        <div class="w-16 h-1.5 rounded-full bg-bg-elevated overflow-hidden">
+        <div class="relative w-16 h-1.5 rounded-full bg-bg-elevated overflow-hidden">
           <div
             class={`h-full rounded-full transition-all ${barColor()}`}
             style={{ width: `${usagePercent()}%` }}
           />
+          {thresholdPercent() !== undefined && (
+            <div
+              class="absolute top-0 bottom-0 w-px bg-text-primary/70"
+              style={{ left: `${thresholdPercent()}%` }}
+              title={`Compaction threshold: ${formatTokenCount(compactThreshold()!)}`}
+            />
+          )}
         </div>
       )}
     </div>

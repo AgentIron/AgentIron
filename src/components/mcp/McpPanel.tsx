@@ -8,7 +8,7 @@ import { McpServerDetail } from "./McpServerDetail";
 import type { McpServerConfig } from "@/types/settings";
 
 export const McpPanel: Component = () => {
-  const { setMcpPaneOpen } = useUI();
+  const { closeRightPane } = useUI();
   const { settings } = useSettings();
   const { getServerStatus, refresh } = useMcp();
   const [selectedServer, setSelectedServer] = createSignal<McpServerConfig | null>(null);
@@ -29,7 +29,7 @@ export const McpPanel: Component = () => {
                 <span class="text-sm font-medium text-text-primary">MCP Servers</span>
               </div>
               <button
-                onClick={() => setMcpPaneOpen(false)}
+                onClick={() => closeRightPane()}
                 class="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors"
               >
                 <TbOutlineX size={16} />

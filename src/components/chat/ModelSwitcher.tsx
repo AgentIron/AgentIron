@@ -71,7 +71,7 @@ export const ModelSwitcher: Component = () => {
       </Show>
       <Transition name="scale-fade">
         <Show when={open()}>
-          <div class="absolute left-0 top-full mt-1 w-64 rounded-lg border border-border-default bg-bg-elevated shadow-xl z-20 py-1 max-h-72 overflow-y-auto">
+          <div class="absolute left-0 bottom-full mb-1 w-64 rounded-lg border border-border-default bg-bg-elevated shadow-xl z-20 py-1 max-h-72 overflow-y-auto">
           <Show
             when={starredModels().length > 0}
             fallback={

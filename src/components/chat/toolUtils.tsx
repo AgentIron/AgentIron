@@ -8,10 +8,15 @@ import {
   TbOutlineTerminal,
   TbOutlineBrandPython,
   TbOutlineWorldWww,
+  TbOutlineArchive,
 } from "solid-icons/tb";
+import { formatTokenCount } from "@lib/models";
 
 export function toolIcon(name: string | undefined, size = 14): JSX.Element {
   const cls = "flex-shrink-0";
+  if (isCompactionTool(name)) {
+    return <TbOutlineArchive size={size} class={`${cls} text-accent`} />;
+  }
   switch (name) {
     case "read":
       return <TbOutlineFileText size={size} class={`${cls} text-amber-light`} />;
@@ -33,6 +38,54 @@ export function toolIcon(name: string | undefined, size = 14): JSX.Element {
     default:
       return <TbOutlineTerminal size={size} class={`${cls} text-text-tertiary`} />;
   }
+}
+
+// ── Compaction classification (graceful stub) ──
+//
+// iron-core does not yet emit compaction as a tool event. These helpers detect
+// it by name and pull token metrics from the result when present, so the UI
+// lights up automatically once the backend support lands. Until then they are
+// dormant. See the linked iron-core follow-up issue.
+
+const COMPACTION_TOOL_NAMES = new Set(["compact", "compaction"]);
+
+export function isCompactionTool(name: string | undefined): boolean {
+  return name ? COMPACTION_TOOL_NAMES.has(name) : false;
+}
+
+export interface CompactionMetrics {
+  tokensBefore?: number;
+  tokensAfter?: number;
+  method?: string;
+}
+
+/** Extract compaction token metrics from a tool result, tolerating naming variants. */
+export function extractCompactionMetrics(result: unknown): CompactionMetrics | null {
+  if (!result || typeof result !== "object") return null;
+  const r = result as Record<string, unknown>;
+  const num = (...keys: string[]): number | undefined => {
+    for (const key of keys) {
+      const value = r[key];
+      if (typeof value === "number") return value;
+    }
+    return undefined;
+  };
+  const tokensBefore = num("tokens_before", "tokensBefore");
+  const tokensAfter = num("tokens_after", "tokensAfter");
+  const method = typeof r.method === "string" ? r.method : undefined;
+  if (tokensBefore === undefined && tokensAfter === undefined && !method) return null;
+  return { tokensBefore, tokensAfter, method };
+}
+
+/** "12.4k → 8.1k tokens" when both endpoints are known. */
+export function formatCompactionDelta(metrics: CompactionMetrics): string {
+  const { tokensBefore, tokensAfter } = metrics;
+  if (tokensBefore !== undefined && tokensAfter !== undefined) {
+    return `${formatTokenCount(tokensBefore)} → ${formatTokenCount(tokensAfter)} tokens`;
+  }
+  if (tokensAfter !== undefined) return `${formatTokenCount(tokensAfter)} tokens`;
+  if (tokensBefore !== undefined) return `${formatTokenCount(tokensBefore)} tokens`;
+  return "";
 }
 
 export function formatArgsSummary(toolName: string | undefined, args: unknown): string {
