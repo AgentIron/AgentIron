@@ -143,10 +143,10 @@ pub async fn migrate_legacy_settings(
     migrate_skill_settings(store, legacy_conn).await?;
     migrate_credentials(store, legacy_conn).await?;
 
-    record_migration_complete(store).await?;
-
     // Delete migrated core-owned keys from the legacy settings table.
     delete_legacy_core_keys(legacy_conn)?;
+
+    record_migration_complete(store).await?;
 
     Ok(())
 }
@@ -497,7 +497,13 @@ async fn migrate_credentials(store: &ConfigStore, conn: &Connection) -> Result<(
                 let access_token = access_token
                     .ok_or_else(|| "Legacy OAuth credential missing access_token".to_string())?;
                 let refresh_token = refresh_token.unwrap_or_default();
-                let expires_at = expires_at.map(|ts| UNIX_EPOCH + Duration::from_secs(ts as u64));
+                let expires_at = expires_at.and_then(|ts| {
+                    if ts >= 0 {
+                        Some(UNIX_EPOCH + Duration::from_secs(ts as u64))
+                    } else {
+                        None
+                    }
+                });
                 Some(StoredCredential::OAuthBearer(OAuthTokenSet {
                     access_token,
                     refresh_token,
@@ -509,6 +515,18 @@ async fn migrate_credentials(store: &ConfigStore, conn: &Connection) -> Result<(
         };
 
         if let Some(credential) = credential {
+            // Preserve existing core credentials; do not overwrite with stale legacy data.
+            match store.get_credential(&provider_slug).await {
+                Ok(Some(_)) => continue,
+                Ok(None) => {}
+                Err(e) => {
+                    return Err(format!(
+                        "Failed to check existing credential for '{}': {}",
+                        provider_slug, e
+                    ))
+                }
+            }
+
             let payload = serde_json::to_vec(&credential).map_err(|e| {
                 format!(
                     "Failed to serialize credential for '{}': {}",

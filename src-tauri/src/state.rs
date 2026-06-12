@@ -312,7 +312,6 @@ pub struct AppState {
     pub agents: Arc<RwLock<HashMap<String, AgentHandle>>>,
     #[allow(dead_code)]
     pub config_store: Arc<CoreConfig>,
-    pub credential_store: Arc<CoreCredentialStore>,
     pub credential_resolver: Arc<CredentialResolver>,
     pub oauth_clients: Arc<RwLock<HashMap<String, reqwest::Client>>>,
     pub debug_enabled: bool,
@@ -321,11 +320,10 @@ pub struct AppState {
 impl AppState {
     pub fn new(config_store: Arc<CoreConfig>, debug_enabled: bool) -> Self {
         let credential_store = Arc::new(CoreCredentialStore::new(config_store.store.clone()));
-        let credential_resolver = Arc::new(CredentialResolver::new(credential_store.clone()));
+        let credential_resolver = Arc::new(CredentialResolver::new(credential_store));
         Self {
             agents: Arc::new(RwLock::new(HashMap::new())),
             config_store,
-            credential_store,
             credential_resolver,
             oauth_clients: Arc::new(RwLock::new(HashMap::new())),
             debug_enabled,

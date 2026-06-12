@@ -5,7 +5,6 @@ use crate::state::AppState;
 use iron_core::provider_credential::{
     domain::{ProviderAuthError, ProviderAuthStatus, ProviderSlug, StoredCredential},
     oauth::{poll_token_exchange, start_device_code_flow, v1_oauth_metadata},
-    ProviderCredentialStore,
 };
 
 // ── Sanitized frontend DTOs ──
@@ -91,10 +90,21 @@ pub async fn poll_provider_oauth(
     let token_set = result.into_token_set(None);
 
     // Persist the credential
+    let credential = StoredCredential::OAuthBearer(token_set.clone());
+    let payload = serde_json::to_vec(&credential)
+        .map_err(|e| format!("Failed to serialize OAuth credential: {e}"))?;
     state
-        .credential_store
-        .set(&slug, StoredCredential::OAuthBearer(token_set.clone()))
-        .await;
+        .config_store
+        .store
+        .set_credential(slug.as_str(), "oauth_bearer", &payload)
+        .await
+        .map_err(|e| {
+            if matches!(e, iron_core::config::ConfigError::KeyUnavailable(_)) {
+                "Credential encryption is unavailable. Set AGENTIRON_CONFIG_ENCRYPTION_KEY or ensure your OS keyring is accessible.".to_string()
+            } else {
+                format!("Failed to persist OAuth credential: {e}")
+            }
+        })?;
 
     let expires_at = token_set.expires_at.map(|t| {
         t.duration_since(std::time::UNIX_EPOCH)

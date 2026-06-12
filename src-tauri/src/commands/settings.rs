@@ -94,9 +94,8 @@ pub async fn load_settings_rows(
             .map_err(|e| format!("Failed to read settings rows: {e}"))?;
 
         // Ensure core-owned keys are present (read from iron-core config store).
-        if let Ok(core_rows) = rt.block_on(load_core_owned_settings(&config)) {
-            rows.extend(core_rows);
-        }
+        let core_rows = rt.block_on(load_core_owned_settings(&config))?;
+        rows.extend(core_rows);
 
         Ok(rows)
     })
@@ -123,7 +122,7 @@ async fn load_core_owned_settings(
         .map(|p| ProviderConfigJson {
             id: p.provider_slug.clone(),
             name: p.display_name,
-            api_key: String::new(),
+            api_key: None,
             base_url: p.base_url,
             enabled: p.enabled,
         })
@@ -134,11 +133,11 @@ async fn load_core_owned_settings(
     for provider in &mut providers_with_keys {
         if credentials.contains(&provider.id) {
             if let Ok(Some(bytes)) = store.get_credential(&provider.id).await {
-                if let Ok(StoredCredential::ApiKey(key)) =
-                    serde_json::from_slice::<StoredCredential>(&bytes)
-                {
-                    provider.api_key = key;
-                }
+                provider.api_key = match serde_json::from_slice::<StoredCredential>(&bytes) {
+                    Ok(StoredCredential::ApiKey(key)) => Some(key),
+                    Ok(StoredCredential::OAuthBearer(_)) => None,
+                    Err(_) => None,
+                };
             }
         }
     }
@@ -148,7 +147,11 @@ async fn load_core_owned_settings(
             .map_err(|e| format!("Failed to serialize providers: {e}"))?,
     });
 
-    if let Some(default) = store.get_default_model().await.ok().flatten() {
+    if let Some(default) = store
+        .get_default_model()
+        .await
+        .map_err(|e| format!("Failed to load default model: {e}"))?
+    {
         rows.push(SettingRow {
             key: "default_model".to_string(),
             value: format!("{}/{}", default.provider_slug, default.model_id),
@@ -250,7 +253,8 @@ async fn save_core_owned_setting(
 struct ProviderConfigJson {
     id: String,
     name: String,
-    api_key: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    api_key: Option<String>,
     base_url: Option<String>,
     enabled: bool,
 }
@@ -295,25 +299,47 @@ async fn save_providers(store: &iron_core::config::ConfigStore, value: &str) -> 
             .await
             .map_err(|e| format!("Failed to save provider config '{}': {}", provider.id, e))?;
 
-        if provider.api_key.trim().is_empty() {
-            store
-                .remove_credential(&provider.id)
-                .await
-                .map_err(|e| format!("Failed to remove API key for '{}': {}", provider.id, e))?;
-        } else {
-            let credential = StoredCredential::ApiKey(provider.api_key);
-            let payload = serde_json::to_vec(&credential)
-                .map_err(|e| format!("Failed to serialize API key: {e}"))?;
-            store
-                .set_credential(&provider.id, "api_key", &payload)
-                .await
-                .map_err(|e| {
-                    if matches!(e, iron_core::config::ConfigError::KeyUnavailable(_)) {
-                        "Credential encryption is unavailable. Set AGENTIRON_CONFIG_ENCRYPTION_KEY or ensure your OS keyring is accessible.".to_string()
-                    } else {
-                        format!("Failed to save API key: {e}")
-                    }
+        let existing_bytes = store.get_credential(&provider.id).await.map_err(|e| {
+            format!(
+                "Failed to read existing credential for '{}': {}",
+                provider.id, e
+            )
+        })?;
+        let is_oauth = matches!(
+            existing_bytes
+                .as_deref()
+                .and_then(|b| serde_json::from_slice::<StoredCredential>(b).ok()),
+            Some(StoredCredential::OAuthBearer(_))
+        );
+
+        match provider.api_key.as_deref().map(str::trim) {
+            None => {
+                // No key was sent; preserve the existing credential (e.g. OAuth).
+            }
+            Some("") if is_oauth => {
+                // Frontend sends an empty apiKey for OAuth-backed providers by default.
+                // Preserve the OAuth credential instead of deleting it.
+            }
+            Some("") => {
+                store.remove_credential(&provider.id).await.map_err(|e| {
+                    format!("Failed to remove API key for '{}': {}", provider.id, e)
                 })?;
+            }
+            Some(key) => {
+                let credential = StoredCredential::ApiKey(key.to_string());
+                let payload = serde_json::to_vec(&credential)
+                    .map_err(|e| format!("Failed to serialize API key: {e}"))?;
+                store
+                    .set_credential(&provider.id, "api_key", &payload)
+                    .await
+                    .map_err(|e| {
+                        if matches!(e, iron_core::config::ConfigError::KeyUnavailable(_)) {
+                            "Credential encryption is unavailable. Set AGENTIRON_CONFIG_ENCRYPTION_KEY or ensure your OS keyring is accessible.".to_string()
+                        } else {
+                            format!("Failed to save API key: {e}")
+                        }
+                    })?;
+            }
         }
     }
 
@@ -538,8 +564,14 @@ async fn save_mcp_servers(
     let servers: Vec<McpServerConfigJson> = serde_json::from_str(value)
         .map_err(|e| format!("Failed to parse MCP servers JSON: {e}"))?;
 
+    // Pre-validate all entries before touching storage so a single invalid entry
+    // does not leave core storage partially updated.
+    let desired_inputs: Vec<McpServerConfigInput> = servers
+        .into_iter()
+        .map(TryInto::try_into)
+        .collect::<Result<_, _>>()?;
     let desired_ids: std::collections::HashSet<String> =
-        servers.iter().map(|s| s.id.clone()).collect();
+        desired_inputs.iter().map(|s| s.id.clone()).collect();
 
     let existing = store
         .list_mcp_servers()
@@ -554,9 +586,9 @@ async fn save_mcp_servers(
         }
     }
 
-    for server in servers {
+    for server in desired_inputs {
         store
-            .set_mcp_server(&server.try_into()?)
+            .set_mcp_server(&server)
             .await
             .map_err(|e| format!("Failed to save MCP server: {e}"))?;
     }
