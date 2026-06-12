@@ -293,6 +293,7 @@ pub struct AgentParams {
     pub working_directory: PathBuf,
     pub mcp_servers: Vec<McpServerConfigJson>,
     pub debug_enabled: bool,
+    pub compact_threshold_tokens: Option<usize>,
 }
 
 unsafe impl Send for AgentParams {}
@@ -406,6 +407,8 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                 }
             };
 
+            let compact_threshold_tokens = params.compact_threshold_tokens;
+
             while let Some(request) = request_rx.recv().await {
                 match request {
                     AgentRequest::Prompt {
@@ -423,7 +426,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                             &mut request_rx,
                         )
                         .await;
-                        emit_token_count(&session, &app_handle, &tab_id);
+                        emit_token_count(&session, &app_handle, &tab_id, compact_threshold_tokens);
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::PromptWithBlocks {
@@ -451,7 +454,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                             &mut request_rx,
                         )
                         .await;
-                        emit_token_count(&session, &app_handle, &tab_id);
+                        emit_token_count(&session, &app_handle, &tab_id, compact_threshold_tokens);
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::GetMcpStatus { response_tx } => {
@@ -550,7 +553,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::GetTokenCount { tab_id, app_handle } => {
-                        emit_token_count(&session, &app_handle, &tab_id);
+                        emit_token_count(&session, &app_handle, &tab_id, compact_threshold_tokens);
                     }
                     AgentRequest::Compact {
                         tab_id,
@@ -558,7 +561,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         response_tx,
                     } => {
                         let result = session.checkpoint().await.map_err(|e| e.to_string());
-                        emit_token_count(&session, &app_handle, &tab_id);
+                        emit_token_count(&session, &app_handle, &tab_id, compact_threshold_tokens);
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::CancelActivePrompt { response_tx } => {
@@ -743,6 +746,70 @@ async fn handle_prompt_stream(
                             }),
                         );
                     }
+                    iron_core::PromptEvent::CompactionStarted { compaction_id, method } => {
+                        let _ = app_handle.emit(
+                            "agent-compaction-status",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "status": "started",
+                                "compactionId": compaction_id,
+                                "method": method,
+                            }),
+                        );
+                    }
+                    iron_core::PromptEvent::CompactionFinished {
+                        compaction_id,
+                        tokens_before,
+                        tokens_after,
+                        method,
+                    } => {
+                        let _ = app_handle.emit(
+                            "agent-compaction-status",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "status": "finished",
+                                "compactionId": compaction_id,
+                                "method": method,
+                            }),
+                        );
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "type": "tool_result",
+                                "callId": compaction_id,
+                                "toolName": "compaction",
+                                "status": "Completed",
+                                "result": {
+                                    "tokens_before": tokens_before,
+                                    "tokens_after": tokens_after,
+                                    "method": method,
+                                },
+                            }),
+                        );
+                    }
+                    iron_core::PromptEvent::CompactionFailed { compaction_id, reason } => {
+                        let _ = app_handle.emit(
+                            "agent-compaction-status",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "status": "failed",
+                                "compactionId": compaction_id,
+                                "reason": reason,
+                            }),
+                        );
+                        let _ = app_handle.emit(
+                            "agent-tool-event",
+                            serde_json::json!({
+                                "tabId": tab_id,
+                                "type": "tool_result",
+                                "callId": compaction_id,
+                                "toolName": "compaction",
+                                "status": "Failed",
+                                "result": { "error": reason },
+                            }),
+                        );
+                    }
                     _ => {}
                 }
             }
@@ -837,7 +904,7 @@ async fn handle_active_request(
             true
         }
         AgentRequest::GetTokenCount { tab_id, app_handle } => {
-            emit_token_count(session, &app_handle, &tab_id);
+            emit_token_count(session, &app_handle, &tab_id, None);
             false
         }
         AgentRequest::Compact { response_tx, .. } => {
@@ -1023,11 +1090,16 @@ fn emit_token_count(
     session: &iron_core::AgentSession,
     app_handle: &tauri::AppHandle,
     tab_id: &str,
+    compact_threshold_tokens: Option<usize>,
 ) {
     use tauri::Emitter;
     let tokens = session.uncompacted_tokens();
     let _ = app_handle.emit(
         "agent-context-update",
-        serde_json::json!({ "tabId": tab_id, "activeTokens": tokens }),
+        serde_json::json!({
+            "tabId": tab_id,
+            "activeTokens": tokens,
+            "compactThreshold": compact_threshold_tokens,
+        }),
     );
 }

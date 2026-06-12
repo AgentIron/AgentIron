@@ -25,7 +25,6 @@ export const MessageInput: Component = () => {
     setLastAssistantContent,
     setStreaming,
     isStreaming,
-    setStatusOverride,
   } = useChat();
   const { state: agentState } = useAgent();
   const { notify } = useNotification();
@@ -107,7 +106,6 @@ export const MessageInput: Component = () => {
         role: "system", content: "Compacting context...",
         createdAt: new Date().toISOString(),
       });
-      setStatusOverride(tid, "compacting");
       try {
         await compactSession(tid);
         addMessageEntry(tid, {
@@ -121,8 +119,6 @@ export const MessageInput: Component = () => {
           role: "system", content: `Compact failed: ${err}`,
           createdAt: new Date().toISOString(),
         });
-      } finally {
-        setStatusOverride(tid, null);
       }
       return true;
     }
