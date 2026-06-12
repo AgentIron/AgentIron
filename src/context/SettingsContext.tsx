@@ -7,9 +7,8 @@ import {
   type JSX,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { query, execute } from "@lib/tauri/db";
 import { KNOWN_MODELS, DEFAULT_PROVIDERS, parseModelSlug } from "@lib/models";
-import { updateModelRegistry as fetchModelRegistry, getProviderAuthStatus } from "@lib/tauri/commands";
+import { updateModelRegistry as fetchModelRegistry, getProviderAuthStatus, loadSettingsRows, saveSettingRow } from "@lib/tauri/commands";
 import type { AppSettings, ProviderConfig, McpServerConfig, ModelInfo } from "@/types/settings";
 
 const DEFAULTS: AppSettings = {
@@ -85,11 +84,7 @@ async function persistSetting(key: keyof AppSettings, value: unknown) {
   const dbKey = DB_KEY_MAP[key] || key;
   const dbValue = JSON_KEYS.has(key) ? JSON.stringify(value) : String(value);
   try {
-    await execute(
-      `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
-       ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')`,
-      [dbKey, dbValue, dbValue],
-    );
+    await saveSettingRow(dbKey, dbValue);
   } catch (e) {
     console.error(`[Settings] Failed to persist ${key}:`, e);
   }
@@ -97,9 +92,7 @@ async function persistSetting(key: keyof AppSettings, value: unknown) {
 
 async function loadAllSettings(): Promise<Partial<AppSettings>> {
   try {
-    const rows = await query<{ key: string; value: string }>(
-      "SELECT key, value FROM settings",
-    );
+    const rows = await loadSettingsRows();
 
     const result: Partial<AppSettings> = {};
     const reverseMap: Record<string, string> = {};
@@ -180,8 +173,8 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
     }));
     // Load cached model registry
     try {
-      const rows = await query<{ key: string; value: string }>(
-        "SELECT key, value FROM settings WHERE key IN ('model_registry', 'model_registry_updated')",
+      const rows = (await loadSettingsRows()).filter((row) =>
+        row.key === "model_registry" || row.key === "model_registry_updated",
       );
       for (const row of rows) {
         if (row.key === "model_registry") {
@@ -324,12 +317,8 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
         setRegistryModels(models);
         const now = new Date().toISOString();
         setRegistryUpdated(now);
-        // Persist to SQLite
         await persistSetting("modelRegistry" as any, models);
-        await execute(
-          "INSERT INTO settings (key, value, updated_at) VALUES ('model_registry_updated', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')",
-          [now, now],
-        );
+        await saveSettingRow("model_registry_updated", now);
       } catch (e) {
         throw e;
       }

@@ -303,37 +303,31 @@ pub struct AgentHandle {
     pub name: String,
 }
 
+use crate::core_config::{CoreConfig, CoreCredentialStore};
 use crate::provider_box::ProviderBox;
 use iron_core::provider_credential::resolver::CredentialResolver;
 
 /// Managed application state held by Tauri.
 pub struct AppState {
     pub agents: Arc<RwLock<HashMap<String, AgentHandle>>>,
-    pub credential_store:
-        Option<std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>>,
-    pub credential_resolver: Option<Arc<CredentialResolver>>,
+    #[allow(dead_code)]
+    pub config_store: Arc<CoreConfig>,
+    pub credential_resolver: Arc<CredentialResolver>,
     pub oauth_clients: Arc<RwLock<HashMap<String, reqwest::Client>>>,
     pub debug_enabled: bool,
 }
 
 impl AppState {
-    pub fn new(debug_enabled: bool) -> Self {
+    pub fn new(config_store: Arc<CoreConfig>, debug_enabled: bool) -> Self {
+        let credential_store = Arc::new(CoreCredentialStore::new(config_store.store.clone()));
+        let credential_resolver = Arc::new(CredentialResolver::new(credential_store));
         Self {
             agents: Arc::new(RwLock::new(HashMap::new())),
-            credential_store: None,
-            credential_resolver: None,
+            config_store,
+            credential_resolver,
             oauth_clients: Arc::new(RwLock::new(HashMap::new())),
             debug_enabled,
         }
-    }
-
-    pub fn with_credential_store(
-        mut self,
-        store: std::sync::Arc<dyn iron_core::provider_credential::store::ProviderCredentialStore>,
-    ) -> Self {
-        self.credential_store = Some(store.clone());
-        self.credential_resolver = Some(Arc::new(CredentialResolver::new(store)));
-        self
     }
 }
 
@@ -1017,9 +1011,11 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
     Some(iron_core::McpServerConfig {
         id: mcp.id.clone(),
         label: mcp.label.clone(),
+        description: None,
         transport,
         enabled_by_default: mcp.enabled_by_default,
         working_dir: mcp.working_dir.clone().map(PathBuf::from),
+        inherited_env_vars: Vec::new(),
     })
 }
 
