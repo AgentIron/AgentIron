@@ -322,22 +322,24 @@ pub async fn create_agent(
         skill_config = skill_config.with_additional_skill_dir(PathBuf::from(dir));
     }
 
+    let context_management = iron_core::ContextManagementConfig::new()
+        .enabled()
+        .with_maintenance_threshold(50_000);
+
     let config = iron_core::Config::default()
         .with_model(model.clone())
         .with_provider_name(&pid)
         .with_max_iterations(10)
         .with_embedded_python_enabled()
-        .with_context_management(
-            iron_core::ContextManagementConfig::new()
-                .enabled()
-                .with_maintenance_threshold(50_000),
-        )
+        .with_context_management(context_management.clone())
         .with_mcp(
             iron_core::McpConfig::new()
                 .with_enabled(true)
                 .with_enabled_by_default(true),
         )
         .with_skills(skill_config);
+
+    let compact_threshold_tokens = context_management.maintenance_threshold;
 
     let work_dir = working_directory
         .map(PathBuf::from)
@@ -357,6 +359,7 @@ pub async fn create_agent(
             working_directory: work_dir,
             mcp_servers: mcp_servers.unwrap_or_default(),
             debug_enabled: state.debug_enabled,
+            compact_threshold_tokens: Some(compact_threshold_tokens),
         },
         request_rx,
     );

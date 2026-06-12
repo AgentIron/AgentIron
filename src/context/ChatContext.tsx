@@ -152,6 +152,24 @@ export const ChatProvider: Component<{ children: JSX.Element }> = (props) => {
         }
       }),
     );
+
+    // Compaction lifecycle events from iron-core drive the "compacting" status.
+    unlisteners.push(
+      await listen<{ tabId: string; status: "started" | "finished" | "failed"; reason?: string }>(
+        "agent-compaction-status",
+        (e) => {
+          const { tabId, status } = e.payload;
+          if (status === "started") {
+            setState("statusOverrideByTab", tabId, "compacting");
+          } else {
+            const override = untrack(() => state.statusOverrideByTab[tabId]);
+            if (override === "compacting") {
+              setState("statusOverrideByTab", tabId, null);
+            }
+          }
+        },
+      ),
+    );
   });
 
   onCleanup(() => {

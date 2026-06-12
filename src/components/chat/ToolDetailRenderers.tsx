@@ -87,11 +87,11 @@ export function renderArgsDetail(toolName: string | undefined, args: unknown): J
   }
 }
 
-// ── Compaction renderer (graceful stub) ──
+// ── Compaction renderer ──
 //
 // Renders a distinct token-reduction summary when iron-core supplies compaction
-// metrics in the result. Returns null when no metrics are present, so callers
-// can fall back to the generic result renderer until backend support lands.
+// metrics in the result. Returns null when no metrics are present so callers
+// fall back to the generic result renderer.
 
 export function renderCompactionResult(result: unknown): JSX.Element {
   const metrics = extractCompactionMetrics(result);

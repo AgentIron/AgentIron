@@ -40,12 +40,11 @@ export function toolIcon(name: string | undefined, size = 14): JSX.Element {
   }
 }
 
-// ── Compaction classification (graceful stub) ──
+// ── Compaction classification ──
 //
-// iron-core does not yet emit compaction as a tool event. These helpers detect
-// it by name and pull token metrics from the result when present, so the UI
-// lights up automatically once the backend support lands. Until then they are
-// dormant. See the linked iron-core follow-up issue.
+// iron-core emits compaction lifecycle events as synthetic tool results with
+// toolName "compaction". These helpers detect them and pull token metrics from
+// the result so the transcript can render a distinct compaction entry.
 
 const COMPACTION_TOOL_NAMES = new Set(["compact", "compaction"]);
 
