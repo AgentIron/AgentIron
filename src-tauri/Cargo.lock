@@ -98,6 +98,7 @@ dependencies = [
  "image",
  "iron-core",
  "iron-providers",
+ "keyring",
  "reqwest",
  "rusqlite",
  "serde",

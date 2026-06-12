@@ -1,7 +1,9 @@
 use async_trait::async_trait;
+use base64::Engine;
 use iron_core::config::{
+    crypto::{DynCredentialCipher, XChaCha20Poly1305Cipher},
     ConfigError, ConfigStore, CustomModelInput, DefaultModelInput, McpServerConfigInput,
-    ProviderConfigInput, SkillSettingsInput,
+    OpenOptions, ProviderConfigInput, SkillSettingsInput,
 };
 use iron_core::provider_credential::{
     domain::{OAuthTokenSet, ProviderSlug, StoredCredential},
@@ -23,13 +25,67 @@ pub struct CoreConfig {
 }
 
 impl CoreConfig {
-    /// Open the platform-default shared config store.
-    pub async fn open() -> Result<Self, ConfigError> {
-        let store = ConfigStore::open().await?;
+    /// Open the platform-default shared config store with a pre-resolved cipher.
+    pub async fn open_with_cipher(
+        cipher: Option<DynCredentialCipher>,
+    ) -> Result<Self, ConfigError> {
+        let path = iron_core::config::default_config_path()?;
+        let store = ConfigStore::open_at_with_options(
+            path,
+            OpenOptions {
+                cipher,
+                busy_timeout: None,
+            },
+        )
+        .await?;
         Ok(Self {
             store: Arc::new(store),
         })
     }
+}
+
+/// Resolve the credential cipher synchronously before entering Tokio.
+///
+/// The keyring crate's Linux backend uses zbus blocking APIs that create their own
+/// runtime. Calling that path from inside Tokio panics, so startup resolves the key
+/// first and then passes the cipher into `ConfigStore` explicitly.
+pub fn resolve_config_cipher_sync() -> Option<DynCredentialCipher> {
+    if let Ok(value) = std::env::var("AGENTIRON_CONFIG_ENCRYPTION_KEY") {
+        if let Some(key) = decode_config_key(&value) {
+            return Some(Arc::new(XChaCha20Poly1305Cipher::new(&key)) as DynCredentialCipher);
+        }
+    }
+
+    let entry = keyring::Entry::new("agentiron", "config-encryption").ok()?;
+    match entry.get_password() {
+        Ok(password) => decode_config_key(&password)
+            .map(|key| Arc::new(XChaCha20Poly1305Cipher::new(&key)) as DynCredentialCipher),
+        Err(keyring::Error::NoEntry) => {
+            let key = XChaCha20Poly1305Cipher::generate_key();
+            let encoded = base64::engine::general_purpose::STANDARD.encode(key);
+            if entry.set_password(&encoded).is_ok() {
+                return Some(Arc::new(XChaCha20Poly1305Cipher::new(&key)) as DynCredentialCipher);
+            }
+
+            entry.get_password().ok().and_then(|password| {
+                decode_config_key(&password)
+                    .map(|key| Arc::new(XChaCha20Poly1305Cipher::new(&key)) as DynCredentialCipher)
+            })
+        }
+        Err(_) => None,
+    }
+}
+
+fn decode_config_key(value: &str) -> Option<[u8; 32]> {
+    let decoded = base64::engine::general_purpose::STANDARD
+        .decode(value)
+        .ok()?;
+    if decoded.len() != 32 {
+        return None;
+    }
+    let mut key = [0u8; 32];
+    key.copy_from_slice(&decoded);
+    Some(key)
 }
 
 /// Credential store backed by the shared `iron-core` config store.

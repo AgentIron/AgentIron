@@ -38,16 +38,26 @@ pub fn run() {
             // Open the shared iron-core config store and run one-time migration of legacy
             // AgentIron settings. This blocks startup if credential encryption is unavailable
             // so the user gets an actionable error instead of silent credential degradation.
-            let core_config = tauri::async_runtime::block_on(async {
-                let config = crate::core_config::CoreConfig::open()
-                    .await
-                    .map_err(|e| format!("Failed to open shared config store: {e}"))?;
-                let legacy_conn = rusqlite::Connection::open(&db_path)
-                    .map_err(|e| format!("Failed to open legacy settings database: {e}"))?;
-                crate::commands::settings::ensure_settings_schema_inner(&legacy_conn)?;
-                crate::core_config::migrate_legacy_settings(&config.store, &legacy_conn).await?;
-                Ok::<_, String>(config)
+            let core_config = std::thread::spawn(move || {
+                let cipher = crate::core_config::resolve_config_cipher_sync();
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .map_err(|e| format!("Failed to create config runtime: {e}"))?;
+                rt.block_on(async move {
+                    let config = crate::core_config::CoreConfig::open_with_cipher(cipher)
+                        .await
+                        .map_err(|e| format!("Failed to open shared config store: {e}"))?;
+                    let legacy_conn = rusqlite::Connection::open(&db_path)
+                        .map_err(|e| format!("Failed to open legacy settings database: {e}"))?;
+                    crate::commands::settings::ensure_settings_schema_inner(&legacy_conn)?;
+                    crate::core_config::migrate_legacy_settings(&config.store, &legacy_conn)
+                        .await?;
+                    Ok::<_, String>(config)
+                })
             })
+            .join()
+            .map_err(|_| "Shared config initialization panicked".to_string())?
             .map_err(|e| format!("Failed to initialize shared config: {e}"))?;
 
             commands::settings::ensure_settings_schema(app.handle())?;
