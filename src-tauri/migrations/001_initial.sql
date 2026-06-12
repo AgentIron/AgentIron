@@ -38,20 +38,6 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id)
 );
 
--- Scheduled tasks
-CREATE TABLE IF NOT EXISTS scheduled_tasks (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    cron_expression TEXT NOT NULL,
-    prompt TEXT NOT NULL,
-    agent_config_id TEXT,
-    enabled INTEGER NOT NULL DEFAULT 1,
-    last_run_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (agent_config_id) REFERENCES agent_configs(id)
-);
-
 -- Insert default settings
 INSERT OR IGNORE INTO settings (key, value) VALUES ('theme', 'dark');
 INSERT OR IGNORE INTO settings (key, value) VALUES ('autostart', 'false');

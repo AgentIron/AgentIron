@@ -5,6 +5,7 @@ use crate::state::AppState;
 use iron_core::provider_credential::{
     domain::{ProviderAuthError, ProviderAuthStatus, ProviderSlug, StoredCredential},
     oauth::{poll_token_exchange, start_device_code_flow, v1_oauth_metadata},
+    ProviderCredentialStore,
 };
 
 // ── Sanitized frontend DTOs ──
@@ -90,11 +91,10 @@ pub async fn poll_provider_oauth(
     let token_set = result.into_token_set(None);
 
     // Persist the credential
-    if let Some(store) = &state.credential_store {
-        store
-            .set(&slug, StoredCredential::OAuthBearer(token_set.clone()))
-            .await;
-    }
+    state
+        .credential_store
+        .set(&slug, StoredCredential::OAuthBearer(token_set.clone()))
+        .await;
 
     let expires_at = token_set.expires_at.map(|t| {
         t.duration_since(std::time::UNIX_EPOCH)
@@ -117,16 +117,7 @@ pub async fn disconnect_provider_oauth(
 ) -> Result<(), String> {
     let slug = ProviderSlug::new(&provider_id);
 
-    if let Some(resolver) = &state.credential_resolver {
-        resolver.disconnect_oauth(&slug).await;
-    } else if let Some(store) = &state.credential_store {
-        // Only remove OAuth credentials; never delete an API key
-        if let Some(cred) = store.get(&slug).await {
-            if matches!(cred, StoredCredential::OAuthBearer(_)) {
-                store.remove(&slug).await;
-            }
-        }
-    }
+    state.credential_resolver.disconnect_oauth(&slug).await;
 
     Ok(())
 }
@@ -143,37 +134,21 @@ pub async fn get_provider_auth_status(
     // this provider supports API-key auth before reporting it as configured.
     if let Some(key) = api_key {
         if !key.trim().is_empty() {
-            if let Some(resolver) = &state.credential_resolver {
-                return Ok(auth_status_response(
-                    provider_id,
-                    resolver.status(&slug, Some(key.trim())).await,
-                ));
-            }
-
-            return Ok(ProviderAuthStatusResponse {
-                provider: provider_id,
-                status: "configuredApiKey".to_string(),
-                expires_at: None,
-                reason: None,
-            });
+            return Ok(auth_status_response(
+                provider_id,
+                state
+                    .credential_resolver
+                    .status(&slug, Some(key.trim()))
+                    .await,
+            ));
         }
     }
 
-    // Otherwise check credential resolver / store
-    if let Some(resolver) = &state.credential_resolver {
-        return Ok(auth_status_response(
-            provider_id,
-            resolver.status(&slug, None).await,
-        ));
-    }
-
-    // Fallback: no resolver configured
-    Ok(ProviderAuthStatusResponse {
-        provider: provider_id,
-        status: "notConfigured".to_string(),
-        expires_at: None,
-        reason: None,
-    })
+    // Otherwise check credential resolver
+    Ok(auth_status_response(
+        provider_id,
+        state.credential_resolver.status(&slug, None).await,
+    ))
 }
 
 fn auth_status_response(

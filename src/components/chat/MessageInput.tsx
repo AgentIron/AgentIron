@@ -4,7 +4,7 @@ import { TbOutlineSend, TbOutlinePaperclip, TbOutlinePhoto, TbOutlineScreenshot,
 import { listen } from "@tauri-apps/api/event";
 import { useChat } from "@context/ChatContext";
 import { useAgent } from "@context/AgentContext";
-import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt, saveHandoffBundle, loadHandoffBundle, importHandoff } from "@lib/tauri/commands";
+import { sendMessage, sendMessageWithImages, compactSession, startSnip, cancelActivePrompt, saveHandoffBundle, loadHandoffBundle, importHandoff, saveHandoffToCore } from "@lib/tauri/commands";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { useNotification } from "@context/NotificationContext";
 
@@ -155,6 +155,29 @@ export const MessageInput: Component = () => {
         addMessageEntry(tid, {
           id: crypto.randomUUID(), conversationId: tid,
           role: "system", content: `Export failed: ${err}`,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      return true;
+    }
+    if (normalized.startsWith("/save-handoff ")) {
+      const name = normalized.slice("/save-handoff ".length).trim() || `handoff-${tid}`;
+      addMessageEntry(tid, {
+        id: crypto.randomUUID(), conversationId: tid,
+        role: "system", content: "Saving handoff bundle to core storage...",
+        createdAt: new Date().toISOString(),
+      });
+      try {
+        const id = await saveHandoffToCore(tid, name);
+        addMessageEntry(tid, {
+          id: crypto.randomUUID(), conversationId: tid,
+          role: "system", content: `Handoff saved to core storage (id: ${id}).`,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        addMessageEntry(tid, {
+          id: crypto.randomUUID(), conversationId: tid,
+          role: "system", content: `Save failed: ${err}`,
           createdAt: new Date().toISOString(),
         });
       }
@@ -382,7 +405,7 @@ export const MessageInput: Component = () => {
         <textarea
           ref={textareaRef}
           rows="1"
-          placeholder="Type a message or /compact, /export-handoff..."
+          placeholder="Type a message or /compact, /export-handoff, /save-handoff..."
           value={text()}
           onInput={(e) => {
             setText(e.currentTarget.value);

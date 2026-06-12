@@ -142,6 +142,22 @@ export async function loadHandoffBundle(filePath: string): Promise<unknown> {
   return invoke("load_handoff_bundle", { filePath });
 }
 
+export async function saveHandoffToCore(tabId: string, name: string): Promise<string> {
+  return invoke("save_handoff_to_core", { tabId, name });
+}
+
+export async function loadHandoffFromCore(tabId: string, id: string): Promise<void> {
+  return invoke("load_handoff_from_core", { tabId, id });
+}
+
+export async function listSavedHandoffs(): Promise<{ id: string; name: string; bundleVersion: string; sourceSessionId?: string; sourceModel?: string; sourceProvider?: string; sizeEstimateTokens: number; createdAt: string; updatedAt: string }[]> {
+  return invoke("list_saved_handoffs");
+}
+
+export async function deleteSavedHandoff(id: string): Promise<void> {
+  return invoke("delete_saved_handoff", { id });
+}
+
 // ── Provider OAuth commands ──
 
 export interface DeviceCodeStartResponse {
@@ -183,4 +199,19 @@ export async function getProviderAuthStatus(
   apiKey?: string,
 ): Promise<ProviderAuthStatusResponse> {
   return invoke("get_provider_auth_status", { providerId, apiKey });
+}
+
+// ── Settings persistence commands ──
+
+export interface SettingRow {
+  key: string;
+  value: string;
+}
+
+export async function loadSettingsRows(): Promise<SettingRow[]> {
+  return invoke("load_settings_rows");
+}
+
+export async function saveSettingRow(key: string, value: string): Promise<void> {
+  return invoke("save_setting_row", { key, value });
 }

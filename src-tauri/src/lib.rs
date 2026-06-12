@@ -3,37 +3,18 @@ use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
 mod commands;
-mod credential_store;
+mod core_config;
 mod debug;
 mod provider_box;
 mod state;
+
+use core_config::CoreConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(
-            tauri_plugin_sql::Builder::new()
-                .add_migrations(
-                    "sqlite:agentiron.db",
-                    vec![
-                        tauri_plugin_sql::Migration {
-                            version: 1,
-                            description: "Initial schema",
-                            sql: include_str!("../migrations/001_initial.sql"),
-                            kind: tauri_plugin_sql::MigrationKind::Up,
-                        },
-                        tauri_plugin_sql::Migration {
-                            version: 2,
-                            description: "Add provider credential storage",
-                            sql: include_str!("../migrations/002_provider_credentials.sql"),
-                            kind: tauri_plugin_sql::MigrationKind::Up,
-                        },
-                    ],
-                )
-                .build(),
-        );
+        .plugin(tauri_plugin_dialog::init());
 
     #[cfg(desktop)]
     {
@@ -53,10 +34,27 @@ pub fn run() {
                 .app_data_dir()
                 .unwrap_or_else(|_| std::path::PathBuf::from("."));
             let db_path = app_data_dir.join("agentiron.db");
-            let credential_store =
-                std::sync::Arc::new(credential_store::SqliteCredentialStore::new(db_path));
+
+            // Open the shared iron-core config store and run one-time migration of legacy
+            // AgentIron settings. This blocks startup if credential encryption is unavailable
+            // so the user gets an actionable error instead of silent credential degradation.
+            let core_config = tauri::async_runtime::block_on(async {
+                let config = crate::core_config::CoreConfig::open()
+                    .await
+                    .map_err(|e| format!("Failed to open shared config store: {e}"))?;
+                let legacy_conn = rusqlite::Connection::open(&db_path)
+                    .map_err(|e| format!("Failed to open legacy settings database: {e}"))?;
+                crate::commands::settings::ensure_settings_schema_inner(&legacy_conn)?;
+                crate::core_config::migrate_legacy_settings(&config.store, &legacy_conn).await?;
+                Ok::<_, String>(config)
+            })
+            .map_err(|e| format!("Failed to initialize shared config: {e}"))?;
+
+            commands::settings::ensure_settings_schema(app.handle())?;
             let debug_enabled = crate::debug::is_debug_mode();
-            app.manage(state::AppState::new(debug_enabled).with_credential_store(credential_store));
+            let core_config = std::sync::Arc::new(core_config);
+            app.manage(CoreConfig::clone(&core_config));
+            app.manage(state::AppState::new(core_config, debug_enabled));
             app.manage(commands::snip::SnipState::new());
 
             // System tray (desktop only)
@@ -103,6 +101,10 @@ pub fn run() {
             commands::agent::import_handoff,
             commands::agent::save_handoff_bundle,
             commands::agent::load_handoff_bundle,
+            commands::agent::save_handoff_to_core,
+            commands::agent::load_handoff_from_core,
+            commands::agent::list_saved_handoffs,
+            commands::agent::delete_saved_handoff,
             commands::chat::send_message,
             commands::chat::send_message_with_images,
             commands::chat::respond_to_approval,
@@ -113,6 +115,8 @@ pub fn run() {
             commands::oauth::poll_provider_oauth,
             commands::oauth::disconnect_provider_oauth,
             commands::oauth::get_provider_auth_status,
+            commands::settings::load_settings_rows,
+            commands::settings::save_setting_row,
             commands::snip::start_snip,
             commands::snip::capture_snip,
             commands::snip::get_snip_screenshot,
