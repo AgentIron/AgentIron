@@ -227,9 +227,6 @@ export const MessageInput: Component = () => {
     clearImages();
     if (textareaRef) textareaRef.style.height = "auto";
 
-    // Clear any lingering error state from a previous turn.
-    setStatusOverride(tid, null);
-
     if (content.startsWith("/") && attachedImages.length === 0) {
       const handled = await handleSlashCommand(content);
       if (handled) return;
@@ -279,7 +276,6 @@ export const MessageInput: Component = () => {
       }
     } catch (err) {
       appendToLastAssistantContent(tid, `Error: ${err}`);
-      setStatusOverride(tid, "error");
     } finally {
       setStreaming(tid, false);
     }

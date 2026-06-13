@@ -88,15 +88,13 @@ pub async fn update_model_registry() -> Result<Vec<RegistryModel>, String> {
     let mut models = Vec::new();
 
     for (provider_key, provider) in &data {
-        // Look up by models.dev ID using the registry's metadata.
-        // Explicit deterministic mapping for known ambiguous IDs.
-        let our_provider = match provider_key.as_str() {
-            "openai" => "openai".to_string(),
-            _ => match registry.resolve_by_models_dev_id(provider_key) {
-                Some(profile) => profile.slug.clone(),
-                None => continue, // Skip providers we don't support
-            },
-        };
+        // Look up by models.dev ID using the registry's metadata. Multiple
+        // AgentIron providers can share one models.dev provider, e.g. Codex
+        // models are published under the OpenAI provider.
+        let profiles = registry.profiles_by_models_dev_id(provider_key);
+        if profiles.is_empty() {
+            continue;
+        }
 
         if let Some(provider_models) = &provider.models {
             for (model_key, model) in provider_models {
@@ -115,18 +113,20 @@ pub async fn update_model_registry() -> Result<Vec<RegistryModel>, String> {
                     .map(|inputs| inputs.iter().any(|i| i == "image"))
                     .unwrap_or(false);
 
-                models.push(RegistryModel {
-                    id: model_id.to_string(),
-                    name: model_name.to_string(),
-                    provider_id: our_provider.clone(),
-                    context_window: model.limit.as_ref().and_then(|l| l.context),
-                    output_limit: model.limit.as_ref().and_then(|l| l.output),
-                    tool_call: model.tool_call.unwrap_or(false),
-                    reasoning: model.reasoning.unwrap_or(false),
-                    vision: has_vision || model.attachment.unwrap_or(false),
-                    cost_input: model.cost.as_ref().and_then(|c| c.input),
-                    cost_output: model.cost.as_ref().and_then(|c| c.output),
-                });
+                for profile in &profiles {
+                    models.push(RegistryModel {
+                        id: model_id.to_string(),
+                        name: model_name.to_string(),
+                        provider_id: profile.slug.clone(),
+                        context_window: model.limit.as_ref().and_then(|l| l.context),
+                        output_limit: model.limit.as_ref().and_then(|l| l.output),
+                        tool_call: model.tool_call.unwrap_or(false),
+                        reasoning: model.reasoning.unwrap_or(false),
+                        vision: has_vision || model.attachment.unwrap_or(false),
+                        cost_input: model.cost.as_ref().and_then(|c| c.input),
+                        cost_output: model.cost.as_ref().and_then(|c| c.output),
+                    });
+                }
             }
         }
     }

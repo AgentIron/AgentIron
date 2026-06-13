@@ -264,9 +264,10 @@ const ProviderCard: Component<{
   } | null>(null);
   const [pollAttempts, setPollAttempts] = createSignal(0);
   const [connectError, setConnectError] = createSignal("");
+  const apiKey = () => props.provider.apiKey ?? "";
 
   const effectiveAuth = () => {
-    if (props.provider.apiKey.trim().length > 0) return "api_key";
+    if (apiKey().trim().length > 0) return "api_key";
     const status = auth()?.status;
     if (status === "connectedOAuth" || status === "configuredApiKey") return "oauth";
     return "none";
@@ -415,7 +416,7 @@ const ProviderCard: Component<{
           <input
             type={showKey() ? "text" : "password"}
             placeholder="API key..."
-            value={props.provider.apiKey}
+            value={apiKey()}
             onInput={(e) => props.onUpdate({ apiKey: e.currentTarget.value })}
             class="w-full rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 pr-16 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
           />

@@ -362,15 +362,58 @@ async fn save_default_model(
         return Err(format!("Invalid default model format: {value}"));
     };
 
+    let input = DefaultModelInput {
+        provider_slug: provider_slug.to_string(),
+        model_id: model_id.to_string(),
+    };
+
+    ensure_model_in_catalog(store, provider_slug, model_id).await?;
+
     store
-        .set_default_model(&DefaultModelInput {
-            provider_slug: provider_slug.to_string(),
-            model_id: model_id.to_string(),
-        })
+        .set_default_model(&input)
         .await
         .map_err(|e| format!("Failed to save default model: {e}"))?;
 
     Ok(())
+}
+
+async fn ensure_model_in_catalog(
+    store: &iron_core::config::ConfigStore,
+    provider_slug: &str,
+    model_id: &str,
+) -> Result<(), String> {
+    let custom_models = store
+        .list_custom_models(None)
+        .await
+        .map_err(|e| format!("Failed to list custom models for default validation: {e}"))?;
+    let catalog = iron_core::config::build_effective_catalog(
+        &iron_core::config::builtin_model_catalog(),
+        &custom_models,
+    )
+    .map_err(|e| format!("Failed to build model catalog: {e}"))?;
+
+    if catalog.contains(provider_slug, model_id) {
+        return Ok(());
+    }
+
+    store
+        .set_custom_model(&CustomModelInput {
+            provider_slug: provider_slug.to_string(),
+            model_id: model_id.to_string(),
+            display_name: model_id.to_string(),
+            context_window: None,
+            output_limit: None,
+            supports_tool_calls: true,
+            supports_reasoning: false,
+            supports_vision: false,
+            supports_streaming: true,
+            reasoning_effort_values: Vec::new(),
+            cost_input_per_million: None,
+            cost_output_per_million: None,
+        })
+        .await
+        .map(|_| ())
+        .map_err(|e| format!("Failed to save default model catalog entry: {e}"))
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -381,8 +424,11 @@ struct ModelInfoJson {
     provider_id: String,
     context_window: Option<u32>,
     output_limit: Option<u32>,
+    #[serde(default)]
     tool_call: bool,
+    #[serde(default)]
     reasoning: bool,
+    #[serde(default)]
     vision: bool,
     cost_input: Option<f64>,
     cost_output: Option<f64>,

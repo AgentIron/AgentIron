@@ -80,6 +80,28 @@ const DB_KEY_MAP: Record<string, string> = {
 
 const JSON_KEYS = new Set(["providers", "starredModels", "customModels", "mcpServers", "userProfile", "modelRegistry", "skills"]);
 
+function normalizeProvider(provider: Partial<ProviderConfig>): ProviderConfig | null {
+  if (!provider.id) return null;
+
+  const template = DEFAULT_PROVIDERS.find((item) => item.id === provider.id);
+
+  return {
+    id: provider.id,
+    name: provider.name ?? template?.name ?? provider.id,
+    apiKey: provider.apiKey ?? "",
+    baseUrl: provider.baseUrl,
+    enabled: provider.enabled ?? template?.enabled ?? false,
+  };
+}
+
+function normalizeProviders(providers: unknown): ProviderConfig[] | undefined {
+  if (!Array.isArray(providers)) return undefined;
+
+  return providers
+    .map((provider) => normalizeProvider(provider as Partial<ProviderConfig>))
+    .filter((provider): provider is ProviderConfig => provider !== null);
+}
+
 async function persistSetting(key: keyof AppSettings, value: unknown) {
   const dbKey = DB_KEY_MAP[key] || key;
   const dbValue = JSON_KEYS.has(key) ? JSON.stringify(value) : String(value);
@@ -114,7 +136,7 @@ async function loadAllSettings(): Promise<Partial<AppSettings>> {
           result.defaultModel = row.value;
           break;
         case "providers":
-          try { result.providers = JSON.parse(row.value); } catch { /* use default */ }
+          try { result.providers = normalizeProviders(JSON.parse(row.value)); } catch { /* use default */ }
           break;
         case "starredModels":
           try { result.starredModels = JSON.parse(row.value); } catch { /* use default */ }
@@ -223,7 +245,7 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
     const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
     if (!provider) return false;
     if (provider.id === "local") return true;
-    if (provider.apiKey.trim().length > 0) return true;
+    if ((provider.apiKey ?? "").trim().length > 0) return true;
     const auth = authStatuses()[providerId];
     if (auth && (auth.status === "connectedOAuth" || auth.status === "configuredApiKey")) {
       return true;
