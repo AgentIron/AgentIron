@@ -19,8 +19,8 @@
     ]
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
-    "@tauri-apps/api": "^2.11.0",
+    "@tailwindcss/vite": "^4.3.1",
+    "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-autostart": "^2.5.1",
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "@tauri-apps/plugin-global-shortcut": "^2.3.2",
@@ -31,15 +31,15 @@
     "solid-icons": "^1.2.0",
     "solid-js": "^1.9.13",
     "solid-transition-group": "^0.3.0",
-    "tailwindcss": "^4.3.0",
+    "tailwindcss": "^4.3.1",
     "tinykeys": "^4.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2",
     "@types/prismjs": "^1.26.6",
-    "@typescript-eslint/eslint-plugin": "^8.61.0",
-    "@typescript-eslint/parser": "^8.61.0",
-    "eslint": "^10.4.1",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-solid": "^0.14.5",
     "prettier": "^3.8.4",
