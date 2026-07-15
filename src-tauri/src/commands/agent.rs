@@ -733,7 +733,7 @@ pub async fn import_handoff(
     let (response_tx, response_rx) = oneshot::channel();
     request_tx
         .send(AgentRequest::ImportHandoff {
-            bundle,
+            bundle: Box::new(bundle),
             response_tx,
         })
         .await
@@ -843,7 +843,7 @@ pub async fn load_handoff_from_core(
     let (response_tx, response_rx) = oneshot::channel();
     request_tx
         .send(AgentRequest::ImportHandoff {
-            bundle: record.bundle,
+            bundle: Box::new(record.bundle),
             response_tx,
         })
         .await
