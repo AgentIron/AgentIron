@@ -88,7 +88,7 @@ pub enum AgentRequest {
     },
     /// Import a handoff bundle into this session.
     ImportHandoff {
-        bundle: iron_core::HandoffBundle,
+        bundle: Box<iron_core::HandoffBundle>,
         response_tx: oneshot::Sender<Result<(), String>>,
     },
     /// Set workspace roots for the current session.
@@ -620,7 +620,7 @@ pub fn spawn_agent_worker(params: AgentParams, mut request_rx: mpsc::Receiver<Ag
                         bundle,
                         response_tx,
                     } => {
-                        let result = session.import_handoff(bundle).map_err(|e| e.to_string());
+                        let result = session.import_handoff(*bundle).map_err(|e| e.to_string());
                         let _ = response_tx.send(result);
                     }
                     AgentRequest::SetWorkspaceRoots { roots, response_tx } => {
