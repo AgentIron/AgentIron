@@ -2,7 +2,6 @@ use iron_core::config::{
     CustomModelInput, CustomModelRecord, DefaultModelInput, McpServerConfigInput,
     McpServerConfigRecord, ProviderConfigInput, SkillSettingsInput, SkillSettingsRecord,
 };
-use iron_core::provider_credential::domain::StoredCredential;
 use rusqlite::Connection;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -10,7 +9,6 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager, State};
 
 use crate::core_config::CoreConfig;
-
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SettingRow {
@@ -112,11 +110,12 @@ async fn load_core_owned_settings(
         .list_provider_configs()
         .await
         .map_err(|e| format!("Failed to load provider configs: {e}"))?;
-    let credentials = store
-        .list_credential_slugs()
-        .await
-        .map_err(|e| format!("Failed to list credential slugs: {e}"))?;
 
+    // Do NOT load saved API keys from the credential store into the frontend
+    // response. Credential status is queried separately through typed
+    // config-management commands (list_credentials) that return only
+    // secret-safe metadata. The api_key field remains None so persisted
+    // secret values never enter long-lived frontend state.
     let providers: Vec<ProviderConfigJson> = provider_configs
         .into_iter()
         .map(|p| ProviderConfigJson {
@@ -128,22 +127,9 @@ async fn load_core_owned_settings(
         })
         .collect();
 
-    // Fill in API keys from the credential store without exposing them in logs.
-    let mut providers_with_keys = providers;
-    for provider in &mut providers_with_keys {
-        if credentials.contains(&provider.id) {
-            if let Ok(Some(bytes)) = store.get_credential(&provider.id).await {
-                provider.api_key = match serde_json::from_slice::<StoredCredential>(&bytes) {
-                    Ok(StoredCredential::ApiKey(key)) => Some(key),
-                    Ok(StoredCredential::OAuthBearer(_)) => None,
-                    Err(_) => None,
-                };
-            }
-        }
-    }
     rows.push(SettingRow {
         key: "providers".to_string(),
-        value: serde_json::to_string(&providers_with_keys)
+        value: serde_json::to_string(&providers)
             .map_err(|e| format!("Failed to serialize providers: {e}"))?,
     });
 
@@ -299,48 +285,9 @@ async fn save_providers(store: &iron_core::config::ConfigStore, value: &str) -> 
             .await
             .map_err(|e| format!("Failed to save provider config '{}': {}", provider.id, e))?;
 
-        let existing_bytes = store.get_credential(&provider.id).await.map_err(|e| {
-            format!(
-                "Failed to read existing credential for '{}': {}",
-                provider.id, e
-            )
-        })?;
-        let is_oauth = matches!(
-            existing_bytes
-                .as_deref()
-                .and_then(|b| serde_json::from_slice::<StoredCredential>(b).ok()),
-            Some(StoredCredential::OAuthBearer(_))
-        );
-
-        match provider.api_key.as_deref().map(str::trim) {
-            None => {
-                // No key was sent; preserve the existing credential (e.g. OAuth).
-            }
-            Some("") if is_oauth => {
-                // Frontend sends an empty apiKey for OAuth-backed providers by default.
-                // Preserve the OAuth credential instead of deleting it.
-            }
-            Some("") => {
-                store.remove_credential(&provider.id).await.map_err(|e| {
-                    format!("Failed to remove API key for '{}': {}", provider.id, e)
-                })?;
-            }
-            Some(key) => {
-                let credential = StoredCredential::ApiKey(key.to_string());
-                let payload = serde_json::to_vec(&credential)
-                    .map_err(|e| format!("Failed to serialize API key: {e}"))?;
-                store
-                    .set_credential(&provider.id, "api_key", &payload)
-                    .await
-                    .map_err(|e| {
-                        if matches!(e, iron_core::config::ConfigError::KeyUnavailable(_)) {
-                            "Credential encryption is unavailable. Set AGENTIRON_CONFIG_ENCRYPTION_KEY or ensure your OS keyring is accessible.".to_string()
-                        } else {
-                            format!("Failed to save API key: {e}")
-                        }
-                    })?;
-            }
-        }
+        // Credentials are managed through typed config-management commands
+        // (set_api_key, delete_credential). The legacy whole-provider save
+        // path must not touch stored credentials.
     }
 
     Ok(())

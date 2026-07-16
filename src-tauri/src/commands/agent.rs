@@ -52,10 +52,37 @@ async fn build_provider(
             iron_providers::AuthStrategy::NoAuth,
         );
 
-        let runtime_config = if api_key.trim().is_empty() {
-            iron_providers::RuntimeConfig::none()
+        // Try the explicit API key first; if empty, resolve from the shared
+        // credential store so secret-safe typed commands work for local too.
+        let resolved_key = if !api_key.trim().is_empty() {
+            Some(api_key.to_string())
         } else {
-            iron_providers::RuntimeConfig::new(api_key)
+            match state
+                .credential_resolver
+                .resolve(
+                    &ProviderPromptContext {
+                        provider_slug: iron_core::provider_credential::domain::ProviderSlug::new(
+                            "local",
+                        ),
+                        model: model.to_string(),
+                        api_key: None,
+                    },
+                    None,
+                )
+                .await
+            {
+                Ok(resolved) => match resolved.provider_credential {
+                    iron_providers::ProviderCredential::ApiKey(k) => Some(k),
+                    _ => None,
+                },
+                Err(ProviderAuthError::NotConfigured(_)) => None,
+                Err(e) => return Err(credential_resolution_message(e)),
+            }
+        };
+
+        let runtime_config = match resolved_key {
+            Some(k) if !k.trim().is_empty() => iron_providers::RuntimeConfig::new(&k),
+            _ => iron_providers::RuntimeConfig::none(),
         };
 
         return iron_providers::ProviderConnection::from_profile(profile, runtime_config)

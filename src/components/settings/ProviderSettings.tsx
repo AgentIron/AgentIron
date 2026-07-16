@@ -1,4 +1,4 @@
-import { For, Show, createSignal, type Component } from "solid-js";
+import { For, Show, createSignal, onCleanup, type Component } from "solid-js";
 import {
   TbOutlineStar,
   TbFillStar,
@@ -12,6 +12,7 @@ import {
   TbOutlineUnlink,
 } from "solid-icons/tb";
 import { useSettings } from "@context/SettingsContext";
+import { useConfigManagement, MutationError } from "@context/ConfigManagementContext";
 import { useNotification } from "@context/NotificationContext";
 import { DEFAULT_PROVIDERS, PROVIDER_METADATA, formatTokenCount, parseModelSlug, makeModelSlug } from "@lib/models";
 import { startProviderOAuth, pollProviderOAuth, disconnectProviderOAuth } from "@lib/tauri/commands";
@@ -249,10 +250,17 @@ const ProviderCard: Component<{
   onUpdate: (patch: Partial<ProviderConfig>) => void;
   onRemove: () => void;
 }> = (props) => {
-  const [showKey, setShowKey] = createSignal(false);
   const { authStatuses, refreshAuthStatus } = useSettings();
+  const mgmt = useConfigManagement();
   const meta = () => PROVIDER_METADATA.find((m) => m.id === props.provider.id);
   const auth = () => authStatuses()[props.provider.id];
+
+  const hasApiKey = () => mgmt.credentials().some(
+    (c) => c.providerSlug === props.provider.id && c.authStatus === "configuredApiKey"
+  );
+  const hasOAuth = () => auth()?.status === "connectedOAuth" || mgmt.credentials().some(
+    (c) => c.providerSlug === props.provider.id && c.credentialMode === "oauthbearer"
+  );
 
   const [connecting, setConnecting] = createSignal(false);
   const [deviceCodeData, setDeviceCodeData] = createSignal<{
@@ -264,13 +272,54 @@ const ProviderCard: Component<{
   } | null>(null);
   const [pollAttempts, setPollAttempts] = createSignal(0);
   const [connectError, setConnectError] = createSignal("");
-  const apiKey = () => props.provider.apiKey ?? "";
+  const [newApiKey, setNewApiKey] = createSignal("");
+  const [apiKeyError, setApiKeyError] = createSignal("");
+
+  const pollState: { timerId: ReturnType<typeof setTimeout> | null; generation: number } = {
+    timerId: null,
+    generation: 0,
+  };
+
+  const cancelOAuthPoll = () => {
+    pollState.generation++;
+    if (pollState.timerId !== null) {
+      clearTimeout(pollState.timerId);
+      pollState.timerId = null;
+    }
+  };
+
+  onCleanup(() => {
+    cancelOAuthPoll();
+  });
 
   const effectiveAuth = () => {
-    if (apiKey().trim().length > 0) return "api_key";
-    const status = auth()?.status;
-    if (status === "connectedOAuth" || status === "configuredApiKey") return "oauth";
+    if (hasApiKey()) return "api_key";
+    if (hasOAuth()) return "oauth";
     return "none";
+  };
+
+  const handleSetApiKey = async () => {
+    const key = newApiKey().trim();
+    if (!key) return;
+    setApiKeyError("");
+    try {
+      await mgmt.setApiKey(props.provider.id, key);
+      setNewApiKey("");
+      await refreshAuthStatus(props.provider.id);
+    } catch (e) {
+      setApiKeyError(e instanceof MutationError ? e.dto.message : String(e));
+      setNewApiKey("");
+    }
+  };
+
+  const handleDeleteApiKey = async () => {
+    setApiKeyError("");
+    try {
+      await mgmt.deleteCredential(props.provider.id);
+      await refreshAuthStatus(props.provider.id);
+    } catch (e) {
+      setApiKeyError(e instanceof MutationError ? e.dto.message : String(e));
+    }
   };
 
   const authorizationLinkIncludesCode = () => {
@@ -279,10 +328,13 @@ const ProviderCard: Component<{
   };
 
   const handleConnect = async () => {
+    cancelOAuthPoll();
+    const generation = pollState.generation;
     setConnecting(true);
     setConnectError("");
     try {
       const start = await startProviderOAuth(props.provider.id);
+      if (generation !== pollState.generation) return;
       setDeviceCodeData({
         deviceCode: start.deviceCode,
         verificationUri: start.verificationUri,
@@ -292,10 +344,10 @@ const ProviderCard: Component<{
       });
       setPollAttempts(0);
 
-      // Start polling
       let attempts = 0;
       const maxAttempts = Math.ceil(start.expiresInSecs / start.intervalSecs);
       const poll = async () => {
+        if (generation !== pollState.generation) return;
         if (attempts >= maxAttempts) {
           setConnectError("Device code expired. Please try again.");
           setDeviceCodeData(null);
@@ -307,14 +359,19 @@ const ProviderCard: Component<{
         setPollAttempts(attempts);
         try {
           await pollProviderOAuth(props.provider.id, start.deviceCode);
+          if (generation !== pollState.generation) return;
           await refreshAuthStatus(props.provider.id);
+          if (generation !== pollState.generation) return;
+          await mgmt.refreshCredentials();
+          if (generation !== pollState.generation) return;
           setDeviceCodeData(null);
           setPollAttempts(0);
           setConnecting(false);
         } catch (e) {
+          if (generation !== pollState.generation) return;
           const errMsg = String(e);
           if (errMsg.includes("authorization pending") || errMsg.includes("polling too fast")) {
-            setTimeout(poll, start.intervalSecs * 1000);
+            pollState.timerId = setTimeout(poll, start.intervalSecs * 1000);
           } else {
             setConnectError(errMsg);
             setDeviceCodeData(null);
@@ -323,17 +380,20 @@ const ProviderCard: Component<{
           }
         }
       };
-      setTimeout(poll, start.intervalSecs * 1000);
+      pollState.timerId = setTimeout(poll, start.intervalSecs * 1000);
     } catch (e) {
-      setConnectError(String(e));
-      setPollAttempts(0);
-      setConnecting(false);
+      if (generation === pollState.generation) {
+        setConnectError(String(e));
+        setPollAttempts(0);
+        setConnecting(false);
+      }
     }
   };
 
   const handleDisconnect = async () => {
     await disconnectProviderOAuth(props.provider.id);
     await refreshAuthStatus(props.provider.id);
+    await mgmt.refreshCredentials();
   };
 
   return (
@@ -410,22 +470,52 @@ const ProviderCard: Component<{
         </div>
       </Show>
 
-      {/* API Key input (shown for api_key and dual providers) */}
+      {/* API Key management (write-only, secret-safe) */}
       <Show when={meta()?.auth !== "oauth"}>
-        <div class="relative">
-          <input
-            type={showKey() ? "text" : "password"}
-            placeholder="API key..."
-            value={apiKey()}
-            onInput={(e) => props.onUpdate({ apiKey: e.currentTarget.value })}
-            class="w-full rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 pr-16 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
-          />
-          <button
-            onClick={() => setShowKey(!showKey())}
-            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-text-tertiary hover:text-text-primary transition-colors"
-          >
-            {showKey() ? "Hide" : "Show"}
-          </button>
+        <div class="space-y-2">
+          <Show when={hasApiKey()}>
+            <div class="flex items-center justify-between rounded-md border border-success/20 bg-success/5 px-3 py-2">
+              <span class="text-xs text-success" data-testid={`apikey-configured-${props.provider.id}`}>
+                API key configured
+              </span>
+              <div class="flex items-center gap-1">
+                <button
+                  onClick={handleDeleteApiKey}
+                  data-testid={`btn-delete-apikey-${props.provider.id}`}
+                  class="rounded p-1 text-text-tertiary hover:text-error hover:bg-error/10"
+                  title="Delete API key"
+                >
+                  <TbOutlineTrash size={14} />
+                </button>
+              </div>
+            </div>
+            <Show when={hasOAuth()}>
+              <p class="text-xs text-text-tertiary">
+                API key takes precedence over OAuth. Delete the API key to use OAuth.
+              </p>
+            </Show>
+          </Show>
+          <div class="flex gap-2">
+            <input
+              type="password"
+              placeholder={hasApiKey() ? "Enter new key to replace..." : "API key..."}
+              value={newApiKey()}
+              onInput={(e) => setNewApiKey(e.currentTarget.value)}
+              data-testid={`apikey-input-${props.provider.id}`}
+              class="flex-1 rounded-lg border border-border-default bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none font-mono"
+            />
+            <button
+              onClick={handleSetApiKey}
+              disabled={!newApiKey().trim()}
+              data-testid={`btn-set-apikey-${props.provider.id}`}
+              class="px-3 py-2 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors disabled:opacity-50"
+            >
+              {hasApiKey() ? "Replace" : "Set"}
+            </button>
+          </div>
+          <Show when={apiKeyError()}>
+            <p class="text-xs text-error" data-testid={`apikey-error-${props.provider.id}`}>{apiKeyError()}</p>
+          </Show>
         </div>
       </Show>
 
@@ -433,9 +523,11 @@ const ProviderCard: Component<{
       <Show when={meta()?.auth !== "api_key"}>
         <div class="space-y-2">
           <Show when={!deviceCodeData() && !connecting()}>
-            <Show when={auth()?.status === "connectedOAuth"}>
+            <Show when={hasOAuth()}>
               <div class="flex items-center justify-between">
-                <span class="text-xs text-success">Connected via OAuth</span>
+                <span class="text-xs text-success">
+                  {auth()?.status === "connectedOAuth" ? "Connected via OAuth" : "OAuth credential stored"}
+                </span>
                 <button
                   onClick={handleDisconnect}
                   class="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors"
@@ -445,7 +537,7 @@ const ProviderCard: Component<{
                 </button>
               </div>
             </Show>
-            <Show when={!auth()?.status || auth()?.status === "notConfigured"}>
+            <Show when={!hasOAuth() && (!auth()?.status || auth()?.status === "notConfigured" || auth()?.status === "configuredApiKey")}>
               <button
                 onClick={handleConnect}
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors"
@@ -496,6 +588,7 @@ const ProviderCard: Component<{
               </p>
               <button
                 onClick={() => {
+                  cancelOAuthPoll();
                   setDeviceCodeData(null);
                   setPollAttempts(0);
                   setConnecting(false);

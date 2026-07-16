@@ -35,11 +35,21 @@ pub fn run() {
                 .unwrap_or_else(|_| std::path::PathBuf::from("."));
             let db_path = app_data_dir.join("agentiron.db");
 
-            // Open the shared iron-core config store and run one-time migration of legacy
-            // AgentIron settings. This blocks startup if credential encryption is unavailable
-            // so the user gets an actionable error instead of silent credential degradation.
-            let core_config = std::thread::spawn(move || {
+            // Shared-config initialization is best-effort: if encryption or
+            // the config store cannot be opened, the app still boots so the
+            // frontend can display an actionable, secret-safe error rather
+            // than exiting silently.
+            let shared_config_error: commands::config_management::SharedConfigError =
+                std::sync::Mutex::new(None);
+
+            let core_config_result = std::thread::spawn(move || {
                 let cipher = crate::core_config::resolve_config_cipher_sync();
+                if cipher.is_none() {
+                    return Err("Credential encryption is unavailable. \
+                         Set AGENTIRON_CONFIG_ENCRYPTION_KEY or ensure your OS keyring \
+                         is accessible, then restart AgentIron."
+                        .to_string());
+                }
                 let rt = tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()
@@ -53,18 +63,35 @@ pub fn run() {
                     crate::commands::settings::ensure_settings_schema_inner(&legacy_conn)?;
                     crate::core_config::migrate_legacy_settings(&config.store, &legacy_conn)
                         .await?;
+
+                    // Seed shipped default agent profiles non-destructively.
+                    iron_core::profile::seed_default_profiles(
+                        &config.store,
+                        iron_core::profile::DefaultProfileSeedPolicy::FirstRunOnly,
+                    )
+                    .await
+                    .map_err(|e| format!("Failed to seed default profiles: {e}"))?;
+
                     Ok::<_, String>(config)
                 })
             })
             .join()
-            .map_err(|_| "Shared config initialization panicked".to_string())?
-            .map_err(|e| format!("Failed to initialize shared config: {e}"))?;
+            .map_err(|_| "Shared config initialization panicked".to_string())?;
 
+            match core_config_result {
+                Ok(config) => {
+                    let debug_enabled = crate::debug::is_debug_mode();
+                    let core_config = std::sync::Arc::new(config);
+                    app.manage(CoreConfig::clone(&core_config));
+                    app.manage(state::AppState::new(core_config, debug_enabled));
+                }
+                Err(e) => {
+                    *shared_config_error.lock().unwrap() = Some(e);
+                }
+            }
+
+            app.manage(shared_config_error);
             commands::settings::ensure_settings_schema(app.handle())?;
-            let debug_enabled = crate::debug::is_debug_mode();
-            let core_config = std::sync::Arc::new(core_config);
-            app.manage(CoreConfig::clone(&core_config));
-            app.manage(state::AppState::new(core_config, debug_enabled));
             app.manage(commands::snip::SnipState::new());
 
             // System tray (desktop only)
@@ -127,6 +154,24 @@ pub fn run() {
             commands::oauth::get_provider_auth_status,
             commands::settings::load_settings_rows,
             commands::settings::save_setting_row,
+            commands::config_management::list_profiles,
+            commands::config_management::get_profile,
+            commands::config_management::save_profile,
+            commands::config_management::delete_profile,
+            commands::config_management::profile_impact,
+            commands::config_management::list_prompts,
+            commands::config_management::get_prompt,
+            commands::config_management::create_prompt,
+            commands::config_management::save_prompt,
+            commands::config_management::rename_prompt,
+            commands::config_management::delete_prompt,
+            commands::config_management::prompt_impact,
+            commands::config_management::list_credentials,
+            commands::config_management::set_api_key,
+            commands::config_management::delete_credential,
+            commands::config_management::get_shared_config_error,
+            commands::config_management::seed_default_profiles,
+            commands::config_management::restore_default_profiles,
             commands::snip::start_snip,
             commands::snip::capture_snip,
             commands::snip::get_snip_screenshot,
