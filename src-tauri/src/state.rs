@@ -104,7 +104,7 @@ pub struct McpServerConfigJson {
 /// Parameters needed to create an agent on the worker thread.
 pub struct AgentParams {
     pub config: iron_core::Config,
-    pub provider: iron_providers::GenericProvider,
+    pub provider: iron_providers::ProviderConnection,
     pub working_directory: PathBuf,
     pub mcp_servers: Vec<McpServerConfigJson>,
 }
@@ -281,10 +281,13 @@ pub fn spawn_agent_worker(
                         emit_token_count(&session, &app_handle, &tab_id);
                     }
                     AgentRequest::Compact { tab_id, app_handle, response_tx } => {
-                        let result = session
-                            .checkpoint(iron_core::CompactionCheckpoint::TaskComplete)
-                            .await
-                            .map_err(|e| format!("{e}"));
+                        // iron-core 0.1.35 removed hidden runtime compaction: `checkpoint`
+                        // is a stub that always errors, and the replacement is model-driven
+                        // (the `compress` tool, triggered by a `/compact` prompt) and is
+                        // only wired up in the ACP connection layer, not the facade we use.
+                        // The error surfaces to the UI until that path exists for AgentSession.
+                        // Upstream: https://github.com/AgentIron/iron-core/issues/102
+                        let result = session.checkpoint().await.map_err(|e| format!("{e}"));
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);
                     }
@@ -351,7 +354,7 @@ async fn handle_prompt_stream(
                     let _ = prompt_handle.deny(call_id);
                 }
             }
-            iron_core::PromptEvent::ToolResult { call_id, tool_name, status, result } => {
+            iron_core::PromptEvent::ToolResult { call_id, tool_name, status, result, .. } => {
                 let _ = app_handle.emit(
                     "agent-tool-event",
                     serde_json::json!({
@@ -440,10 +443,16 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
             }
         }
         "http" => iron_core::McpTransport::Http {
-            url: mcp.url.clone().unwrap_or_default(),
+            config: iron_core::HttpConfig {
+                url: mcp.url.clone().unwrap_or_default(),
+                headers: mcp.headers.clone(),
+            },
         },
         "http_sse" => iron_core::McpTransport::HttpSse {
-            url: mcp.url.clone().unwrap_or_default(),
+            config: iron_core::HttpConfig {
+                url: mcp.url.clone().unwrap_or_default(),
+                headers: mcp.headers.clone(),
+            },
         },
         _ => return None,
     };
@@ -451,9 +460,11 @@ fn build_mcp_config(mcp: &McpServerConfigJson) -> Option<iron_core::McpServerCon
     Some(iron_core::McpServerConfig {
         id: mcp.id.clone(),
         label: mcp.label.clone(),
+        description: None,
         transport,
         enabled_by_default: mcp.enabled_by_default,
         working_dir: mcp.working_dir.clone().map(PathBuf::from),
+        inherited_env_vars: Vec::new(),
     })
 }
 

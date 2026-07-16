@@ -20,18 +20,18 @@ pub struct AgentInfo {
 fn build_provider(
     provider_id: &str,
     api_key: &str,
-) -> Result<iron_providers::GenericProvider, String> {
+) -> Result<iron_providers::ProviderConnection, String> {
     let profile = match provider_id {
         "openai" => iron_providers::ProviderProfile::new(
             "openai",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.openai.com/v1",
         )
         .with_auth(iron_providers::AuthStrategy::BearerToken),
 
         "anthropic" => iron_providers::ProviderProfile::new(
             "anthropic",
-            iron_providers::ApiFamily::AnthropicMessages,
+            iron_providers::ApiFamily::Messages,
             "https://api.anthropic.com",
         )
         .with_auth(iron_providers::AuthStrategy::ApiKeyHeader {
@@ -40,45 +40,45 @@ fn build_provider(
 
         "minimax" => iron_providers::ProviderProfile::new(
             "minimax",
-            iron_providers::ApiFamily::AnthropicMessages,
+            iron_providers::ApiFamily::Messages,
             "https://api.minimax.io/anthropic",
         )
         .with_auth(iron_providers::AuthStrategy::BearerToken),
 
         "minimax-code" => iron_providers::ProviderProfile::new(
             "minimax-code",
-            iron_providers::ApiFamily::AnthropicMessages,
+            iron_providers::ApiFamily::Messages,
             "https://api.minimax.io/anthropic",
         )
         .with_auth(iron_providers::AuthStrategy::BearerToken),
 
         "zai" => iron_providers::ProviderProfile::new(
             "zai",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.z.ai/api/paas/v4",
         ),
 
         "zai-code" => iron_providers::ProviderProfile::new(
             "zai-code",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.z.ai/api/coding/paas/v4",
         ),
 
         "kimi" => iron_providers::ProviderProfile::new(
             "kimi",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.moonshot.ai/v1",
         ),
 
         "kimi-code" => iron_providers::ProviderProfile::new(
             "kimi-code",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.moonshot.ai/v1",
         ),
 
         "openrouter" => iron_providers::ProviderProfile::new(
             "openrouter",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://openrouter.ai/api/v1",
         )
         .with_header("HTTP-Referer", "https://github.com/AgentIron/AgentIron")
@@ -86,7 +86,7 @@ fn build_provider(
 
         "requesty" => iron_providers::ProviderProfile::new(
             "requesty",
-            iron_providers::ApiFamily::OpenAiChatCompletions,
+            iron_providers::ApiFamily::Completions,
             "https://api.requesty.ai/v1",
         ),
 
@@ -94,7 +94,7 @@ fn build_provider(
     };
 
     let runtime_config = iron_providers::RuntimeConfig::new(api_key);
-    iron_providers::GenericProvider::from_profile(profile, runtime_config)
+    iron_providers::ProviderConnection::from_profile(profile, runtime_config)
         .map_err(|e| format!("Provider error: {e}"))
 }
 
