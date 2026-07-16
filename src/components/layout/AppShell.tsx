@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { TabBar } from "./TabBar";
 import { ChatArea } from "@components/chat/ChatArea";
 import { SettingsPanel } from "@components/settings/SettingsPanel";
+import { AgentsWorkspace } from "@components/agents/AgentsWorkspace";
 import { useAgent } from "@context/AgentContext";
 import { useSettings } from "@context/SettingsContext";
 import { useUI } from "@context/UIContext";
@@ -65,16 +66,20 @@ export const AppShell: Component = () => {
               <Show
                 when={currentView() === "settings"}
                 fallback={
-                  <Show
-                    when={defaultProviderConfigured()}
-                    fallback={<DefaultProviderPrompt />}
-                  >
+                  <Show when={currentView() === "agents"} fallback={
                     <Show
-                      when={agentState.activeTabId}
-                      fallback={<NoActiveAgentFallback starting={initialAgentCreating()} />}
+                      when={defaultProviderConfigured()}
+                      fallback={<DefaultProviderPrompt />}
                     >
-                      <ChatArea />
+                      <Show
+                        when={agentState.activeTabId}
+                        fallback={<NoActiveAgentFallback starting={initialAgentCreating()} />}
+                      >
+                        <ChatArea />
+                      </Show>
                     </Show>
+                  }>
+                    <AgentsWorkspace />
                   </Show>
                 }
               >

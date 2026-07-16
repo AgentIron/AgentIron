@@ -1,6 +1,8 @@
 import { createContext, useContext, createSignal, type Component, type JSX } from "solid-js";
 
-export type AppView = "chat" | "settings";
+export type AppView = "chat" | "settings" | "agents";
+
+export type AgentsSection = "profiles" | "prompts";
 
 /** Which right-side panel is currently shown (only one at a time). */
 export type RightPane = "mcp" | "tools" | "model" | null;
@@ -12,6 +14,8 @@ interface UIContextValue {
   setQuickLaunchOpen: (open: boolean) => void;
   currentView: () => AppView;
   setCurrentView: (view: AppView) => void;
+  agentsSection: () => AgentsSection;
+  setAgentsSection: (section: AgentsSection) => void;
   rightPane: () => RightPane;
   /** Open the given pane, or close it if it is already open (mutually exclusive). */
   toggleRightPane: (pane: Exclude<RightPane, null>) => void;
@@ -26,6 +30,7 @@ export const UIProvider: Component<{ children: JSX.Element }> = (props) => {
   const [sidebarOpen, setSidebarOpen] = createSignal(true);
   const [quickLaunchOpen, setQuickLaunchOpen] = createSignal(false);
   const [currentView, setCurrentView] = createSignal<AppView>("chat");
+  const [agentsSection, setAgentsSection] = createSignal<AgentsSection>("profiles");
   const [rightPane, setRightPane] = createSignal<RightPane>(null);
 
   const toggleRightPane = (pane: Exclude<RightPane, null>) =>
@@ -39,6 +44,8 @@ export const UIProvider: Component<{ children: JSX.Element }> = (props) => {
     setQuickLaunchOpen,
     currentView,
     setCurrentView,
+    agentsSection,
+    setAgentsSection,
     rightPane,
     toggleRightPane,
     closeRightPane,

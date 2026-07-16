@@ -7,7 +7,7 @@ import {
   type JSX,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { KNOWN_MODELS, DEFAULT_PROVIDERS, parseModelSlug } from "@lib/models";
+import { KNOWN_MODELS, DEFAULT_PROVIDERS } from "@lib/models";
 import { updateModelRegistry as fetchModelRegistry, getProviderAuthStatus, loadSettingsRows, saveSettingRow } from "@lib/tauri/commands";
 import type { AppSettings, ProviderConfig, McpServerConfig, ModelInfo } from "@/types/settings";
 
@@ -245,7 +245,6 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
     const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
     if (!provider) return false;
     if (provider.id === "local") return true;
-    if ((provider.apiKey ?? "").trim().length > 0) return true;
     const auth = authStatuses()[providerId];
     if (auth && (auth.status === "connectedOAuth" || auth.status === "configuredApiKey")) {
       return true;
@@ -385,16 +384,8 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
       }));
       persistSetting("skills", settings.skills);
     },
-    activeApiKey: () => {
-      const all = [...registryModels(), ...KNOWN_MODELS, ...settings.customModels];
-      const { providerId } = parseModelSlug(settings.defaultModel, all);
-      const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
-      return provider?.apiKey ?? "";
-    },
-    apiKeyForProvider: (providerId) => {
-      const provider = settings.providers.find((p) => p.id === providerId && p.enabled);
-      return provider?.apiKey ?? "";
-    },
+    activeApiKey: () => "",
+    apiKeyForProvider: () => "",
     hasConfiguredProvider: () =>
       settings.providers.some((p) => p.enabled && isProviderConfigured(p.id)),
     isProviderConfigured,

@@ -30,6 +30,8 @@ export const Sidebar: Component = () => {
         <SidebarItem
           label="Agents"
           icon={<TbOutlineRobot size={16} />}
+          active={currentView() === "agents"}
+          onClick={() => setCurrentView("agents")}
         />
         <SidebarItem
           label="Tasks"

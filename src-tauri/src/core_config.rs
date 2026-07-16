@@ -2,8 +2,8 @@ use async_trait::async_trait;
 use base64::Engine;
 use iron_core::config::{
     crypto::{DynCredentialCipher, XChaCha20Poly1305Cipher},
-    ConfigError, ConfigStore, CustomModelInput, DefaultModelInput, McpServerConfigInput,
-    OpenOptions, ProviderConfigInput, SkillSettingsInput,
+    BootstrapMetadataInput, ConfigError, ConfigStore, CustomModelInput, DefaultModelInput,
+    McpServerConfigInput, OpenOptions, ProviderConfigInput, SkillSettingsInput,
 };
 use iron_core::provider_credential::{
     domain::{OAuthTokenSet, ProviderSlug, StoredCredential},
@@ -15,6 +15,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, UNIX_EPOCH};
 
+const MIGRATION_DOMAIN: &str = "agentiron";
+const MIGRATION_KEY: &str = "migration.v1";
 const MIGRATION_PROFILE_ID: &str = "agentiron.migration.v1";
 const MIGRATION_VERSION: i64 = 1;
 
@@ -186,28 +188,57 @@ pub async fn migrate_legacy_settings(
     store: &ConfigStore,
     legacy_conn: &Connection,
 ) -> Result<(), String> {
-    if is_migration_complete(store).await? {
+    // Check whether the durable metadata marker already exists.
+    let has_metadata = has_metadata_marker(store).await?;
+
+    if has_metadata {
+        // Metadata already exists, but the legacy fake-profile marker may
+        // not have been cleaned up (e.g. a crash between the metadata write
+        // and marker deletion). Attempt cleanup now; failure is non-fatal
+        // and will be retried on the next startup.
+        let _ = store.delete_profile(MIGRATION_PROFILE_ID).await;
         return Ok(());
     }
 
-    // Migrate in an order that satisfies cross-record validation:
-    // providers -> custom models -> default model -> MCP servers -> skills -> credentials.
-    migrate_providers(store, legacy_conn).await?;
-    migrate_custom_models(store, legacy_conn).await?;
-    migrate_default_model(store, legacy_conn).await?;
-    migrate_mcp_servers(store, legacy_conn).await?;
-    migrate_skill_settings(store, legacy_conn).await?;
-    migrate_credentials(store, legacy_conn).await?;
+    // Check whether the legacy profile marker says migration completed.
+    let already_completed = is_legacy_marker_complete(store).await?;
 
-    // Delete migrated core-owned keys from the legacy settings table.
-    delete_legacy_core_keys(legacy_conn)?;
+    if !already_completed {
+        // Migrate in an order that satisfies cross-record validation:
+        // providers -> custom models -> default model -> MCP servers -> skills -> credentials.
+        migrate_providers(store, legacy_conn).await?;
+        migrate_custom_models(store, legacy_conn).await?;
+        migrate_default_model(store, legacy_conn).await?;
+        migrate_mcp_servers(store, legacy_conn).await?;
+        migrate_skill_settings(store, legacy_conn).await?;
+        migrate_credentials(store, legacy_conn).await?;
 
+        // Delete migrated core-owned keys from the legacy settings table.
+        delete_legacy_core_keys(legacy_conn)?;
+    }
+
+    // Always record completion in the new metadata format and remove the
+    // legacy fake-profile marker. This runs whether migration just happened
+    // or was already done under the old marker scheme.
     record_migration_complete(store).await?;
 
     Ok(())
 }
 
-async fn is_migration_complete(store: &ConfigStore) -> Result<bool, String> {
+/// Check whether the durable bootstrap metadata marker exists.
+async fn has_metadata_marker(store: &ConfigStore) -> Result<bool, String> {
+    match store
+        .get_bootstrap_metadata(MIGRATION_DOMAIN, MIGRATION_KEY)
+        .await
+    {
+        Ok(Some(_)) => Ok(true),
+        Ok(None) => Ok(false),
+        Err(e) => Err(format!("Failed to read migration metadata: {e}")),
+    }
+}
+
+/// Check whether the legacy fake-profile marker indicates completion.
+async fn is_legacy_marker_complete(store: &ConfigStore) -> Result<bool, String> {
     match store.get_profile(MIGRATION_PROFILE_ID).await {
         Ok(Some(record)) => Ok(record
             .payload
@@ -215,7 +246,7 @@ async fn is_migration_complete(store: &ConfigStore) -> Result<bool, String> {
             .and_then(|v| v.as_bool())
             .unwrap_or(false)),
         Ok(None) => Ok(false),
-        Err(e) => Err(format!("Failed to read migration marker: {e}")),
+        Err(e) => Err(format!("Failed to read legacy migration marker: {e}")),
     }
 }
 
@@ -224,14 +255,24 @@ async fn record_migration_complete(store: &ConfigStore) -> Result<(), String> {
         "completed": true,
         "version": MIGRATION_VERSION,
     });
+
+    // Write the durable metadata marker first so a crash after this step
+    // does not lose completion state.
     store
-        .set_profile(&iron_core::config::ProfileInput {
-            id: MIGRATION_PROFILE_ID.to_string(),
-            schema_version: MIGRATION_VERSION,
-            payload,
+        .set_bootstrap_metadata(&BootstrapMetadataInput {
+            domain: MIGRATION_DOMAIN.to_string(),
+            key: MIGRATION_KEY.to_string(),
+            value: payload.to_string(),
         })
         .await
-        .map_err(|e| format!("Failed to record migration completion: {e}"))
+        .map_err(|e| format!("Failed to record migration completion: {e}"))?;
+
+    // Remove the legacy fake-profile marker so it does not pollute typed
+    // profile listing or diagnostics.
+    // Ignore errors here — if the old marker doesn't exist, that's fine.
+    let _ = store.delete_profile(MIGRATION_PROFILE_ID).await;
+
+    Ok(())
 }
 
 fn delete_legacy_core_keys(conn: &Connection) -> Result<(), String> {
@@ -721,7 +762,7 @@ mod tests {
             "invalid default model should be skipped"
         );
 
-        let completed = is_migration_complete(&store)
+        let completed = has_metadata_marker(&store)
             .await
             .expect("migration should record completion");
         assert!(completed);
@@ -780,5 +821,149 @@ mod tests {
 
         let configs = store.list_provider_configs().await.unwrap();
         assert_eq!(configs.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn migration_converts_legacy_profile_marker_to_metadata() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+
+        // Simulate a store with the old fake-profile migration marker.
+        store
+            .set_profile(&iron_core::config::ProfileInput {
+                id: MIGRATION_PROFILE_ID.to_string(),
+                schema_version: MIGRATION_VERSION,
+                payload: serde_json::json!({"completed": true, "version": 1}),
+            })
+            .await
+            .unwrap();
+
+        // The old marker should be recognized as complete.
+        assert!(is_legacy_marker_complete(&store).await.unwrap());
+
+        // Run the real migration path (not just record_migration_complete).
+        let (legacy_conn, _legacy_temp) = legacy_db_with_settings(&[]);
+        migrate_legacy_settings(&store, &legacy_conn).await.unwrap();
+
+        // Metadata marker is now present.
+        let metadata = store
+            .get_bootstrap_metadata(MIGRATION_DOMAIN, MIGRATION_KEY)
+            .await
+            .unwrap();
+        assert!(metadata.is_some());
+
+        // Old fake-profile marker is gone.
+        let old_profile = store.get_profile(MIGRATION_PROFILE_ID).await.unwrap();
+        assert!(old_profile.is_none());
+    }
+
+    #[tokio::test]
+    async fn migration_preserves_unrelated_profiles() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+
+        // Insert a real user profile.
+        iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::RestoreMissing,
+        )
+        .await
+        .unwrap();
+
+        // Also insert the old migration marker.
+        store
+            .set_profile(&iron_core::config::ProfileInput {
+                id: MIGRATION_PROFILE_ID.to_string(),
+                schema_version: MIGRATION_VERSION,
+                payload: serde_json::json!({"completed": true, "version": 1}),
+            })
+            .await
+            .unwrap();
+
+        record_migration_complete(&store).await.unwrap();
+
+        // Real profiles remain.
+        let ids = store.list_profile_ids().await.unwrap();
+        assert!(ids.contains(&"explore".to_string()));
+        assert!(!ids.contains(&MIGRATION_PROFILE_ID.to_string()));
+    }
+
+    #[tokio::test]
+    async fn first_run_seeding_creates_shipped_defaults() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+
+        let report = iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::FirstRunOnly,
+        )
+        .await
+        .unwrap();
+
+        assert!(report
+            .created
+            .contains(&iron_core::profile::AgentProfileId::from("explore")));
+        assert!(report
+            .created
+            .contains(&iron_core::profile::AgentProfileId::from("plan")));
+        assert!(report
+            .created
+            .contains(&iron_core::profile::AgentProfileId::from("apply")));
+        assert!(report.marker_written);
+    }
+
+    #[tokio::test]
+    async fn first_run_seeding_preserves_edited_and_deleted_profiles() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+
+        // First run seeds all three defaults.
+        iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::FirstRunOnly,
+        )
+        .await
+        .unwrap();
+
+        // Delete one profile.
+        store.delete_profile("apply").await.unwrap();
+
+        // Second run with FirstRunOnly must NOT recreate the deleted profile.
+        let report = iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::FirstRunOnly,
+        )
+        .await
+        .unwrap();
+
+        assert!(report.created.is_empty());
+        let ids = store.list_profile_ids().await.unwrap();
+        assert!(!ids.contains(&"apply".to_string()));
+    }
+
+    #[tokio::test]
+    async fn restore_missing_recreates_deleted_defaults() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+
+        // Seed defaults.
+        iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::FirstRunOnly,
+        )
+        .await
+        .unwrap();
+
+        // Delete one.
+        store.delete_profile("plan").await.unwrap();
+
+        // RestoreMissing recreates the deleted default.
+        let report = iron_core::profile::seed_default_profiles(
+            &store,
+            iron_core::profile::DefaultProfileSeedPolicy::RestoreMissing,
+        )
+        .await
+        .unwrap();
+
+        assert!(report
+            .created
+            .contains(&iron_core::profile::AgentProfileId::from("plan")));
+        let ids = store.list_profile_ids().await.unwrap();
+        assert!(ids.contains(&"plan".to_string()));
     }
 }
