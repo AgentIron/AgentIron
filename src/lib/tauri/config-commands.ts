@@ -49,10 +49,21 @@ export type ManagedPromptRecordDto =
   | { status: "ready"; entry: ManagedPromptEntryDto }
   | { status: "needsAttention"; id: string; decoded?: StoredPromptDto; diagnostics: RecordDiagnosticDto[] };
 
+export type CredentialMode = "apikey" | "oauthbearer" | "unsupported";
+export type CredentialAuthStatus =
+  | "configuredApiKey"
+  | "connectedOAuth"
+  | "refreshing"
+  | "expired"
+  | "revoked"
+  | "notConfigured"
+  | "unsupported"
+  | `refreshFailed:${string}`;
+
 export interface CredentialSummaryDto {
   providerSlug: string;
-  credentialMode: string;
-  authStatus: string;
+  credentialMode: CredentialMode;
+  authStatus: CredentialAuthStatus;
   expiresAt?: string;
   createdAt: string;
   updatedAt: string;

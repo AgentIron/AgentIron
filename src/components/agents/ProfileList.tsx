@@ -33,6 +33,7 @@ export const ProfileList: Component = () => {
   const [deleteDependents, setDeleteDependents] = createSignal<string[]>([]);
   const [impactLoading, setImpactLoading] = createSignal(false);
   const [impactFailed, setImpactFailed] = createSignal(false);
+  const [deleting, setDeleting] = createSignal(false);
 
   const readyProfiles = createMemo(() =>
     mgmt.profiles().filter((r): r is Extract<ManagedProfileRecordDto, { status: "ready" }> =>
@@ -71,12 +72,15 @@ export const ProfileList: Component = () => {
 
   const doDelete = async () => {
     const id = deleteTarget();
-    if (!id) return;
+    if (!id || deleting()) return;
+    setDeleting(true);
     try {
       await mgmt.deleteProfile(id);
       setDeleteTarget(null);
     } catch (e) {
       setDeleteError(String(e));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -209,6 +213,7 @@ export const ProfileList: Component = () => {
           error={deleteError()}
           impactLoading={impactLoading()}
           impactFailed={impactFailed()}
+          deleting={deleting()}
           onCancel={() => { setDeleteTarget(null); setDeleteError(null); setImpactFailed(false); }}
           onConfirm={doDelete}
         />
@@ -369,8 +374,9 @@ const ProfileEditor: Component<{
 
       <div class="space-y-3">
         <Show when={!isEdit()}>
-          <Field label="Profile ID">
+          <Field label="Profile ID" labelFor="profile-id">
             <input
+              id="profile-id"
               data-testid="field-id"
               value={id()}
               onInput={(e) => setId(e.currentTarget.value)}
@@ -380,8 +386,9 @@ const ProfileEditor: Component<{
           </Field>
         </Show>
 
-        <Field label="Name">
+        <Field label="Name" labelFor="profile-name">
           <input
+            id="profile-name"
             data-testid="field-name"
             value={name()}
             onInput={(e) => setName(e.currentTarget.value)}
@@ -390,7 +397,8 @@ const ProfileEditor: Component<{
           />
         </Field>
 
-        <Field label="Provider">
+        <fieldset>
+          <legend class="mb-1 block text-xs font-medium text-text-secondary">Provider</legend>
           <div class="flex gap-4">
             <label class="flex items-center gap-1.5 text-sm">
               <input
@@ -409,11 +417,12 @@ const ProfileEditor: Component<{
               Managed
             </label>
           </div>
-        </Field>
+        </fieldset>
 
         <Show when={providerKind() === "managed"}>
-          <Field label="Provider Slug">
+          <Field label="Provider Slug" labelFor="profile-provider">
             <input
+              id="profile-provider"
               data-testid="field-provider"
               value={providerSlug()}
               onInput={(e) => setProviderSlug(e.currentTarget.value)}
@@ -424,8 +433,9 @@ const ProfileEditor: Component<{
               Suggestions: {PROVIDER_METADATA.map((p) => p.id).join(", ")}
             </div>
           </Field>
-          <Field label="Model">
+          <Field label="Model" labelFor="profile-model">
             <input
+              id="profile-model"
               data-testid="field-model"
               value={model()}
               onInput={(e) => setModel(e.currentTarget.value)}
@@ -435,8 +445,9 @@ const ProfileEditor: Component<{
           </Field>
         </Show>
 
-        <Field label="Tool Filter">
+        <Field label="Tool Filter" labelFor="profile-tools">
           <select
+            id="profile-tools"
             data-testid="field-tools"
             value={toolFilterKind()}
             onChange={(e) => setToolFilterKind(e.currentTarget.value as "inherit" | "allow" | "deny")}
@@ -449,6 +460,7 @@ const ProfileEditor: Component<{
           <Show when={toolFilterKind() !== "inherit"}>
             <input
               data-testid="field-tool-names"
+              aria-label="Tool names"
               value={toolNames()}
               onInput={(e) => setToolNames(e.currentTarget.value)}
               placeholder="read, write, bash"
@@ -460,8 +472,9 @@ const ProfileEditor: Component<{
           </Show>
         </Field>
 
-        <Field label="Skill Filter">
+        <Field label="Skill Filter" labelFor="profile-skills">
           <select
+            id="profile-skills"
             data-testid="field-skills"
             value={skillFilterKind()}
             onChange={(e) => setSkillFilterKind(e.currentTarget.value as "inherit" | "allow" | "none")}
@@ -474,6 +487,7 @@ const ProfileEditor: Component<{
           <Show when={skillFilterKind() === "allow"}>
             <input
               data-testid="field-skill-names"
+              aria-label="Skill names"
               value={skillNames()}
               onInput={(e) => setSkillNames(e.currentTarget.value)}
               placeholder="skill-a, skill-b"
@@ -482,8 +496,9 @@ const ProfileEditor: Component<{
           </Show>
         </Field>
 
-        <Field label="Approval Policy">
+        <Field label="Approval Policy" labelFor="profile-approval">
           <select
+            id="profile-approval"
             data-testid="field-approval"
             value={approval()}
             onChange={(e) => setApproval(e.currentTarget.value as "perTool" | "autoApprove")}
@@ -494,8 +509,9 @@ const ProfileEditor: Component<{
           </select>
         </Field>
 
-        <Field label="Identity Prompt (optional)">
+        <Field label="Identity Prompt (optional)" labelFor="profile-identity">
           <textarea
+            id="profile-identity"
             data-testid="field-identity"
             value={identityPrompt()}
             onInput={(e) => setIdentityPrompt(e.currentTarget.value)}
@@ -536,6 +552,7 @@ const DeleteDialog: Component<{
   error: string | null;
   impactLoading: boolean;
   impactFailed: boolean;
+  deleting: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }> = (props) => {
@@ -570,10 +587,11 @@ const DeleteDialog: Component<{
           <Show when={canDelete()}>
             <button
               onClick={props.onConfirm}
+              disabled={props.deleting}
               data-testid="btn-confirm-delete"
-              class="rounded-md bg-error px-4 py-2 text-sm text-void hover:bg-error-hover"
+              class="rounded-md bg-error px-4 py-2 text-sm text-void hover:bg-error-hover disabled:opacity-50"
             >
-              Delete
+              {props.deleting ? "Deleting..." : "Delete"}
             </button>
           </Show>
         </div>
@@ -584,9 +602,9 @@ const DeleteDialog: Component<{
 
 // ── Helpers ──
 
-const Field: Component<{ label: string; children: JSX.Element }> = (props) => (
+const Field: Component<{ label: string; labelFor: string; children: JSX.Element }> = (props) => (
   <div>
-    <label class="mb-1 block text-xs font-medium text-text-secondary">{props.label}</label>
+    <label for={props.labelFor} class="mb-1 block text-xs font-medium text-text-secondary">{props.label}</label>
     {props.children}
   </div>
 );

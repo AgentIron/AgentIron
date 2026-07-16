@@ -34,6 +34,7 @@ export const mockCommands = {
   listCredentials: vi.fn(),
   setApiKey: vi.fn(),
   deleteCredential: vi.fn(),
+  getSharedConfigError: vi.fn().mockResolvedValue(null),
 
   // Seed / recovery
   seedDefaultProfiles: vi.fn(),
@@ -51,4 +52,5 @@ export function resetMockCommands() {
   for (const key of Object.keys(mockCommands)) {
     (mockCommands as Record<string, ReturnType<typeof vi.fn>>)[key].mockReset();
   }
+  mockCommands.getSharedConfigError.mockResolvedValue(null);
 }

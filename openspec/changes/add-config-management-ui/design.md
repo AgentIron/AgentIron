@@ -2,7 +2,7 @@
 
 AgentIron is a Tauri 2 and SolidJS desktop client over shared `iron-core` configuration. The application already opens the platform-default core `ConfigStore`, but its UI exposes only provider, model, MCP, skill, and desktop settings. The Agents sidebar entry is inert, profile and prompt management commands do not exist, and the current provider settings path can return persisted API keys to JavaScript.
 
-`iron-core` v0.1.34 provides `ConfigManagementService`, typed agent-profile and stored-prompt contracts, secret-safe credential summaries and mutations, delete-impact queries, per-record diagnostics, and non-destructive seeding for the ordinary shipped `explore`, `plan`, and `apply` profiles. AgentIron should adapt those contracts rather than reproduce schema, normalization, reference, or seed logic.
+`iron-core` v0.1.35 provides `ConfigManagementService`, typed agent-profile and stored-prompt contracts, secret-safe credential summaries and mutations, delete-impact queries, per-record diagnostics, and non-destructive seeding for the ordinary shipped `explore`, `plan`, and `apply` profiles. AgentIron should adapt those contracts rather than reproduce schema, normalization, reference, or seed logic.
 
 The core store is shared with CLI and headless consumers. AgentIron therefore cannot assume that records remain unchanged while a screen is open or that all records were created by this UI. Existing migration completion is represented by a fake profile record, which would leak into typed profile diagnostics and must move to a core metadata primitive.
 

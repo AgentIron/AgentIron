@@ -205,7 +205,42 @@ export const PromptList: Component = () => {
                 profile: prompt.profile,
               });
             } else {
-              await mgmt.savePrompt(id, prompt);
+              const currentRecord = mgmt.prompts().find((record) =>
+                record.status === "ready" ? record.entry.id === id : record.id === id
+              );
+              const currentPrompt = currentRecord?.status === "ready"
+                ? currentRecord.entry.prompt
+                : currentRecord?.decoded;
+              if (currentPrompt && currentPrompt.displayName !== prompt.displayName) {
+                const nonIdentityChanged =
+                  currentPrompt.instructions !== prompt.instructions ||
+                  currentPrompt.profile !== prompt.profile ||
+                  currentPrompt.skills.length !== prompt.skills.length ||
+                  currentPrompt.skills.some((skill, index) => skill !== prompt.skills[index]);
+                if (nonIdentityChanged) {
+                  await mgmt.savePrompt(id, {
+                    ...prompt,
+                    displayName: currentPrompt.displayName,
+                    normalizedName: currentPrompt.normalizedName,
+                  });
+                }
+                try {
+                  await mgmt.renamePrompt(id, prompt.displayName);
+                } catch (renameError) {
+                  if (nonIdentityChanged) {
+                    try {
+                      await mgmt.savePrompt(id, currentPrompt);
+                    } catch (rollbackError) {
+                      throw new Error(
+                        `Rename failed (${String(renameError)}), and the other prompt changes could not be rolled back (${String(rollbackError)}).`,
+                      );
+                    }
+                  }
+                  throw renameError;
+                }
+              } else {
+                await mgmt.savePrompt(id, prompt);
+              }
             }
             setEditor({ kind: "none" });
           }}
@@ -331,8 +366,9 @@ const PromptEditor: Component<{
       </Show>
 
       <div class="space-y-3">
-        <Field label="Display Name">
+        <Field label="Display Name" labelFor="prompt-display-name">
           <input
+            id="prompt-display-name"
             data-testid="field-display-name"
             value={displayName()}
             onInput={(e) => setDisplayName(e.currentTarget.value)}
@@ -341,8 +377,9 @@ const PromptEditor: Component<{
           />
         </Field>
 
-        <Field label="Instructions">
+        <Field label="Instructions" labelFor="prompt-instructions">
           <textarea
+            id="prompt-instructions"
             data-testid="field-instructions"
             value={instructions()}
             onInput={(e) => setInstructions(e.currentTarget.value)}
@@ -352,8 +389,9 @@ const PromptEditor: Component<{
           />
         </Field>
 
-        <Field label="Requested Skills (comma-separated)">
+        <Field label="Requested Skills (comma-separated)" labelFor="prompt-skills">
           <input
+            id="prompt-skills"
             data-testid="field-skills"
             value={skills()}
             onInput={(e) => setSkills(e.currentTarget.value)}
@@ -365,8 +403,9 @@ const PromptEditor: Component<{
           </div>
         </Field>
 
-        <Field label="Profile Assignment (optional)">
+        <Field label="Profile Assignment (optional)" labelFor="prompt-profile">
           <select
+            id="prompt-profile"
             data-testid="field-profile"
             value={profile()}
             onChange={(e) => setProfile(e.currentTarget.value)}
@@ -460,9 +499,9 @@ const DeleteDialog: Component<{
 
 // ── Helpers ──
 
-const Field: Component<{ label: string; children: JSX.Element }> = (props) => (
+const Field: Component<{ label: string; labelFor: string; children: JSX.Element }> = (props) => (
   <div>
-    <label class="mb-1 block text-xs font-medium text-text-secondary">{props.label}</label>
+    <label for={props.labelFor} class="mb-1 block text-xs font-medium text-text-secondary">{props.label}</label>
     {props.children}
   </div>
 );

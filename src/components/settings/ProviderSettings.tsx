@@ -258,7 +258,9 @@ const ProviderCard: Component<{
   const hasApiKey = () => mgmt.credentials().some(
     (c) => c.providerSlug === props.provider.id && c.authStatus === "configuredApiKey"
   );
-  const hasOAuth = () => auth()?.status === "connectedOAuth";
+  const hasOAuth = () => auth()?.status === "connectedOAuth" || mgmt.credentials().some(
+    (c) => c.providerSlug === props.provider.id && c.credentialMode === "oauthbearer"
+  );
 
   const [connecting, setConnecting] = createSignal(false);
   const [deviceCodeData, setDeviceCodeData] = createSignal<{
@@ -273,14 +275,13 @@ const ProviderCard: Component<{
   const [newApiKey, setNewApiKey] = createSignal("");
   const [apiKeyError, setApiKeyError] = createSignal("");
 
-  // OAuth poll cancellation state.
-  const pollState: { timerId: ReturnType<typeof setTimeout> | null; cancelled: boolean } = {
+  const pollState: { timerId: ReturnType<typeof setTimeout> | null; generation: number } = {
     timerId: null,
-    cancelled: false,
+    generation: 0,
   };
 
   const cancelOAuthPoll = () => {
-    pollState.cancelled = true;
+    pollState.generation++;
     if (pollState.timerId !== null) {
       clearTimeout(pollState.timerId);
       pollState.timerId = null;
@@ -327,12 +328,13 @@ const ProviderCard: Component<{
   };
 
   const handleConnect = async () => {
-    pollState.cancelled = false;
+    cancelOAuthPoll();
+    const generation = pollState.generation;
     setConnecting(true);
     setConnectError("");
     try {
       const start = await startProviderOAuth(props.provider.id);
-      if (pollState.cancelled) return;
+      if (generation !== pollState.generation) return;
       setDeviceCodeData({
         deviceCode: start.deviceCode,
         verificationUri: start.verificationUri,
@@ -345,7 +347,7 @@ const ProviderCard: Component<{
       let attempts = 0;
       const maxAttempts = Math.ceil(start.expiresInSecs / start.intervalSecs);
       const poll = async () => {
-        if (pollState.cancelled) return;
+        if (generation !== pollState.generation) return;
         if (attempts >= maxAttempts) {
           setConnectError("Device code expired. Please try again.");
           setDeviceCodeData(null);
@@ -357,14 +359,16 @@ const ProviderCard: Component<{
         setPollAttempts(attempts);
         try {
           await pollProviderOAuth(props.provider.id, start.deviceCode);
-          if (pollState.cancelled) return;
+          if (generation !== pollState.generation) return;
           await refreshAuthStatus(props.provider.id);
+          if (generation !== pollState.generation) return;
           await mgmt.refreshCredentials();
+          if (generation !== pollState.generation) return;
           setDeviceCodeData(null);
           setPollAttempts(0);
           setConnecting(false);
         } catch (e) {
-          if (pollState.cancelled) return;
+          if (generation !== pollState.generation) return;
           const errMsg = String(e);
           if (errMsg.includes("authorization pending") || errMsg.includes("polling too fast")) {
             pollState.timerId = setTimeout(poll, start.intervalSecs * 1000);
@@ -378,7 +382,7 @@ const ProviderCard: Component<{
       };
       pollState.timerId = setTimeout(poll, start.intervalSecs * 1000);
     } catch (e) {
-      if (!pollState.cancelled) {
+      if (generation === pollState.generation) {
         setConnectError(String(e));
         setPollAttempts(0);
         setConnecting(false);
@@ -519,9 +523,11 @@ const ProviderCard: Component<{
       <Show when={meta()?.auth !== "api_key"}>
         <div class="space-y-2">
           <Show when={!deviceCodeData() && !connecting()}>
-            <Show when={auth()?.status === "connectedOAuth"}>
+            <Show when={hasOAuth()}>
               <div class="flex items-center justify-between">
-                <span class="text-xs text-success">Connected via OAuth</span>
+                <span class="text-xs text-success">
+                  {auth()?.status === "connectedOAuth" ? "Connected via OAuth" : "OAuth credential stored"}
+                </span>
                 <button
                   onClick={handleDisconnect}
                   class="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-bg-elevated text-text-secondary hover:bg-bg-hover transition-colors"
@@ -531,7 +537,7 @@ const ProviderCard: Component<{
                 </button>
               </div>
             </Show>
-            <Show when={!auth()?.status || auth()?.status === "notConfigured"}>
+            <Show when={!hasOAuth() && (!auth()?.status || auth()?.status === "notConfigured" || auth()?.status === "configuredApiKey")}>
               <button
                 onClick={handleConnect}
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-accent text-void hover:bg-accent-hover transition-colors"

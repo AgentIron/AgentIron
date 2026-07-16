@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { createSignal, type Component } from "solid-js";
+import { mockCommands, renderWithProviders, resetMockCommands } from "./render";
 
 describe("test infrastructure smoke test", () => {
   it("renders a Solid component", () => {
@@ -31,5 +32,15 @@ describe("test infrastructure smoke test", () => {
     const result = await invoke("test_command");
     expect(result).toBe("ok");
     expect(invoke).toHaveBeenCalledWith("test_command");
+  });
+
+  it("wires typed config command mocks", async () => {
+    mockCommands.listProfiles.mockResolvedValue([{ status: "ready" }]);
+    renderWithProviders(() => <div />);
+    const { listProfiles } = await import("@lib/tauri/config-commands");
+
+    await expect(listProfiles()).resolves.toEqual([{ status: "ready" }]);
+    expect(mockCommands.listProfiles).toHaveBeenCalledOnce();
+    resetMockCommands();
   });
 });

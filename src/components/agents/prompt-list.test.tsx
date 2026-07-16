@@ -23,7 +23,7 @@ vi.mock("@lib/tauri/config-commands", () => ({
   ),
 }));
 
-import { listProfiles, listPrompts, listCredentials, createPrompt, deletePrompt, promptImpact } from "@lib/tauri/config-commands";
+import { listProfiles, listPrompts, listCredentials, createPrompt, savePrompt, renamePrompt, deletePrompt, promptImpact } from "@lib/tauri/config-commands";
 import { ConfigManagementProvider } from "@context/ConfigManagementContext";
 import { PromptList } from "@components/agents/PromptList";
 
@@ -152,6 +152,64 @@ describe("PromptList", () => {
         displayName: "My Task",
         instructions: "Do the thing",
       }));
+    });
+  });
+
+  it("renames an existing prompt through the rename command", async () => {
+    vi.mocked(renamePrompt).mockResolvedValue(undefined as never);
+    vi.mocked(savePrompt).mockResolvedValue(undefined as never);
+    const { getByTestId, findByTestId } = renderPromptList();
+    await waitFor(() => expect(getByTestId("prompt-row-prompt-abc")).toBeTruthy());
+
+    fireEvent.click(getByTestId("btn-edit-prompt-prompt-abc"));
+    await findByTestId("prompt-editor");
+    fireEvent.input(getByTestId("field-display-name"), { target: { value: "Review Email" } });
+    fireEvent.click(getByTestId("btn-save-prompt"));
+
+    await waitFor(() => {
+      expect(vi.mocked(renamePrompt)).toHaveBeenCalledWith("prompt-abc", "Review Email");
+      expect(vi.mocked(savePrompt)).not.toHaveBeenCalled();
+    });
+  });
+
+  it("saves non-identity edits before renaming a prompt", async () => {
+    vi.mocked(renamePrompt).mockResolvedValue(undefined as never);
+    vi.mocked(savePrompt).mockResolvedValue(undefined as never);
+    const { getByTestId, findByTestId } = renderPromptList();
+    await waitFor(() => expect(getByTestId("prompt-row-prompt-abc")).toBeTruthy());
+
+    fireEvent.click(getByTestId("btn-edit-prompt-prompt-abc"));
+    await findByTestId("prompt-editor");
+    fireEvent.input(getByTestId("field-display-name"), { target: { value: "Review Email" } });
+    fireEvent.input(getByTestId("field-instructions"), { target: { value: "Review unread email." } });
+    fireEvent.click(getByTestId("btn-save-prompt"));
+
+    await waitFor(() => {
+      expect(vi.mocked(savePrompt)).toHaveBeenCalledWith("prompt-abc", expect.objectContaining({
+        displayName: "Check Email",
+        normalizedName: "check-email",
+        instructions: "Review unread email.",
+      }));
+      expect(vi.mocked(renamePrompt)).toHaveBeenCalledWith("prompt-abc", "Review Email");
+    });
+  });
+
+  it("rolls back non-identity edits when renaming fails", async () => {
+    vi.mocked(renamePrompt).mockRejectedValue("Name already exists" as never);
+    vi.mocked(savePrompt).mockResolvedValue(undefined as never);
+    const { getByTestId, findByTestId } = renderPromptList();
+    await waitFor(() => expect(getByTestId("prompt-row-prompt-abc")).toBeTruthy());
+
+    fireEvent.click(getByTestId("btn-edit-prompt-prompt-abc"));
+    await findByTestId("prompt-editor");
+    fireEvent.input(getByTestId("field-display-name"), { target: { value: "Review Email" } });
+    fireEvent.input(getByTestId("field-instructions"), { target: { value: "Review unread email." } });
+    fireEvent.click(getByTestId("btn-save-prompt"));
+
+    await waitFor(() => {
+      expect(vi.mocked(savePrompt)).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(savePrompt)).toHaveBeenLastCalledWith("prompt-abc", mockReadyPrompt.entry.prompt);
+      expect(getByTestId("form-error").textContent).toContain("Name already exists");
     });
   });
 

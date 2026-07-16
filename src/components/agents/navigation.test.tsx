@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
-import { type Component } from "solid-js";
+import { Show, type Component } from "solid-js";
 import { UIProvider, useUI } from "@context/UIContext";
+import { ConfigManagementProvider } from "@context/ConfigManagementContext";
+import { AgentsWorkspace } from "@components/agents/AgentsWorkspace";
+import { Sidebar } from "@components/layout/Sidebar";
 
 // Helper component to expose UI state in tests
 const StateProbe: Component = () => {
@@ -14,33 +17,16 @@ const StateProbe: Component = () => {
   );
 };
 
-// Minimal sidebar for navigation tests
-const TestSidebar: Component = () => {
-  const { currentView, setCurrentView } = useUI();
+const ProductionNavigation: Component = () => {
+  const { currentView } = useUI();
   return (
-    <nav>
-      <button
-        data-testid="nav-chat"
-        onClick={() => setCurrentView("chat")}
-        class={currentView() === "chat" ? "active" : ""}
-      >
-        Chat
-      </button>
-      <button
-        data-testid="nav-agents"
-        onClick={() => setCurrentView("agents")}
-        class={currentView() === "agents" ? "active" : ""}
-      >
-        Agents
-      </button>
-      <button
-        data-testid="nav-settings"
-        onClick={() => setCurrentView("settings")}
-        class={currentView() === "settings" ? "active" : ""}
-      >
-        Settings
-      </button>
-    </nav>
+    <div>
+      <Sidebar />
+      <Show when={currentView() === "agents"}>
+        <AgentsWorkspace />
+      </Show>
+      <StateProbe />
+    </div>
   );
 };
 
@@ -55,29 +41,52 @@ describe("UIContext navigation", () => {
     expect(getByTestId("agents-section").textContent).toBe("profiles");
   });
 
-  it("switches to agents view", () => {
-    const { getByTestId } = render(() => (
-      <UIProvider>
-        <TestSidebar />
-        <StateProbe />
-      </UIProvider>
+  it("opens the production agents workspace from the sidebar", async () => {
+    const { invoke } = await import("@tauri-apps/api/core");
+    vi.mocked(invoke).mockImplementation((cmd: string) => {
+      if (cmd === "get_shared_config_error") return Promise.resolve(null);
+      if (cmd === "list_profiles") return Promise.resolve([{
+        status: "ready",
+        entry: {
+          id: "explore",
+          profile: {
+            name: "Explore",
+            kind: "runtimeDefault",
+            tools: { kind: "inherit" },
+            skills: { kind: "inherit" },
+            approval: "perTool",
+          },
+          createdAt: "2025-01-01T00:00:00Z",
+          updatedAt: "2025-01-01T00:00:00Z",
+        },
+      }]);
+      return Promise.resolve([]);
+    });
+
+    const { getByTestId, getByRole, findByTestId } = render(() => (
+      <ConfigManagementProvider>
+        <UIProvider>
+          <ProductionNavigation />
+        </UIProvider>
+      </ConfigManagementProvider>
     ));
-    fireEvent.click(getByTestId("nav-agents"));
+    fireEvent.click(getByRole("button", { name: "Agents" }));
     expect(getByTestId("current-view").textContent).toBe("agents");
+    expect(await findByTestId("btn-new-profile")).toBeTruthy();
   });
 
   it("switches between views", () => {
-    const { getByTestId } = render(() => (
+    const { getByTestId, getByRole } = render(() => (
       <UIProvider>
-        <TestSidebar />
+        <Sidebar />
         <StateProbe />
       </UIProvider>
     ));
-    fireEvent.click(getByTestId("nav-agents"));
+    fireEvent.click(getByRole("button", { name: "Agents" }));
     expect(getByTestId("current-view").textContent).toBe("agents");
-    fireEvent.click(getByTestId("nav-settings"));
+    fireEvent.click(getByRole("button", { name: "Settings" }));
     expect(getByTestId("current-view").textContent).toBe("settings");
-    fireEvent.click(getByTestId("nav-chat"));
+    fireEvent.click(getByRole("button", { name: "Chat" }));
     expect(getByTestId("current-view").textContent).toBe("chat");
   });
 });

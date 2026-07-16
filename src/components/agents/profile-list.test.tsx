@@ -187,6 +187,31 @@ describe("ProfileList", () => {
     });
   });
 
+  it("submits a profile deletion only once while it is pending", async () => {
+    vi.mocked(profileImpact).mockResolvedValue({
+      target: { kind: "profile", id: "explore" },
+      links: [],
+      diagnostics: [],
+    } as never);
+    let resolveDelete!: () => void;
+    vi.mocked(deleteProfile).mockReturnValue(new Promise<void>((resolve) => {
+      resolveDelete = resolve;
+    }) as never);
+
+    const { getByTestId, findByTestId } = renderProfileList();
+    await waitFor(() => expect(getByTestId("profile-row-explore")).toBeTruthy());
+    fireEvent.click(getByTestId("btn-delete-explore"));
+    await findByTestId("delete-dialog");
+
+    const confirmBtn = await findByTestId("btn-confirm-delete");
+    fireEvent.click(confirmBtn);
+    fireEvent.click(confirmBtn);
+
+    expect(vi.mocked(deleteProfile)).toHaveBeenCalledTimes(1);
+    expect(confirmBtn).toHaveProperty("disabled", true);
+    resolveDelete();
+  });
+
   it("shows error when deleting last valid profile", async () => {
     vi.mocked(profileImpact).mockResolvedValue({
       target: { kind: "profile", id: "explore" },

@@ -11,7 +11,7 @@ use iron_core::profile::{
 };
 use iron_core::stored_prompt::{IdentityState, StoredPrompt};
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
 use crate::core_config::CoreConfig;
 
@@ -622,14 +622,36 @@ fn service(config: &CoreConfig) -> ConfigManagementService {
     ConfigManagementService::new((*config.store).clone())
 }
 
+fn shared_config(app: &AppHandle) -> Result<State<'_, CoreConfig>, String> {
+    if let Some(config) = app.try_state::<CoreConfig>() {
+        return Ok(config);
+    }
+
+    let error = app
+        .state::<SharedConfigError>()
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone()
+        .unwrap_or_else(|| "Shared configuration is unavailable.".to_string());
+    Err(error)
+}
+
+fn shared_config_for_mutation(app: &AppHandle) -> Result<State<'_, CoreConfig>, MutationErrorDto> {
+    shared_config(app).map_err(|message| MutationErrorDto {
+        kind: "unavailable".to_string(),
+        message,
+        field: None,
+        referrers: Vec::new(),
+    })
+}
+
 // ============================================================================
 // Profile commands
 // ============================================================================
 
 #[tauri::command]
-pub async fn list_profiles(
-    config: State<'_, CoreConfig>,
-) -> Result<Vec<ManagedProfileRecordDto>, String> {
+pub async fn list_profiles(app: AppHandle) -> Result<Vec<ManagedProfileRecordDto>, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.list_profiles()
         .await
@@ -639,9 +661,10 @@ pub async fn list_profiles(
 
 #[tauri::command]
 pub async fn get_profile(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     id: String,
 ) -> Result<Option<ManagedProfileRecordDto>, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.get_profile(&id)
         .await
@@ -651,10 +674,11 @@ pub async fn get_profile(
 
 #[tauri::command]
 pub async fn save_profile(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     id: String,
     profile: AgentProfileDto,
 ) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     let typed: AgentProfile = profile.try_into().map_err(|e: String| MutationErrorDto {
         kind: "validation".to_string(),
@@ -668,10 +692,8 @@ pub async fn save_profile(
 }
 
 #[tauri::command]
-pub async fn delete_profile(
-    config: State<'_, CoreConfig>,
-    id: String,
-) -> Result<(), MutationErrorDto> {
+pub async fn delete_profile(app: AppHandle, id: String) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
 
     svc.delete_profile_with_policy(&id, ProfileDeletePolicy::RequireMinimumValid(1))
@@ -681,9 +703,10 @@ pub async fn delete_profile(
 
 #[tauri::command]
 pub async fn profile_impact(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     profileId: String,
 ) -> Result<DependencyImpactReportDto, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.profile_impact(&profileId)
         .await
@@ -706,9 +729,8 @@ pub struct CreatePromptInput {
 }
 
 #[tauri::command]
-pub async fn list_prompts(
-    config: State<'_, CoreConfig>,
-) -> Result<Vec<ManagedPromptRecordDto>, String> {
+pub async fn list_prompts(app: AppHandle) -> Result<Vec<ManagedPromptRecordDto>, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.list_prompts()
         .await
@@ -718,9 +740,10 @@ pub async fn list_prompts(
 
 #[tauri::command]
 pub async fn get_prompt(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     id: String,
 ) -> Result<Option<ManagedPromptRecordDto>, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.get_prompt(&id)
         .await
@@ -730,9 +753,10 @@ pub async fn get_prompt(
 
 #[tauri::command]
 pub async fn create_prompt(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     input: CreatePromptInput,
 ) -> Result<(String, StoredPromptDto), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     let profile_id = input.profile.map(AgentProfileId::from);
     svc.create_prompt(
@@ -748,10 +772,11 @@ pub async fn create_prompt(
 
 #[tauri::command]
 pub async fn save_prompt(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     id: String,
     prompt: StoredPromptDto,
 ) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     let typed = StoredPrompt {
         display_name: prompt.display_name,
@@ -767,10 +792,11 @@ pub async fn save_prompt(
 
 #[tauri::command]
 pub async fn rename_prompt(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     id: String,
     newDisplayName: String,
 ) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     svc.rename_prompt(&id, &newDisplayName)
         .await
@@ -778,19 +804,18 @@ pub async fn rename_prompt(
 }
 
 #[tauri::command]
-pub async fn delete_prompt(
-    config: State<'_, CoreConfig>,
-    id: String,
-) -> Result<(), MutationErrorDto> {
+pub async fn delete_prompt(app: AppHandle, id: String) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     svc.delete_prompt(&id).await.map_err(MutationErrorDto::from)
 }
 
 #[tauri::command]
 pub async fn prompt_impact(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     promptId: String,
 ) -> Result<DependencyImpactReportDto, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.prompt_impact(&promptId)
         .await
@@ -803,9 +828,8 @@ pub async fn prompt_impact(
 // ============================================================================
 
 #[tauri::command]
-pub async fn list_credentials(
-    config: State<'_, CoreConfig>,
-) -> Result<Vec<CredentialSummaryDto>, String> {
+pub async fn list_credentials(app: AppHandle) -> Result<Vec<CredentialSummaryDto>, String> {
+    let config = shared_config(&app)?;
     let svc = service(&config);
     svc.list_credentials()
         .await
@@ -815,10 +839,11 @@ pub async fn list_credentials(
 
 #[tauri::command]
 pub async fn set_api_key(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     providerSlug: String,
     apiKey: String,
 ) -> Result<CredentialSummaryDto, MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     svc.set_api_key(&providerSlug, &apiKey)
         .await
@@ -828,9 +853,10 @@ pub async fn set_api_key(
 
 #[tauri::command]
 pub async fn delete_credential(
-    config: State<'_, CoreConfig>,
+    app: AppHandle,
     providerSlug: String,
 ) -> Result<(), MutationErrorDto> {
+    let config = shared_config_for_mutation(&app)?;
     let svc = service(&config);
     svc.delete_credential(&providerSlug)
         .await
@@ -853,7 +879,8 @@ pub async fn get_shared_config_error(
 // ============================================================================
 
 #[tauri::command]
-pub async fn seed_default_profiles(config: State<'_, CoreConfig>) -> Result<SeedReportDto, String> {
+pub async fn seed_default_profiles(app: AppHandle) -> Result<SeedReportDto, String> {
+    let config = shared_config(&app)?;
     let report = iron_core::profile::seed_default_profiles(
         &config.store,
         DefaultProfileSeedPolicy::FirstRunOnly,
@@ -884,9 +911,8 @@ pub async fn seed_default_profiles(config: State<'_, CoreConfig>) -> Result<Seed
 }
 
 #[tauri::command]
-pub async fn restore_default_profiles(
-    config: State<'_, CoreConfig>,
-) -> Result<SeedReportDto, String> {
+pub async fn restore_default_profiles(app: AppHandle) -> Result<SeedReportDto, String> {
+    let config = shared_config(&app)?;
     let report = iron_core::profile::seed_default_profiles(
         &config.store,
         DefaultProfileSeedPolicy::RestoreMissing,

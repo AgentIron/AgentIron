@@ -54,7 +54,6 @@ interface SettingsContextValue {
   removeSkillDir: (dir: string) => void;
   updateModelRegistry: () => Promise<void>;
   registryLastUpdated: () => string | null;
-  activeApiKey: () => string;
   apiKeyForProvider: (providerId: string) => string;
   hasConfiguredProvider: () => boolean;
   isProviderConfigured: (providerId: string) => boolean;
@@ -384,7 +383,6 @@ export const SettingsProvider: Component<{ children: JSX.Element }> = (props) =>
       }));
       persistSetting("skills", settings.skills);
     },
-    activeApiKey: () => "",
     apiKeyForProvider: () => "",
     hasConfiguredProvider: () =>
       settings.providers.some((p) => p.enabled && isProviderConfigured(p.id)),

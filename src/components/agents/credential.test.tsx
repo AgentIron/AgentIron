@@ -27,6 +27,7 @@ import { SettingsProvider } from "@context/SettingsContext";
 import { UIProvider } from "@context/UIContext";
 import { NotificationProvider } from "@context/NotificationContext";
 import { ProviderSettings } from "@components/settings/ProviderSettings";
+import { loadSettingsRows } from "@lib/tauri/commands";
 
 // Mock settings commands so SettingsProvider loads without real Tauri
 vi.mock("@lib/tauri/commands", () => ({
@@ -172,11 +173,17 @@ describe("ProviderSettings credential management", () => {
     // Both credentials for the same provider — the frontend must find
     // the API key even if the OAuth entry appears first.
     const bothCreds = [
-      { ...mockCredentialOAuth, providerSlug: "openai" },
-      mockCredentialConfigured,
+      mockCredentialOAuth,
+      { ...mockCredentialConfigured, providerSlug: "kimi-code" },
     ];
+    vi.mocked(loadSettingsRows).mockResolvedValue([
+      { key: "providers", value: '[{"id":"kimi-code","name":"Kimi for Coding","enabled":true}]' },
+      { key: "default_model", value: "kimi-code/kimi-for-coding" },
+    ]);
     setupMocks(bothCreds);
     const { findByText } = renderProviderSettings();
     expect(await findByText("API key configured")).toBeTruthy();
+    expect(await findByText(/API key takes precedence over OAuth/)).toBeTruthy();
+    expect(await findByText("OAuth credential stored")).toBeTruthy();
   });
 });
