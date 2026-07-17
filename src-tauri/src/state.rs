@@ -281,12 +281,11 @@ pub fn spawn_agent_worker(
                         emit_token_count(&session, &app_handle, &tab_id);
                     }
                     AgentRequest::Compact { tab_id, app_handle, response_tx } => {
-                        // iron-core 0.1.35 removed hidden runtime compaction: `checkpoint`
-                        // is a stub that always errors, and the replacement is model-driven
-                        // (the `compress` tool, triggered by a `/compact` prompt) and is
-                        // only wired up in the ACP connection layer, not the facade we use.
-                        // The error surfaces to the UI until that path exists for AgentSession.
-                        // Upstream: https://github.com/AgentIron/iron-core/issues/102
+                        // Compaction is model-driven as of iron-core 0.1.36: `checkpoint`
+                        // dispatches a `/compact` prompt so the model calls the `compress`
+                        // tool. It returns once that turn completes, not when a summary is
+                        // written, and errors unless the session is idle with context
+                        // management enabled.
                         let result = session.checkpoint().await.map_err(|e| format!("{e}"));
                         emit_token_count(&session, &app_handle, &tab_id);
                         let _ = response_tx.send(result);

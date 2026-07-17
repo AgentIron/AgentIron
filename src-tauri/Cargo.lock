@@ -92,7 +92,6 @@ version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 6.0.0",
- "get-size2",
  "image",
  "iron-core",
  "iron-providers",
@@ -3595,9 +3594,9 @@ checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
 
 [[package]]
 name = "iron-core"
-version = "0.1.35"
+version = "0.1.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e9a40ada08d45e95e5a2dbdf1537b1827954777c3d0cafe2c8d84a245e388b8"
+checksum = "4b5c63c6a97f0486a3e1151aa0c84df0de8d6d346e2695f5cba63d1ad7b3b69b"
 dependencies = [
  "agent-client-protocol",
  "async-trait",
@@ -3608,6 +3607,7 @@ dependencies = [
  "directories",
  "extism",
  "futures",
+ "get-size2",
  "globset",
  "grep-regex",
  "grep-searcher",
