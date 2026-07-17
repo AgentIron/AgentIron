@@ -592,7 +592,7 @@ fn infer_error_field(msg: &str) -> Option<String> {
     }
 }
 
-fn management_error_to_string(e: ManagementError) -> String {
+pub(crate) fn management_error_to_string(e: ManagementError) -> String {
     match e {
         ManagementError::Storage(inner) => format!("Storage error: {inner}"),
         ManagementError::Validation(msg) => msg,
@@ -622,7 +622,7 @@ fn service(config: &CoreConfig) -> ConfigManagementService {
     ConfigManagementService::new((*config.store).clone())
 }
 
-fn shared_config(app: &AppHandle) -> Result<State<'_, CoreConfig>, String> {
+pub(crate) fn shared_config(app: &AppHandle) -> Result<State<'_, CoreConfig>, String> {
     if let Some(config) = app.try_state::<CoreConfig>() {
         return Ok(config);
     }
@@ -636,7 +636,9 @@ fn shared_config(app: &AppHandle) -> Result<State<'_, CoreConfig>, String> {
     Err(error)
 }
 
-fn shared_config_for_mutation(app: &AppHandle) -> Result<State<'_, CoreConfig>, MutationErrorDto> {
+pub(crate) fn shared_config_for_mutation(
+    app: &AppHandle,
+) -> Result<State<'_, CoreConfig>, MutationErrorDto> {
     shared_config(app).map_err(|message| MutationErrorDto {
         kind: "unavailable".to_string(),
         message,
