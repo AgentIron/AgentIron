@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "agentiron"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "async-trait",
  "base64 0.22.1",

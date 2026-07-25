@@ -5,6 +5,12 @@ description = "Cross-platform AI agent client for iron-core"
 authors = ["AgentIron"]
 license = "Apache-2.0"
 edition = "2021"
+# The crate builds two binaries: this GUI app and the headless scheduler runner
+# in src/bin. tauri-cli ships both, but it only marks one as the application,
+# and for a crate with no explicit [[bin]] sections `default-run` is the only
+# thing it consults to decide which. Leaving it unset made it pick the runner,
+# producing installers that contained the CLI and no GUI at all.
+default-run = "agentiron"
 
 [lib]
 name = "agentiron_lib"
