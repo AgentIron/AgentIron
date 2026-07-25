@@ -11,10 +11,14 @@ export interface ScheduledTaskDto {
   updatedAt: string;
 }
 
+// Rust `Option<T>` fields are serialized without `skip_serializing_if`, so
+// `None` arrives as an explicit `null` rather than an absent key. These are
+// modelled as `T | null` rather than optional to match that wire shape.
+
 export interface ScheduledTaskRecordDto {
   id: string;
   ready: boolean;
-  task?: ScheduledTaskDto;
+  task: ScheduledTaskDto | null;
   diagnostics: string[];
 }
 
@@ -30,9 +34,9 @@ export interface ScheduleDiagnosticDto {
 }
 
 export interface HostRunMetadataDto {
-  lastRun?: string;
-  nextRun?: string;
-  lastResult?: string;
+  lastRun: string | null;
+  nextRun: string | null;
+  lastResult: string | null;
 }
 
 /**
@@ -50,13 +54,26 @@ export interface ScheduleStatusDto {
   executionState: ExecutionState;
   hostState: HostState;
   diagnostics: ScheduleDiagnosticDto[];
-  hostMetadata?: HostRunMetadataDto;
+  hostMetadata: HostRunMetadataDto | null;
+}
+
+/**
+ * The result of a combined delete.
+ *
+ * `hostRemoved` without `desiredDeleted` is a partial success: the system entry
+ * is gone but the saved schedule remains, and `drift` describes what is left.
+ */
+export interface ScheduleDeletionOutcomeDto {
+  scheduleId: string;
+  hostRemoved: boolean;
+  desiredDeleted: boolean;
+  drift: ScheduleStatusDto | null;
 }
 
 export interface SchedulerAvailabilityDto {
   available: boolean;
-  platform?: string;
-  reason?: string;
+  platform: string | null;
+  reason: string | null;
 }
 
 export interface ScheduledTaskInputDto {
@@ -120,7 +137,7 @@ export function reconcileAllSchedules(): Promise<ScheduleStatusDto[]> {
 }
 
 /** Remove the host entry and the desired state. */
-export function deleteScheduledTask(id: string): Promise<string> {
+export function deleteScheduledTask(id: string): Promise<ScheduleDeletionOutcomeDto> {
   return invoke("delete_scheduled_task", { id });
 }
 

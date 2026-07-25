@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 //! Tauri commands for the scheduled task manager.
 //!
 //! Mirrors `config_management`, with one difference: the service is built with
@@ -7,7 +6,7 @@
 //! without one and those calls report `SchedulerUnavailable`, which the UI
 //! surfaces as an unavailable state rather than an error.
 
-use iron_core::management::ManagedScheduledTaskRecord;
+use iron_core::management::{ManagedScheduledTaskRecord, ScheduleDeletionOutcome};
 use iron_core::scheduled_task::manager::OrphanPolicy;
 use iron_core::scheduled_task::{
     validate_schedule_input, DesiredState, ExecutionState, HostState, ReferenceState,
@@ -32,22 +31,22 @@ use crate::scheduler;
 #[serde(rename_all = "camelCase")]
 pub struct ScheduledTaskDto {
     pub id: String,
-    pub automationTaskId: String,
-    pub cronExpression: String,
+    pub automation_task_id: String,
+    pub cron_expression: String,
     pub enabled: bool,
-    pub createdAt: String,
-    pub updatedAt: String,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 impl From<&ScheduledTask> for ScheduledTaskDto {
     fn from(t: &ScheduledTask) -> Self {
         Self {
             id: t.id.clone(),
-            automationTaskId: t.automation_task_id.clone(),
-            cronExpression: t.cron_expression.clone(),
+            automation_task_id: t.automation_task_id.clone(),
+            cron_expression: t.cron_expression.clone(),
             enabled: t.enabled,
-            createdAt: t.created_at.to_rfc3339(),
-            updatedAt: t.updated_at.to_rfc3339(),
+            created_at: t.created_at.to_rfc3339(),
+            updated_at: t.updated_at.to_rfc3339(),
         }
     }
 }
@@ -107,9 +106,9 @@ impl From<&ScheduleDiagnostic> for ScheduleDiagnosticDto {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostRunMetadataDto {
-    pub lastRun: Option<String>,
-    pub nextRun: Option<String>,
-    pub lastResult: Option<String>,
+    pub last_run: Option<String>,
+    pub next_run: Option<String>,
+    pub last_result: Option<String>,
 }
 
 /// The full composite status for one schedule.
@@ -121,45 +120,45 @@ pub struct HostRunMetadataDto {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScheduleStatusDto {
-    pub scheduleId: String,
+    pub schedule_id: String,
     pub health: String,
-    pub desiredState: String,
-    pub referenceState: String,
-    pub executionState: String,
-    pub hostState: String,
+    pub desired_state: String,
+    pub reference_state: String,
+    pub execution_state: String,
+    pub host_state: String,
     pub diagnostics: Vec<ScheduleDiagnosticDto>,
-    pub hostMetadata: Option<HostRunMetadataDto>,
+    pub host_metadata: Option<HostRunMetadataDto>,
 }
 
 impl From<&ScheduleStatus> for ScheduleStatusDto {
     fn from(s: &ScheduleStatus) -> Self {
         Self {
-            scheduleId: s.schedule_id.clone(),
+            schedule_id: s.schedule_id.clone(),
             health: match s.health {
                 ScheduleHealth::Healthy => "healthy",
                 ScheduleHealth::Degraded => "degraded",
                 ScheduleHealth::Unavailable => "unavailable",
             }
             .to_string(),
-            desiredState: match s.desired_state {
+            desired_state: match s.desired_state {
                 DesiredState::Present => "present",
                 DesiredState::Missing => "missing",
                 DesiredState::Unsupported => "unsupported",
             }
             .to_string(),
-            referenceState: match s.reference_state {
+            reference_state: match s.reference_state {
                 ReferenceState::Valid => "valid",
                 ReferenceState::Missing => "missing",
                 ReferenceState::Invalid => "invalid",
             }
             .to_string(),
-            executionState: match s.execution_state {
+            execution_state: match s.execution_state {
                 ExecutionState::Ready => "ready",
                 ExecutionState::UnsafePolicy => "unsafe_policy",
                 ExecutionState::Unknown => "unknown",
             }
             .to_string(),
-            hostState: match s.host_state {
+            host_state: match s.host_state {
                 HostState::Installed => "installed",
                 HostState::Disabled => "disabled",
                 HostState::Missing => "missing",
@@ -169,10 +168,10 @@ impl From<&ScheduleStatus> for ScheduleStatusDto {
             }
             .to_string(),
             diagnostics: s.diagnostics.iter().map(Into::into).collect(),
-            hostMetadata: s.host_metadata.as_ref().map(|m| HostRunMetadataDto {
-                lastRun: m.last_run.map(|t| t.to_rfc3339()),
-                nextRun: m.next_run.map(|t| t.to_rfc3339()),
-                lastResult: m.last_result.clone(),
+            host_metadata: s.host_metadata.as_ref().map(|m| HostRunMetadataDto {
+                last_run: m.last_run.map(|t| t.to_rfc3339()),
+                next_run: m.next_run.map(|t| t.to_rfc3339()),
+                last_result: m.last_result.clone(),
             }),
         }
     }
@@ -192,6 +191,33 @@ fn diagnostic_kind_str(kind: ScheduleDiagnosticKind) -> &'static str {
         ScheduleDiagnosticKind::PlatformUnavailable => "platform_unavailable",
         ScheduleDiagnosticKind::RunnerPathDrift => "runner_path_drift",
         ScheduleDiagnosticKind::DesiredDeletionFailed => "desired_deletion_failed",
+    }
+}
+
+/// The result of removing a schedule from both the host and the ConfigStore.
+///
+/// Host removal succeeding while the desired-state delete fails is a real
+/// outcome rather than an error, so it is reported as a value and `drift`
+/// carries the post-failure status. Modelled field by field instead of
+/// forwarding the upstream type's `Debug` output, so the wire contract does not
+/// shift when iron-core renames or reorders anything.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScheduleDeletionOutcomeDto {
+    pub schedule_id: String,
+    pub host_removed: bool,
+    pub desired_deleted: bool,
+    pub drift: Option<ScheduleStatusDto>,
+}
+
+impl From<&ScheduleDeletionOutcome> for ScheduleDeletionOutcomeDto {
+    fn from(o: &ScheduleDeletionOutcome) -> Self {
+        Self {
+            schedule_id: o.schedule_id.clone(),
+            host_removed: o.host_removed,
+            desired_deleted: o.desired_deleted,
+            drift: o.drift.as_ref().map(Into::into),
+        }
     }
 }
 
@@ -272,16 +298,16 @@ pub async fn get_scheduled_task(
 pub async fn save_scheduled_task(
     app: AppHandle,
     id: String,
-    automationTaskId: String,
-    cronExpression: String,
+    automation_task_id: String,
+    cron_expression: String,
     enabled: bool,
 ) -> Result<ScheduledTaskDto, MutationErrorDto> {
     let config = shared_config_for_mutation(&app)?;
 
     let input = ScheduledTaskInput {
         id,
-        automation_task_id: automationTaskId,
-        cron_expression: cronExpression,
+        automation_task_id,
+        cron_expression,
         enabled,
     };
 
@@ -298,21 +324,21 @@ pub async fn save_scheduled_task(
 #[tauri::command]
 pub async fn validate_scheduled_task(
     id: String,
-    automationTaskId: String,
-    cronExpression: String,
+    automation_task_id: String,
+    cron_expression: String,
     enabled: bool,
 ) -> Result<ScheduledTaskInputDto, String> {
     let input = ScheduledTaskInput {
         id,
-        automation_task_id: automationTaskId,
-        cron_expression: cronExpression,
+        automation_task_id,
+        cron_expression,
         enabled,
     };
 
     validate_schedule_input(&input).map(|normalized| ScheduledTaskInputDto {
         id: normalized.id,
-        automationTaskId: normalized.automation_task_id,
-        cronExpression: normalized.cron_expression,
+        automation_task_id: normalized.automation_task_id,
+        cron_expression: normalized.cron_expression,
         enabled: normalized.enabled,
     })
 }
@@ -321,8 +347,8 @@ pub async fn validate_scheduled_task(
 #[serde(rename_all = "camelCase")]
 pub struct ScheduledTaskInputDto {
     pub id: String,
-    pub automationTaskId: String,
-    pub cronExpression: String,
+    pub automation_task_id: String,
+    pub cron_expression: String,
     pub enabled: bool,
 }
 
@@ -376,12 +402,15 @@ pub async fn reconcile_all_schedules(
 
 /// Remove both the host entry and the desired state.
 #[tauri::command]
-pub async fn delete_scheduled_task(app: AppHandle, id: String) -> Result<String, MutationErrorDto> {
+pub async fn delete_scheduled_task(
+    app: AppHandle,
+    id: String,
+) -> Result<ScheduleDeletionOutcomeDto, MutationErrorDto> {
     let config = shared_config_for_mutation(&app)?;
     service(&config)
         .delete_schedule_combined(&id)
         .await
-        .map(|outcome| format!("{outcome:?}"))
+        .map(|outcome| (&outcome).into())
         .map_err(MutationErrorDto::from)
 }
 
@@ -403,7 +432,7 @@ pub async fn delete_scheduled_task_desired_only(
 #[serde(rename_all = "camelCase")]
 pub struct AutomationTaskOptionDto {
     pub id: String,
-    pub displayName: String,
+    pub display_name: String,
     pub ready: bool,
 }
 
@@ -424,11 +453,11 @@ pub async fn list_automation_task_options(
         .map(|r| match r {
             ManagedRecord::Ready(t) => AutomationTaskOptionDto {
                 id: t.id.clone(),
-                displayName: t.display_name.clone(),
+                display_name: t.display_name.clone(),
                 ready: true,
             },
             ManagedRecord::NeedsAttention { id, decoded, .. } => AutomationTaskOptionDto {
-                displayName: decoded
+                display_name: decoded
                     .as_ref()
                     .map(|t| t.display_name.clone())
                     .unwrap_or_else(|| id.clone()),

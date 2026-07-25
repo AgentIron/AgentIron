@@ -24,7 +24,7 @@ function errorMessage(e: unknown): string {
   return String(e);
 }
 
-function formatTime(iso?: string): string {
+function formatTime(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString();
@@ -59,9 +59,18 @@ export const ScheduledTasksSettings: Component = () => {
     return statuses().filter((s) => !known.has(s.scheduleId));
   });
 
-  const refresh = async () => {
+  /**
+   * Reload the list, replacing whatever error is on screen.
+   *
+   * Every mutation refreshes on the way out, so the error signal is only
+   * written once here, at the end: setting it inside a handler and clearing it
+   * on entry to this function would drop the message before a render could show
+   * it. Handlers pass their failure as `carry` instead, and it takes precedence
+   * over anything the reload itself reports, being the more specific of the two.
+   */
+  const refresh = async (carry: string | null = null) => {
     setLoading(true);
-    setError(null);
+    let nextError = carry;
     try {
       const [avail, recs, opts] = await Promise.all([
         schedulerAvailability(),
@@ -78,16 +87,19 @@ export const ScheduledTasksSettings: Component = () => {
         setStatuses(await inspectAllSchedules());
       } catch (e) {
         setStatuses([]);
-        setError(`Schedules loaded, but their system status is unavailable: ${errorMessage(e)}`);
+        nextError ??= `Schedules loaded, but their system status is unavailable: ${errorMessage(e)}`;
       }
     } catch (e) {
-      setError(errorMessage(e));
+      nextError ??= errorMessage(e);
     } finally {
+      setError(nextError);
       setLoading(false);
     }
   };
 
-  onMount(refresh);
+  onMount(() => {
+    void refresh();
+  });
 
   const openEditor = (record?: ScheduledTaskRecordDto) => {
     setFormError(null);
@@ -108,6 +120,7 @@ export const ScheduledTasksSettings: Component = () => {
   const handleSave = async () => {
     setSaving(true);
     setFormError(null);
+    let failure: string | null = null;
     try {
       // Validate first so cron and identifier problems read as form errors
       // rather than as a failed write.
@@ -118,10 +131,10 @@ export const ScheduledTasksSettings: Component = () => {
       try {
         await reconcileSchedule(formId());
       } catch (e) {
-        setError(`Saved, but installing it on the system failed: ${errorMessage(e)}`);
+        failure = `Saved, but installing it on the system failed: ${errorMessage(e)}`;
       }
       setEditorOpen(false);
-      await refresh();
+      await refresh(failure);
     } catch (e) {
       setFormError(errorMessage(e));
     } finally {
@@ -131,39 +144,51 @@ export const ScheduledTasksSettings: Component = () => {
 
   const handleReconcile = async (id: string) => {
     setBusyId(id);
+    // Clear on entry so a stale message does not sit there during the work;
+    // `refresh` has the last word on what is shown once it finishes.
     setError(null);
+    let failure: string | null = null;
     try {
       await reconcileSchedule(id);
     } catch (e) {
-      setError(errorMessage(e));
+      failure = errorMessage(e);
     } finally {
       setBusyId(null);
-      await refresh();
+      await refresh(failure);
     }
   };
 
   const handleReconcileAll = async () => {
     setLoading(true);
     setError(null);
+    let failure: string | null = null;
     try {
       await reconcileAllSchedules();
     } catch (e) {
-      setError(errorMessage(e));
+      failure = errorMessage(e);
     } finally {
-      await refresh();
+      await refresh(failure);
     }
   };
 
   const handleDelete = async (id: string) => {
     setBusyId(id);
     setError(null);
+    let failure: string | null = null;
     try {
-      await deleteScheduledTask(id);
+      // A delete that clears the system entry but not the saved schedule
+      // resolves rather than rejecting, so the outcome has to be read.
+      const outcome = await deleteScheduledTask(id);
+      if (!outcome.desiredDeleted) {
+        failure = outcome.hostRemoved
+          ? "Removed from the system, but the saved schedule could not be deleted."
+          : "The schedule could not be deleted.";
+      }
     } catch (e) {
-      setError(errorMessage(e));
+      failure = errorMessage(e);
     } finally {
       setBusyId(null);
-      await refresh();
+      await refresh(failure);
     }
   };
 

@@ -11,6 +11,7 @@ function status(over: Partial<ScheduleStatusDto> = {}): ScheduleStatusDto {
     executionState: "ready",
     hostState: "installed",
     diagnostics: [],
+    hostMetadata: null,
     ...over,
   };
 }
