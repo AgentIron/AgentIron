@@ -352,6 +352,13 @@ async fn migrate_providers(store: &ConfigStore, conn: &Connection) -> Result<(),
     Ok(())
 }
 
+/// A custom model as the pre-iron-core frontend wrote it.
+///
+/// The capability flags are optional in the TypeScript `ModelInfo` and were
+/// only ever written when the user toggled them, so `JSON.stringify` left them
+/// out entirely for most rows. They must default rather than be required, or
+/// the migration rejects legitimate stored data. `ModelInfoJson` in
+/// `commands::settings` models the same shape and has always defaulted them.
 #[derive(Debug, Clone, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct LegacyModelInfo {
@@ -360,8 +367,11 @@ struct LegacyModelInfo {
     provider_id: String,
     context_window: Option<u32>,
     output_limit: Option<u32>,
+    #[serde(default)]
     tool_call: bool,
+    #[serde(default)]
     reasoning: bool,
+    #[serde(default)]
     vision: bool,
     cost_input: Option<f64>,
     cost_output: Option<f64>,
@@ -373,8 +383,21 @@ async fn migrate_custom_models(store: &ConfigStore, conn: &Connection) -> Result
         None => return Ok(()),
     };
 
-    let models: Vec<LegacyModelInfo> = serde_json::from_str(&value)
+    // Deserialize entry by entry so one unreadable row cannot abort migration.
+    // Failing here aborts config initialization, which leaves `AppState`
+    // unmanaged and makes every command that needs it fail with an opaque
+    // "state not managed" error -- the whole app becomes unusable over a single
+    // malformed custom model. Skipping the entry loses only that model.
+    let entries: Vec<serde_json::Value> = serde_json::from_str(&value)
         .map_err(|e| format!("Failed to parse legacy custom models: {e}"))?;
+
+    let models = entries.into_iter().filter_map(|entry| {
+        serde_json::from_value::<LegacyModelInfo>(entry.clone())
+            .inspect_err(|e| {
+                eprintln!("Skipping unreadable legacy custom model ({e}): {entry}");
+            })
+            .ok()
+    });
 
     for model in models {
         // Preserve existing core custom model rather than overwriting.
@@ -679,6 +702,51 @@ mod tests {
             .unwrap();
         }
         (conn, temp_dir)
+    }
+
+    /// The pre-iron-core frontend omitted the capability flags whenever the
+    /// user never toggled them, so most stored rows look exactly like this.
+    /// Requiring them aborted migration, which left `AppState` unmanaged and
+    /// took the whole app down with "state not managed" on every command.
+    #[tokio::test]
+    async fn migrates_custom_models_without_capability_flags() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+        let (legacy_conn, _legacy_temp) = legacy_db_with_settings(&[(
+            "custom_models",
+            r#"[{"id":"alibaba/qwen3.5","name":"alibaba/qwen3.5","providerId":"requesty"}]"#,
+        )]);
+
+        migrate_legacy_settings(&store, &legacy_conn).await.unwrap();
+
+        let model = store
+            .get_custom_model("requesty", "alibaba/qwen3.5")
+            .await
+            .unwrap()
+            .expect("custom model should be migrated");
+        assert_eq!(model.display_name, "alibaba/qwen3.5");
+        assert!(!model.supports_tool_calls);
+        assert!(!model.supports_reasoning);
+        assert!(!model.supports_vision);
+    }
+
+    /// One unreadable entry must not cost the user the rest of the migration,
+    /// nor abort startup.
+    #[tokio::test]
+    async fn skips_unreadable_custom_model_entries() {
+        let store = ConfigStore::open_in_memory().await.unwrap();
+        let (legacy_conn, _legacy_temp) = legacy_db_with_settings(&[(
+            "custom_models",
+            r#"[{"name":"no id here","providerId":"requesty"},
+                {"id":"good/model","name":"Good","providerId":"requesty"}]"#,
+        )]);
+
+        migrate_legacy_settings(&store, &legacy_conn).await.unwrap();
+
+        assert!(store
+            .get_custom_model("requesty", "good/model")
+            .await
+            .unwrap()
+            .is_some());
     }
 
     #[tokio::test]
