@@ -7,7 +7,6 @@
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
-    "stage-sidecar": "node scripts/stage-sidecar.mjs",
     "serve": "vite preview",
     "tauri": "tauri",
     "lint": "eslint src/",
