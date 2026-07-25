@@ -6,20 +6,23 @@ import {
   TbOutlinePlug,
   TbOutlineServer,
   TbOutlineBrain,
+  TbOutlineClock,
 } from "solid-icons/tb";
 import { ProviderSettings } from "./ProviderSettings";
 import { UserSettings } from "./UserSettings";
 import { PluginsSettings } from "./PluginsSettings";
 import { McpSettings } from "./McpSettings";
 import { SkillsSettings } from "./SkillsSettings";
+import { ScheduledTasksSettings } from "./ScheduledTasksSettings";
 import type { JSX } from "solid-js";
 
-type Section = "providers" | "mcp" | "user" | "plugins" | "skills";
+type Section = "providers" | "mcp" | "user" | "plugins" | "skills" | "scheduled";
 
 const SECTIONS: { id: Section; label: string; icon: JSX.Element }[] = [
   { id: "providers", label: "Providers", icon: <TbOutlineKey size={15} /> },
   { id: "mcp", label: "MCP Servers", icon: <TbOutlineServer size={15} /> },
   { id: "skills", label: "Skills", icon: <TbOutlineBrain size={15} /> },
+  { id: "scheduled", label: "Scheduled Tasks", icon: <TbOutlineClock size={15} /> },
   { id: "user", label: "User", icon: <TbOutlineUser size={15} /> },
   { id: "plugins", label: "Plugins", icon: <TbOutlinePlug size={15} /> },
 ];
@@ -30,6 +33,7 @@ const SECTION_COMPONENTS: Record<Section, Component> = {
   user: UserSettings,
   plugins: PluginsSettings,
   skills: SkillsSettings,
+  scheduled: ScheduledTasksSettings,
 };
 
 export const SettingsPanel: Component = () => {

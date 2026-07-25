@@ -6,6 +6,7 @@ mod commands;
 mod core_config;
 mod debug;
 mod provider_box;
+mod scheduler;
 mod state;
 
 use core_config::CoreConfig;
@@ -172,6 +173,18 @@ pub fn run() {
             commands::config_management::get_shared_config_error,
             commands::config_management::seed_default_profiles,
             commands::config_management::restore_default_profiles,
+            commands::scheduled_tasks::scheduler_availability,
+            commands::scheduled_tasks::list_scheduled_tasks,
+            commands::scheduled_tasks::get_scheduled_task,
+            commands::scheduled_tasks::save_scheduled_task,
+            commands::scheduled_tasks::validate_scheduled_task,
+            commands::scheduled_tasks::inspect_schedule,
+            commands::scheduled_tasks::inspect_all_schedules,
+            commands::scheduled_tasks::reconcile_schedule,
+            commands::scheduled_tasks::reconcile_all_schedules,
+            commands::scheduled_tasks::delete_scheduled_task,
+            commands::scheduled_tasks::delete_scheduled_task_desired_only,
+            commands::scheduled_tasks::list_automation_task_options,
             commands::snip::start_snip,
             commands::snip::capture_snip,
             commands::snip::get_snip_screenshot,
