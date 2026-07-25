@@ -7,6 +7,9 @@ dist/
 # Rust build
 src-tauri/target/
 
+# Sidecar binaries staged from target/ by scripts/stage-sidecar.mjs
+src-tauri/binaries/
+
 # Generated (mobile)
 src-tauri/gen/
 
